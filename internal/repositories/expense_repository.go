@@ -12,10 +12,6 @@ type expenseRepositoryMemory struct {
 	nextID   int
 }
 
-type expenseRepositoryPostgres struct {
-	// 将来実装予定
-}
-
 func NewExpenseRepositoryMemory() ExpenseRepository {
 	return &expenseRepositoryMemory{
 		expenses: []models.Expense{},

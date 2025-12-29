@@ -1,6 +1,7 @@
 package main
 
 import (
+	"money-buddy-backend/internal/db"
 	"money-buddy-backend/internal/handlers"
 	"money-buddy-backend/internal/repositories"
 	"money-buddy-backend/internal/services"
@@ -10,8 +11,12 @@ import (
 
 func main() {
 	r := gin.Default()
+	dbConn, err := db.NewDB()
+	if err != nil {
+		panic(err)
+	}
 
-	repo := repositories.NewExpenseRepositoryMemory()
+	repo := repositories.NewExpenseRepositoryPostgres(dbConn)
 	service := services.NewExpenseService(repo)
 	handlers.NewExpenseHandler(r, service)
 
