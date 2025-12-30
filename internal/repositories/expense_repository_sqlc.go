@@ -35,8 +35,8 @@ func (r *expenseRepositorySQLC) CreateExpense(input models.CreateExpenseInput) (
 	}
 
 	params := db.CreateExpenseParams{
-		Amount:     int32(input.Amount),
-		CategoryID: int32(input.CategoryID),
+		Amount:     int32(*input.Amount),
+		CategoryID: int32(*input.CategoryID),
 		Memo:       sql.NullString{String: input.Memo, Valid: input.Memo != ""},
 		SpentAt:    spentAt,
 	}
