@@ -18,7 +18,7 @@ type mockRepo struct {
 func (m *mockRepo) CreateExpense(input models.CreateExpenseInput) (models.Expense, error) {
 	m.called = true
 	m.in = input
-	return models.Expense{ID: 1, Amount: input.Amount, CategoryID: input.CategoryID, Memo: input.Memo, SpentAt: input.SpentAt}, nil
+	return models.Expense{ID: 1, Amount: *input.Amount, CategoryID: *input.CategoryID, Memo: input.Memo, SpentAt: input.SpentAt}, nil
 }
 
 func (m *mockRepo) FindAll() ([]models.Expense, error) {
@@ -34,15 +34,15 @@ func TestCreateExpenseValidation(t *testing.T) {
 		skip       bool
 		skipReason string
 	}{
-		{name: "金額が0以下の場合はエラーになる", input: models.CreateExpenseInput{Amount: 0, CategoryID: 1, SpentAt: "2020-01-01"}, wantErr: true, wantCalled: false},
-		{name: "金額が1Bを超える場合はエラーになる", input: models.CreateExpenseInput{Amount: 1000000001, CategoryID: 1, SpentAt: "2020-01-02"}, wantErr: true, wantCalled: false},
-		{name: "カテゴリIDが0以下の場合はエラーになる", input: models.CreateExpenseInput{Amount: 100, CategoryID: 0, SpentAt: "2020-01-01"}, wantErr: true, wantCalled: false},
-		{name: "カテゴリが存在しない場合はエラーになる（将来的にカテゴリテーブルを参照）", input: models.CreateExpenseInput{Amount: 100, CategoryID: 9999, SpentAt: "2020-01-02"}, wantErr: true, wantCalled: false, skip: true, skipReason: "カテゴリ存在チェックは未実装"},
-		{name: "spentAtがzero time（0001-01-01T00:00:00Z）の場合はエラーになる", input: models.CreateExpenseInput{Amount: 100, CategoryID: 1, SpentAt: "0001-01-01T00:00:00Z"}, wantErr: true, wantCalled: false},
-		{name: "日付のみ（YYYY-MM-DD）で正常に作成される", input: models.CreateExpenseInput{Amount: 100, CategoryID: 1, SpentAt: "2020-01-02"}, wantErr: false, wantCalled: true},
-		{name: "RFC3339形式で正常に作成される", input: models.CreateExpenseInput{Amount: 200, CategoryID: 2, SpentAt: "2020-01-02T15:04:05Z"}, wantErr: false, wantCalled: true},
-		{name: "spentAtが空文字の場合はエラーになる", input: models.CreateExpenseInput{Amount: 100, CategoryID: 1, SpentAt: ""}, wantErr: true, wantCalled: false},
-		{name: "メモが最大長を超える場合はエラーになる", input: models.CreateExpenseInput{Amount: 100, CategoryID: 1, SpentAt: "2020-01-02", Memo: strings.Repeat("a", 5001)}, wantErr: true, wantCalled: false},
+		{name: "金額が0以下の場合はエラーになる", input: models.CreateExpenseInput{Amount: intPtr(0), CategoryID: intPtr(1), SpentAt: "2020-01-01"}, wantErr: true, wantCalled: false},
+		{name: "金額が1Bを超える場合はエラーになる", input: models.CreateExpenseInput{Amount: intPtr(1000000001), CategoryID: intPtr(1), SpentAt: "2020-01-02"}, wantErr: true, wantCalled: false},
+		{name: "カテゴリIDが0以下の場合はエラーになる", input: models.CreateExpenseInput{Amount: intPtr(100), CategoryID: intPtr(0), SpentAt: "2020-01-01"}, wantErr: true, wantCalled: false},
+		{name: "カテゴリが存在しない場合はエラーになる（将来的にカテゴリテーブルを参照）", input: models.CreateExpenseInput{Amount: intPtr(100), CategoryID: intPtr(9999), SpentAt: "2020-01-02"}, wantErr: true, wantCalled: false, skip: true, skipReason: "カテゴリ存在チェックは未実装"},
+		{name: "spentAtがzero time（0001-01-01T00:00:00Z）の場合はエラーになる", input: models.CreateExpenseInput{Amount: intPtr(100), CategoryID: intPtr(1), SpentAt: "0001-01-01T00:00:00Z"}, wantErr: true, wantCalled: false},
+		{name: "日付のみ（YYYY-MM-DD）で正常に作成される", input: models.CreateExpenseInput{Amount: intPtr(100), CategoryID: intPtr(1), SpentAt: "2020-01-02"}, wantErr: false, wantCalled: true},
+		{name: "RFC3339形式で正常に作成される", input: models.CreateExpenseInput{Amount: intPtr(200), CategoryID: intPtr(2), SpentAt: "2020-01-02T15:04:05Z"}, wantErr: false, wantCalled: true},
+		{name: "spentAtが空文字の場合はエラーになる", input: models.CreateExpenseInput{Amount: intPtr(100), CategoryID: intPtr(1), SpentAt: ""}, wantErr: true, wantCalled: false},
+		{name: "メモが最大長を超える場合はエラーになる", input: models.CreateExpenseInput{Amount: intPtr(100), CategoryID: intPtr(1), SpentAt: "2020-01-02", Memo: strings.Repeat("a", 5001)}, wantErr: true, wantCalled: false},
 	}
 
 	for _, tc := range cases {
@@ -69,8 +69,10 @@ func TestCreateExpenseValidation(t *testing.T) {
 			assert.Equal(t, tc.wantCalled, m.called, "repo called mismatch for case %s", tc.name)
 
 			if !tc.wantErr {
-				assert.Equal(t, tc.input.Amount, out.Amount, "amount mismatch for case %s", tc.name)
+				assert.Equal(t, *tc.input.Amount, out.Amount, "amount mismatch for case %s", tc.name)
 			}
 		})
 	}
 }
+
+func intPtr(v int) *int { return &v }

@@ -28,16 +28,22 @@ func NewExpenseService(repo repositories.ExpenseRepository) ExpenseService {
 }
 
 func (s *expenseService) CreateExpense(input models.CreateExpenseInput) (models.Expense, error) {
-	// 金額チェック
-	if input.Amount <= 0 {
+	// 金額チェック: 入力が存在するかをまず確認し、その後業務上の制約を確認する
+	if input.Amount == nil {
+		return models.Expense{}, &ValidationError{Message: "amount must be provided"}
+	}
+	if *input.Amount <= 0 {
 		return models.Expense{}, &ValidationError{Message: "amount must be greater than 0"}
 	}
-	if input.Amount > BusinessMaxAmount {
+	if *input.Amount > BusinessMaxAmount {
 		return models.Expense{}, &ValidationError{Message: "amount exceeds maximum allowed"}
 	}
 
 	// カテゴリID チェック
-	if input.CategoryID <= 0 {
+	if input.CategoryID == nil {
+		return models.Expense{}, &ValidationError{Message: "category_id must be provided"}
+	}
+	if *input.CategoryID <= 0 {
 		return models.Expense{}, &ValidationError{Message: "category_id must be greater than 0"}
 	}
 

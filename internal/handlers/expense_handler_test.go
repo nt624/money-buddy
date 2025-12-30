@@ -20,8 +20,8 @@ type mockExpenseService struct{}
 func (m *mockExpenseService) CreateExpense(input models.CreateExpenseInput) (models.Expense, error) {
 	return models.Expense{
 		ID:         1,
-		Amount:     input.Amount,
-		CategoryID: input.CategoryID,
+		Amount:     *input.Amount,
+		CategoryID: *input.CategoryID,
 		Memo:       input.Memo,
 		SpentAt:    input.SpentAt,
 	}, nil
@@ -74,7 +74,7 @@ func TestCreateExpenseHandler_ValidationError(t *testing.T) {
 
 	// amount=0 would fail Gin's binding `required` check (zero value),
 	// so use -1 to let binding pass and exercise service-side validation.
-	body := `{"amount":-1,"category_id":2,"memo":"lunch","spent_at":"2025-12-30"}`
+	body := `{"amount":0,"category_id":2,"memo":"lunch","spent_at":"2025-12-30"}`
 	req := httptest.NewRequest(http.MethodPost, "/expenses", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
