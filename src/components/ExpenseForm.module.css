@@ -1,0 +1,55 @@
+/*
+  Minimal baseline styles for the expense form.
+  Goal: prevent layout breaks and improve readability without imposing design.
+  Notes:
+  - No colors, fonts, animations except red for error messages.
+  - Classes are meaning-based to ease future refactors.
+  - Keep structure simple: form -> field -> label + input/select -> error -> button.
+*/
+
+/* Center the form and limit width to keep line length readable. */
+.form {
+  width: 100%;
+  max-width: 480px; /* modest max-width; easy to adjust as spec evolves */
+  margin: 0 auto;   /* center horizontally */
+  padding: 12px;    /* small inner spacing to avoid edge contact */
+  box-sizing: border-box;
+}
+
+/* Stack label and input vertically per field, with consistent spacing. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;         /* tight spacing between label and control */
+  margin-bottom: 12px; /* space between fields to avoid crowding */
+}
+
+/* Label is kept minimal; default typography is fine for now. */
+.label {
+  /* Minimal structural role: ensure label behaves as a block for stacking */
+  display: block;
+}
+
+/* Inputs/selects should look like form controls without design specifics. */
+.input {
+  width: 100%;
+  padding: 8px;     /* clear hit area and readability */
+  border: 1px solid; /* solid border using currentColor; avoids design color pick */
+  border-radius: 4px; /* subtle rounding to indicate interactivity */
+  box-sizing: border-box;
+}
+
+/* Error messages: small and red to signal issues clearly. */
+.error {
+  color: #d00;      /* minimal, conventional error red */
+  font-size: 12px;  /* slightly smaller than body text */
+  margin-top: 4px;
+}
+
+/* Submit button: looks pressable without aesthetic commitment. */
+.button {
+  padding: 8px 12px;
+  border: 1px solid; /* uses currentColor; avoids fixed palette */
+  border-radius: 4px;
+  cursor: pointer;   /* affordance */
+}
