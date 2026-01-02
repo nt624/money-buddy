@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import styles from './ExpenseForm.module.css'
 import { CreateExpenseInput } from '@/lib/types/expense'
+import { getCategories } from '@/lib/api/categories'
+import { Category } from '@/lib/types/category'
 
 type Props = {
     onSubmit: (input: CreateExpenseInput) => Promise<void>
@@ -14,6 +16,13 @@ export function ExpenseForm({ onSubmit, isSubmitting }: Props) {
     const [categoryId, setCategoryId] = useState('1')
     const [memo, setMemo] = useState('')
     const [spentAt, setSpentAt] = useState('')
+    const [categories, setCategories] = useState<Category[]>([])
+
+    useEffect(() => {
+        getCategories()
+            .then(setCategories)
+            .catch(console.error)
+    }, [])
 
     const [errors, setErrors] = useState<{
         amount?: string
@@ -35,7 +44,6 @@ export function ExpenseForm({ onSubmit, isSubmitting }: Props) {
         setErrors(newErrors)
         return Object.keys(newErrors).length === 0
     }
-
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -59,7 +67,6 @@ export function ExpenseForm({ onSubmit, isSubmitting }: Props) {
 
     return (
         <form onSubmit={handleSubmit} className={styles.form}>
-            {/* Each field stack: label + control. Minimal classes to protect layout */}
             <div className={styles.field}>
                 <label className={styles.label}>
                     金額
@@ -77,13 +84,15 @@ export function ExpenseForm({ onSubmit, isSubmitting }: Props) {
                 <label className={styles.label}>
                     カテゴリ
                     <select
-                        className={styles.input}
                         value={categoryId}
                         onChange={(e) => setCategoryId(e.target.value)}
                     >
-                        <option value="1">食費</option>
-                        <option value="2">日用品</option>
-                        <option value="3">交通費</option>
+                        <option value="">カテゴリを選択</option>
+                        {categories.map((category) => (
+                            <option key={category.id} value={category.id}>
+                                {category.name}
+                            </option>
+                        ))}
                     </select>
                 </label>
             </div>
