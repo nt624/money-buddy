@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import styles from './ExpenseForm.module.css'
 import { CreateExpenseInput } from '@/lib/types/expense'
 
 type Props = {
@@ -56,23 +57,26 @@ export function ExpenseForm({ onSubmit, isSubmitting }: Props) {
     }
 
     return (
-        <form onSubmit={handleSubmit}>
-            <div>
-                <label>
+        <form onSubmit={handleSubmit} className={styles.form}>
+            {/* Each field stack: label + control. Minimal classes to protect layout */}
+            <div className={styles.field}>
+                <label className={styles.label}>
                     金額
                     <input
+                        className={styles.input}
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
                     />
                 </label>
-                {errors.amount && <p style={{ color: 'red' }}>{errors.amount}</p>}
+                {errors.amount && <p className={styles.error}>{errors.amount}</p>}
             </div>
 
-            <div>
-                <label>
+            <div className={styles.field}>
+                <label className={styles.label}>
                     カテゴリ
                     <select
+                        className={styles.input}
                         value={categoryId}
                         onChange={(e) => setCategoryId(e.target.value)}
                     >
@@ -83,10 +87,11 @@ export function ExpenseForm({ onSubmit, isSubmitting }: Props) {
                 </label>
             </div>
 
-            <div>
-                <label>
+            <div className={styles.field}>
+                <label className={styles.label}>
                     メモ
                     <input
+                        className={styles.input}
                         type="text"
                         value={memo}
                         onChange={(e) => setMemo(e.target.value)}
@@ -94,21 +99,22 @@ export function ExpenseForm({ onSubmit, isSubmitting }: Props) {
                 </label>
             </div>
 
-            <div>
-                <label>
+            <div className={styles.field}>
+                <label className={styles.label}>
                     日付
                     <input
+                        className={styles.input}
                         type="date"
                         value={spentAt}
                         onChange={(e) => setSpentAt(e.target.value)}
                     />
                 </label>
                 {errors.spent_at && (
-                    <p style={{ color: 'red' }}>{errors.spent_at}</p>
+                    <p className={styles.error}>{errors.spent_at}</p>
                 )}
             </div>
 
-            <button type="submit" disabled={isSubmitting}>
+            <button className={styles.button} type="submit" disabled={isSubmitting}>
                 {isSubmitting ? '送信中...' : '追加'}
             </button>
         </form>
