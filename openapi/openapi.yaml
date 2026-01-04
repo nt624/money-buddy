@@ -74,20 +74,30 @@ components:
         amount:
           type: integer
           minimum: 1
-        category_id:
-          type: integer
-          minimum: 1
         memo:
           type: string
         spent_at:
           type: string
           format: date
+        category:
+          $ref: '#/components/schemas/Category'
       required:
         - id
         - amount
-        - category_id
         - memo
         - spent_at
+        - category
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+        - id
+        - name
 
     CreateExpenseRequest:
       type: object

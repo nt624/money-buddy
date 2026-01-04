@@ -16,11 +16,14 @@ func NewExpenseRepositoryMemory() ExpenseRepository {
 
 func (r *expenseRepositoryMemory) CreateExpense(input models.CreateExpenseInput) (models.Expense, error) {
 	expense := models.Expense{
-		ID:         r.nextID,
-		Amount:     *input.Amount,
-		CategoryID: *input.CategoryID,
-		Memo:       input.Memo,
-		SpentAt:    input.SpentAt,
+		ID:      r.nextID,
+		Amount:  *input.Amount,
+		Memo:    input.Memo,
+		SpentAt: input.SpentAt,
+		Category: models.Category{
+			ID:   *input.CategoryID,
+			Name: "",
+		},
 	}
 	r.nextID++
 
