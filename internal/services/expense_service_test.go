@@ -20,7 +20,7 @@ type mockRepo struct {
 func (m *mockRepo) CreateExpense(input models.CreateExpenseInput) (models.Expense, error) {
 	m.called = true
 	m.in = input
-	return models.Expense{ID: 1, Amount: *input.Amount, CategoryID: *input.CategoryID, Memo: input.Memo, SpentAt: input.SpentAt}, nil
+	return models.Expense{ID: 1, Amount: *input.Amount, Memo: input.Memo, SpentAt: input.SpentAt, Category: models.Category{ID: *input.CategoryID, Name: ""}}, nil
 }
 
 func (m *mockRepo) FindAll() ([]models.Expense, error) {

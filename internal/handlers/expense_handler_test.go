@@ -19,11 +19,14 @@ type mockExpenseService struct{}
 
 func (m *mockExpenseService) CreateExpense(input models.CreateExpenseInput) (models.Expense, error) {
 	return models.Expense{
-		ID:         1,
-		Amount:     *input.Amount,
-		CategoryID: *input.CategoryID,
-		Memo:       input.Memo,
-		SpentAt:    input.SpentAt,
+		ID:      1,
+		Amount:  *input.Amount,
+		Memo:    input.Memo,
+		SpentAt: input.SpentAt,
+		Category: models.Category{
+			ID:   *input.CategoryID,
+			Name: "",
+		},
 	}, nil
 }
 
@@ -55,7 +58,7 @@ func TestCreateExpenseHandler_Created(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, 1, expense.ID)
 	require.Equal(t, 1000, expense.Amount)
-	require.Equal(t, 2, expense.CategoryID)
+	require.Equal(t, 2, expense.Category.ID)
 	require.Equal(t, "lunch", expense.Memo)
 	require.Equal(t, "2025-12-30", expense.SpentAt)
 }

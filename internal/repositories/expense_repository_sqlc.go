@@ -70,12 +70,11 @@ func dbExpenseToModel(e db.Expense) models.Expense {
 	}
 
 	return models.Expense{
-		ID:           int(e.ID),
-		Amount:       int(e.Amount),
-		CategoryID:   int(e.CategoryID),
-		CategoryName: "",
-		Memo:         memo,
-		SpentAt:      e.SpentAt.Format(time.RFC3339),
+		ID:       int(e.ID),
+		Amount:   int(e.Amount),
+		Memo:     memo,
+		SpentAt:  e.SpentAt.Format(time.RFC3339),
+		Category: models.Category{ID: int(e.CategoryID), Name: ""},
 	}
 }
 
@@ -86,11 +85,10 @@ func dbListExpenseRowToModel(e db.ListExpensesRow) models.Expense {
 	}
 
 	return models.Expense{
-		ID:           int(e.ID),
-		Amount:       int(e.Amount),
-		CategoryID:   int(e.CategoryID),
-		CategoryName: e.CategoryName,
-		Memo:         memo,
-		SpentAt:      e.SpentAt.Format(time.RFC3339),
+		ID:       int(e.ID),
+		Amount:   int(e.Amount),
+		Memo:     memo,
+		SpentAt:  e.SpentAt.Format(time.RFC3339),
+		Category: models.Category{ID: int(e.CategoryID), Name: e.CategoryName},
 	}
 }
