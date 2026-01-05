@@ -8,9 +8,12 @@ export type CreateExpenseInput = {
 export type Expense = {
     id: number;
     amount: number;
-    category_id: number;
     memo: string | null;
     spent_at: string; // YYYY-MM-DD
+    category: {
+        id: number;
+        name: string;
+    }
 };
 
 export type GetExpensesResponse = {

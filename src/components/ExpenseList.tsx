@@ -11,7 +11,7 @@ export function ExpenseList({ expenses }: Props) {
         <li key={e.id}>
           <span>{e.spent_at}</span> / 
           <span>¥{e.amount}</span> / 
-          <span>カテゴリID: {e.category_id}</span> / 
+          <span>カテゴリ: {e.category.name}</span> / 
           <span>{e.memo}</span>
         </li>
       ))}

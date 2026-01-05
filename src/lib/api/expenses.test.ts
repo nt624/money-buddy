@@ -14,15 +14,15 @@ describe("createExpense", () => {
     const input: CreateExpenseInput = {
       amount: 1200,
       category_id: 3,
-      memo: "lunch",
+      memo: "通勤",
       spent_at: "2025-12-31",
     };
 
     const expectedExpense: Expense = {
       id: 1,
       amount: 1200,
-      category_id: 3,
-      memo: "lunch",
+      category: { id: 3, name: "交通費" },
+      memo: "通勤",
       spent_at: "2025-12-31",
     };
 
