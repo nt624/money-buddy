@@ -5,7 +5,8 @@ CREATE TABLE expenses (
   memo TEXT,
   spent_at DATE NOT NULL,
   status TEXT NOT NULL DEFAULT 'confirmed',
-  created_at TIMESTAMP NOT NULL DEFAULT now()
+  created_at TIMESTAMP NOT NULL DEFAULT now(),
+  update_at TIMESTAMP NOT NULL DEFAULT now()
 );
 
 ALTER TABLE expenses
