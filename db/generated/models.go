@@ -21,5 +21,7 @@ type Expense struct {
 	CategoryID int32
 	Memo       sql.NullString
 	SpentAt    time.Time
+	Status     string
 	CreatedAt  time.Time
+	UpdateAt   time.Time
 }

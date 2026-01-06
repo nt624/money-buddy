@@ -4,5 +4,11 @@ CREATE TABLE expenses (
   category_id INTEGER NOT NULL,
   memo TEXT,
   spent_at DATE NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT now()
+  status TEXT NOT NULL DEFAULT 'confirmed',
+  created_at TIMESTAMP NOT NULL DEFAULT now(),
+  update_at TIMESTAMP NOT NULL DEFAULT now()
 );
+
+ALTER TABLE expenses
+ADD CONSTRAINT expenses_status_check
+CHECK (status IN ('planned', 'confirmed'));
