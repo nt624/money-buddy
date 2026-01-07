@@ -45,6 +45,51 @@ func (q *Queries) CreateExpense(ctx context.Context, arg CreateExpenseParams) (i
 	return id, err
 }
 
+const deleteExpense = `-- name: DeleteExpense :exec
+DELETE FROM expenses
+WHERE id = $1
+`
+
+func (q *Queries) DeleteExpense(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, deleteExpense, id)
+	return err
+}
+
+const getExpenseByID = `-- name: GetExpenseByID :one
+SELECT
+  id,
+  amount,
+  category_id,
+  memo,
+  spent_at,
+  status
+FROM expenses
+WHERE id = $1
+`
+
+type GetExpenseByIDRow struct {
+	ID         int32
+	Amount     int32
+	CategoryID int32
+	Memo       sql.NullString
+	SpentAt    time.Time
+	Status     string
+}
+
+func (q *Queries) GetExpenseByID(ctx context.Context, id int32) (GetExpenseByIDRow, error) {
+	row := q.db.QueryRowContext(ctx, getExpenseByID, id)
+	var i GetExpenseByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.Amount,
+		&i.CategoryID,
+		&i.Memo,
+		&i.SpentAt,
+		&i.Status,
+	)
+	return i, err
+}
+
 const getExpenseWithCategoryByID = `-- name: GetExpenseWithCategoryByID :one
 SELECT
   e.id,
@@ -137,4 +182,55 @@ func (q *Queries) ListExpenses(ctx context.Context) ([]ListExpensesRow, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateExpense = `-- name: UpdateExpense :exec
+UPDATE expenses
+SET
+  amount = $2,
+  category_id = $3,
+  memo = $4,
+  spent_at = $5,
+  status = $6,
+  update_at = now()
+WHERE id = $1
+`
+
+type UpdateExpenseParams struct {
+	ID         int32
+	Amount     int32
+	CategoryID int32
+	Memo       sql.NullString
+	SpentAt    time.Time
+	Status     string
+}
+
+func (q *Queries) UpdateExpense(ctx context.Context, arg UpdateExpenseParams) error {
+	_, err := q.db.ExecContext(ctx, updateExpense,
+		arg.ID,
+		arg.Amount,
+		arg.CategoryID,
+		arg.Memo,
+		arg.SpentAt,
+		arg.Status,
+	)
+	return err
+}
+
+const updateExpenseStatus = `-- name: UpdateExpenseStatus :exec
+UPDATE expenses
+SET
+  status = $2,
+  update_at = now()
+WHERE id = $1
+`
+
+type UpdateExpenseStatusParams struct {
+	ID     int32
+	Status string
+}
+
+func (q *Queries) UpdateExpenseStatus(ctx context.Context, arg UpdateExpenseStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateExpenseStatus, arg.ID, arg.Status)
+	return err
 }
