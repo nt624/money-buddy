@@ -35,3 +35,36 @@ SELECT
 FROM expenses e
 JOIN categories c ON e.category_id = c.id
 WHERE e.id = $1;
+
+-- name: GetExpenseByID :one
+SELECT
+  id,
+  amount,
+  category_id,
+  memo,
+  spent_at,
+  status
+FROM expenses
+WHERE id = $1;
+
+-- name: UpdateExpense :exec
+UPDATE expenses
+SET
+  amount = $2,
+  category_id = $3,
+  memo = $4,
+  spent_at = $5,
+  status = $6,
+  update_at = now()
+WHERE id = $1;
+
+-- name: UpdateExpenseStatus :exec
+UPDATE expenses
+SET
+  status = $2,
+  update_at = now()
+WHERE id = $1;
+
+-- name: DeleteExpense :exec
+DELETE FROM expenses
+WHERE id = $1;
