@@ -34,6 +34,10 @@ func (m *mockExpenseService) ListExpenses() ([]models.Expense, error) {
 	return nil, nil
 }
 
+func (m *mockExpenseService) DeleteExpense(id int) error {
+	return nil
+}
+
 func TestCreateExpenseHandler_Created(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
@@ -104,4 +108,8 @@ func (m *mockExpenseServiceValidationErr) CreateExpense(input models.CreateExpen
 
 func (m *mockExpenseServiceValidationErr) ListExpenses() ([]models.Expense, error) {
 	return nil, nil
+}
+
+func (m *mockExpenseServiceValidationErr) DeleteExpense(id int) error {
+	return nil
 }

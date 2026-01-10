@@ -8,6 +8,7 @@ import (
 
 	"money-buddy-backend/internal/models"
 	"money-buddy-backend/internal/services"
+	"strconv"
 )
 
 type ExpenseHandler struct {
@@ -19,6 +20,7 @@ func NewExpenseHandler(r *gin.Engine, service services.ExpenseService) {
 
 	r.POST("/expenses", handler.CreateExpense)
 	r.GET("/expenses", handler.ListExpenses)
+	r.DELETE("/expenses/:id", handler.DeleteExpense)
 }
 
 func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
@@ -51,4 +53,25 @@ func (h *ExpenseHandler) ListExpenses(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"expenses": expenses})
+}
+
+func (h *ExpenseHandler) DeleteExpense(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid expense ID"})
+		return
+	}
+
+	err = h.service.DeleteExpense(int(id))
+	if err != nil {
+		var ve *services.ValidationError
+		if errors.As(err, &ve) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": ve.Message})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
