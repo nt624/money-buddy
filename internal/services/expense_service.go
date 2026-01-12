@@ -139,3 +139,8 @@ func (s *expenseService) DeleteExpense(id int) error {
 
 	return s.repo.DeleteExpense(int32(id))
 }
+
+func (s *expenseService) UpdateExpense(input models.UpdateExpenseInput) (models.Expense, error) {
+	// validationは後ほど実装する
+	return s.repo.UpdateExpense(input)
+}
