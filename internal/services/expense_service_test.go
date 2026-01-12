@@ -369,3 +369,193 @@ func TestDeleteExpense_StatusAgnostic(t *testing.T) {
 		})
 	}
 }
+
+// mockUpdateRepo satisfies repositories.ExpenseRepository and simulates update behavior
+type mockUpdateRepo struct {
+	current   models.Expense
+	called    bool
+	in        models.UpdateExpenseInput
+	returnErr error
+	getErr    error
+}
+
+func (m *mockUpdateRepo) CreateExpense(input models.CreateExpenseInput) (models.Expense, error) {
+	return models.Expense{}, errors.New("not implemented")
+}
+
+func (m *mockUpdateRepo) FindAll() ([]models.Expense, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockUpdateRepo) GetExpenseByID(id int32) (models.Expense, error) {
+	if m.getErr != nil {
+		return models.Expense{}, m.getErr
+	}
+	return m.current, nil
+}
+
+func (m *mockUpdateRepo) DeleteExpense(id int32) error { return errors.New("not implemented") }
+
+// UpdateExpense updates fields; if Status is empty, keep current status
+func (m *mockUpdateRepo) UpdateExpense(input models.UpdateExpenseInput) (models.Expense, error) {
+	m.called = true
+	m.in = input
+	if m.returnErr != nil {
+		return models.Expense{}, m.returnErr
+	}
+	e := m.current
+	if input.Amount != nil {
+		e.Amount = *input.Amount
+	}
+	if input.CategoryID != nil {
+		e.Category = models.Category{ID: *input.CategoryID}
+	}
+	e.Memo = input.Memo
+	e.SpentAt = input.SpentAt
+	if input.Status != "" {
+		e.Status = strings.ToLower(input.Status)
+	}
+	m.current = e
+	return e, nil
+}
+
+func TestUpdateExpense_NormalCases(t *testing.T) {
+	t.Parallel()
+
+	// Pattern 1: current planned -> update to confirmed
+	t.Run("planned to confirmed", func(t *testing.T) {
+		t.Parallel()
+
+		repo := &mockUpdateRepo{current: models.Expense{ID: 1, Amount: 100, Memo: "old", SpentAt: "2025-01-01", Status: "planned", Category: models.Category{ID: 1}}}
+		cr := &mockCategoryRepo{}
+		s := &expenseService{repo: repo, categoryRepo: cr}
+
+		input := models.UpdateExpenseInput{
+			ID:         1,
+			Amount:     intPtr(200),
+			CategoryID: intPtr(2),
+			Memo:       "updated memo",
+			SpentAt:    "2025-02-01",
+			Status:     "confirmed",
+		}
+		out, err := s.UpdateExpense(input)
+
+		assert.NoError(t, err)
+		assert.True(t, repo.called)
+		assert.Equal(t, "confirmed", out.Status)
+		assert.Equal(t, 200, out.Amount)
+		assert.Equal(t, 2, out.Category.ID)
+		assert.Equal(t, "updated memo", out.Memo)
+		assert.Equal(t, "2025-02-01", out.SpentAt)
+	})
+
+	// Pattern 2: current confirmed -> update content without changing status
+	t.Run("confirmed no status change", func(t *testing.T) {
+		t.Parallel()
+
+		repo := &mockUpdateRepo{current: models.Expense{ID: 2, Amount: 300, Memo: "c-old", SpentAt: "2025-03-01", Status: "confirmed", Category: models.Category{ID: 3}}}
+		cr := &mockCategoryRepo{}
+		s := &expenseService{repo: repo, categoryRepo: cr}
+
+		input := models.UpdateExpenseInput{
+			ID:         2,
+			Amount:     intPtr(350),
+			CategoryID: intPtr(4),
+			Memo:       "c-updated",
+			SpentAt:    "2025-03-15",
+			Status:     "", // no change
+		}
+		out, err := s.UpdateExpense(input)
+
+		assert.NoError(t, err)
+		assert.True(t, repo.called)
+		assert.Equal(t, "confirmed", out.Status)
+		assert.Equal(t, 350, out.Amount)
+		assert.Equal(t, 4, out.Category.ID)
+		assert.Equal(t, "c-updated", out.Memo)
+		assert.Equal(t, "2025-03-15", out.SpentAt)
+	})
+
+	// Pattern 3: current planned -> update content without changing status
+	t.Run("planned no status change", func(t *testing.T) {
+		t.Parallel()
+
+		repo := &mockUpdateRepo{current: models.Expense{ID: 3, Amount: 500, Memo: "p-old", SpentAt: "2025-04-01", Status: "planned", Category: models.Category{ID: 5}}}
+		cr := &mockCategoryRepo{}
+		s := &expenseService{repo: repo, categoryRepo: cr}
+
+		input := models.UpdateExpenseInput{
+			ID:         3,
+			Amount:     intPtr(550),
+			CategoryID: intPtr(6),
+			Memo:       "p-updated",
+			SpentAt:    "2025-04-10",
+			Status:     "", // no change
+		}
+		out, err := s.UpdateExpense(input)
+
+		assert.NoError(t, err)
+		assert.True(t, repo.called)
+		assert.Equal(t, "planned", out.Status)
+		assert.Equal(t, 550, out.Amount)
+		assert.Equal(t, 6, out.Category.ID)
+		assert.Equal(t, "p-updated", out.Memo)
+		assert.Equal(t, "2025-04-10", out.SpentAt)
+	})
+}
+
+func TestUpdateExpense_InvalidTransition_ConfirmedToPlanned(t *testing.T) {
+	t.Parallel()
+
+	repo := &mockUpdateRepo{current: models.Expense{ID: 100, Amount: 1000, Memo: "confirmed item", SpentAt: "2025-05-01", Status: "confirmed", Category: models.Category{ID: 10}}}
+	cr := &mockCategoryRepo{}
+	s := &expenseService{repo: repo, categoryRepo: cr}
+
+	input := models.UpdateExpenseInput{
+		ID:         100,
+		Amount:     intPtr(1200),
+		CategoryID: intPtr(11),
+		Memo:       "try revert to planned",
+		SpentAt:    "2025-05-02",
+		Status:     "planned",
+	}
+
+	_, err := s.UpdateExpense(input)
+	if err == nil {
+		t.Fatalf("expected error")
+	}
+	// ErrInvalidStatusTransition を返すこと
+	if !assert.ErrorIs(t, err, ErrInvalidStatusTransition) {
+		return
+	}
+	// Update が呼ばれないこと
+	assert.False(t, repo.called)
+}
+
+func TestUpdateExpense_NotFound(t *testing.T) {
+	t.Parallel()
+
+	repo := &mockUpdateRepo{getErr: sqlErrNoRows()}
+	cr := &mockCategoryRepo{}
+	s := &expenseService{repo: repo, categoryRepo: cr}
+
+	input := models.UpdateExpenseInput{
+		ID:         9999,
+		Amount:     intPtr(500),
+		CategoryID: intPtr(1),
+		Memo:       "not found case",
+		SpentAt:    "2025-06-01",
+		Status:     "planned",
+	}
+
+	_, err := s.UpdateExpense(input)
+	if err == nil {
+		t.Fatalf("expected error")
+	}
+	// 指定のIDが存在しない場合も ErrInvalidStatusTransition を返す
+	if !assert.ErrorIs(t, err, ErrInvalidStatusTransition) {
+		return
+	}
+	// Update が呼ばれないこと
+	assert.False(t, repo.called)
+}
