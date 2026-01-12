@@ -113,3 +113,20 @@ func (r *expenseRepositorySQLC) GetExpenseByID(id int32) (models.Expense, error)
 func (r *expenseRepositorySQLC) DeleteExpense(id int32) error {
 	return r.q.DeleteExpense(context.Background(), id)
 }
+
+func (r *expenseRepositorySQLC) UpdateExpense(input models.Expense) (models.Expense, error) {
+	err := r.q.UpdateExpense(context.Background(), db.UpdateExpenseParams{
+		ID:         int32(input.ID),
+		Amount:     int32(input.Amount),
+		CategoryID: int32(input.Category.ID),
+		Memo:       sql.NullString{String: input.Memo, Valid: input.Memo != ""},
+		SpentAt:    parseSpentAt(input.SpentAt),
+		UpdateAt:   time.Now(),
+		Status:     input.Status,
+	})
+	if err != nil {
+		return models.Expense{}, err
+	}
+
+	return r.GetExpenseByID(int32(input.ID))
+}

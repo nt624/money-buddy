@@ -33,6 +33,10 @@ func (m *mockRepo) GetExpenseByID(id int32) (models.Expense, error) {
 
 func (m *mockRepo) DeleteExpense(id int32) error { return errors.New("not implemented") }
 
+func (m *mockRepo) UpdateExpense(input models.UpdateExpenseInput) (models.Expense, error) {
+	return models.Expense{}, errors.New("not implemented")
+}
+
 // mockCategoryRepo satisfies CategoryRepository for testing
 type mockCategoryRepo struct {
 	exists map[int32]bool
@@ -182,6 +186,10 @@ func (m *mockRepoErr) GetExpenseByID(id int32) (models.Expense, error) {
 
 func (m *mockRepoErr) DeleteExpense(id int32) error { return errors.New("not implemented") }
 
+func (m *mockRepoErr) UpdateExpense(input models.UpdateExpenseInput) (models.Expense, error) {
+	return models.Expense{}, errors.New("not implemented")
+}
+
 // sqlErrNoRows returns sql.ErrNoRows from database/sql
 func sqlErrNoRows() error { return sql.ErrNoRows }
 
@@ -288,6 +296,10 @@ func (m *mockDeleteRepo) DeleteExpense(id int32) error {
 	m.called = true
 	m.deletedID = id
 	return m.returnErr
+}
+
+func (m *mockDeleteRepo) UpdateExpense(input models.UpdateExpenseInput) (models.Expense, error) {
+	return models.Expense{}, errors.New("not implemented")
 }
 
 func (m *mockDeleteRepo) GetExpenseByID(id int32) (models.Expense, error) {
