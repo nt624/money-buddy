@@ -1,5 +1,7 @@
 package services
 
+import "errors"
+
 // ValidationError はサービス層が返す入力バリデーションエラーを表します。
 // 具体的な型にすることで、呼び出し側は errors.As などでエラーの種類を判別できます。
 type ValidationError struct {
@@ -36,3 +38,6 @@ func (e *InternalError) Error() string {
 	}
 	return e.Message
 }
+
+// ErrInvalidStatusTransition は不正なステータス遷移を表すエラーです。
+var ErrInvalidStatusTransition = errors.New("invalid status transition")

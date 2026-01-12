@@ -113,3 +113,36 @@ func (r *expenseRepositorySQLC) GetExpenseByID(id int32) (models.Expense, error)
 func (r *expenseRepositorySQLC) DeleteExpense(id int32) error {
 	return r.q.DeleteExpense(context.Background(), id)
 }
+
+func (r *expenseRepositorySQLC) UpdateExpense(input models.UpdateExpenseInput) (models.Expense, error) {
+	// 複数フォーマットに対応するため、RFC3339 をまず試し、失敗したら日付のみ (2006-01-02) を試す
+	var spentAt time.Time
+	var err error
+
+	spentAt, err = time.Parse(time.RFC3339, input.SpentAt)
+	if err != nil {
+		// try date-only format
+		spentAt, err = time.Parse("2006-01-02", input.SpentAt)
+		if err != nil {
+			return models.Expense{}, err
+		}
+		// 日付のみの場合は UTC の 00:00 として扱う
+		spentAt = time.Date(spentAt.Year(), spentAt.Month(), spentAt.Day(), 0, 0, 0, 0, time.UTC)
+	}
+
+	params := db.UpdateExpenseParams{
+		ID:         int32(input.ID),
+		Amount:     int32(*input.Amount),
+		CategoryID: int32(*input.CategoryID),
+		Memo:       sql.NullString{String: input.Memo, Valid: input.Memo != ""},
+		SpentAt:    spentAt,
+		Status:     defaultStatus(input.Status),
+	}
+	err = r.q.UpdateExpense(context.Background(), params)
+
+	if err != nil {
+		return models.Expense{}, err
+	}
+
+	return r.GetExpenseByID(int32(input.ID))
+}

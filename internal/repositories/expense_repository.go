@@ -8,4 +8,5 @@ type ExpenseRepository interface {
 	FindAll() ([]models.Expense, error)
 	GetExpenseByID(id int32) (models.Expense, error)
 	DeleteExpense(id int32) error
+	UpdateExpense(input models.UpdateExpenseInput) (models.Expense, error)
 }
