@@ -22,6 +22,7 @@ type ExpenseService interface {
 	CreateExpense(input models.CreateExpenseInput) (models.Expense, error)
 	ListExpenses() ([]models.Expense, error)
 	DeleteExpense(id int) error
+	UpdateExpense(input models.UpdateExpenseInput) (models.Expense, error)
 }
 
 type expenseService struct {
