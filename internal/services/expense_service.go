@@ -81,12 +81,12 @@ func (s *expenseService) CreateExpense(input models.CreateExpenseInput) (models.
 
 	// Status の検証（任意入力、指定されている場合のみチェック）
 	if input.Status != "" {
-		lower := strings.ToLower(input.Status)
-		if lower != "planned" && lower != "confirmed" {
+		if normalized, ok := models.NormalizeStatus(input.Status); ok {
+			// 正規化: DB は小文字で扱う前提
+			input.Status = normalized
+		} else {
 			return models.Expense{}, &ValidationError{Message: "status must be 'planned' or 'confirmed'"}
 		}
-		// 正規化: DB は小文字で扱う前提
-		input.Status = lower
 	}
 
 	// カテゴリ存在チェック（CategoryExists を用いる）
@@ -156,9 +156,9 @@ func (s *expenseService) UpdateExpense(input models.UpdateExpenseInput) (models.
 	if desiredStatus == "" {
 		desiredStatus = current.Status
 	} else {
-		desiredStatus = strings.ToLower(desiredStatus)
-		// 値の正規化（"planned"/"confirmed" のみ受け付け）
-		if desiredStatus != "planned" && desiredStatus != "confirmed" {
+		if normalized, ok := models.NormalizeStatus(desiredStatus); ok {
+			desiredStatus = normalized
+		} else {
 			return models.Expense{}, &ValidationError{Message: "status must be 'planned' or 'confirmed'"}
 		}
 	}
