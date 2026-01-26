@@ -9,6 +9,27 @@ import (
 	"context"
 )
 
+const getMonthlyExpensesSummary = `-- name: GetMonthlyExpensesSummary :one
+SELECT
+  COALESCE(SUM(CASE WHEN e.status = 'confirmed' THEN e.amount ELSE 0 END), 0) AS confirmed_expenses,
+  COALESCE(SUM(CASE WHEN e.status = 'planned' THEN e.amount ELSE 0 END), 0) AS pending_expenses
+FROM expenses e
+WHERE e.user_id = $1
+  AND DATE_TRUNC('month', e.spent_at) = DATE_TRUNC('month', CURRENT_DATE)
+`
+
+type GetMonthlyExpensesSummaryRow struct {
+	ConfirmedExpenses interface{}
+	PendingExpenses   interface{}
+}
+
+func (q *Queries) GetMonthlyExpensesSummary(ctx context.Context, userID string) (GetMonthlyExpensesSummaryRow, error) {
+	row := q.db.QueryRowContext(ctx, getMonthlyExpensesSummary, userID)
+	var i GetMonthlyExpensesSummaryRow
+	err := row.Scan(&i.ConfirmedExpenses, &i.PendingExpenses)
+	return i, err
+}
+
 const getMonthlySummary = `-- name: GetMonthlySummary :one
 SELECT
   u.income,
