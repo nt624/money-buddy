@@ -1,4 +1,4 @@
-package repositories
+package repository
 
 import "money-buddy-backend/internal/models"
 

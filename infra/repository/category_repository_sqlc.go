@@ -1,21 +1,22 @@
-package repositories
+package repository
 
 import (
 	"context"
 
 	db "money-buddy-backend/db/generated"
 	"money-buddy-backend/internal/models"
+	"money-buddy-backend/internal/repositories"
 )
 
-type CategoryRepositorySQLC struct {
+type categoryRepositorySQLC struct {
 	q *db.Queries
 }
 
-func NewCategoryRepositorySQLC(q *db.Queries) *CategoryRepositorySQLC {
-	return &CategoryRepositorySQLC{q: q}
+func NewCategoryRepositorySQLC(q *db.Queries) repositories.CategoryRepository {
+	return &categoryRepositorySQLC{q: q}
 }
 
-func (r *CategoryRepositorySQLC) ListCategories(ctx context.Context) ([]models.Category, error) {
+func (r *categoryRepositorySQLC) ListCategories(ctx context.Context) ([]models.Category, error) {
 	items, err := r.q.ListCategories(ctx)
 	if err != nil {
 		return nil, err
@@ -36,6 +37,6 @@ func dbCategoryToModel(c db.ListCategoriesRow) models.Category {
 	}
 }
 
-func (r *CategoryRepositorySQLC) CategoryExists(ctx context.Context, id int32) (bool, error) {
+func (r *categoryRepositorySQLC) CategoryExists(ctx context.Context, id int32) (bool, error) {
 	return r.q.CategoryExists(ctx, id)
 }
