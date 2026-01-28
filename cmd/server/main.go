@@ -2,9 +2,9 @@ package main
 
 import (
 	dbgen "money-buddy-backend/db/generated"
+	"money-buddy-backend/infra/repository"
 	"money-buddy-backend/internal/db"
 	"money-buddy-backend/internal/handlers"
-	"money-buddy-backend/internal/repositories"
 	"money-buddy-backend/internal/services"
 
 	"github.com/gin-gonic/gin"
@@ -32,8 +32,8 @@ func main() {
 	}
 
 	queries := dbgen.New(dbConn)
-	repo := repositories.NewExpenseRepositorySQLC(queries)
-	categoryRepo := repositories.NewCategoryRepositorySQLC(queries)
+	repo := repository.NewExpenseRepositorySQLC(queries)
+	categoryRepo := repository.NewCategoryRepositorySQLC(queries)
 	service := services.NewExpenseService(repo, categoryRepo)
 	handlers.NewExpenseHandler(r, service)
 
