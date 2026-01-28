@@ -45,6 +45,32 @@ func (r *fixedCostRepositorySQLC) ListFixedCostsByUser(ctx context.Context, user
 	return out, nil
 }
 
+func (r *fixedCostRepositorySQLC) DeleteFixedCostsByUser(ctx context.Context, userID string) error {
+	return r.q.DeleteFixedCostsByUser(ctx, userID)
+}
+
+func (r *fixedCostRepositorySQLC) BulkCreateFixedCosts(ctx context.Context, userID string, fixedCosts []models.FixedCostInput) error {
+	if len(fixedCosts) == 0 {
+		return nil
+	}
+
+	userIDs := make([]string, 0, len(fixedCosts))
+	names := make([]string, 0, len(fixedCosts))
+	amounts := make([]int32, 0, len(fixedCosts))
+	for _, fc := range fixedCosts {
+		userIDs = append(userIDs, userID)
+		names = append(names, fc.Name)
+		amounts = append(amounts, int32(fc.Amount))
+	}
+
+	params := db.BulkCreateFixedCostsParams{
+		Column1: userIDs,
+		Column2: names,
+		Column3: amounts,
+	}
+	return r.q.BulkCreateFixedCosts(ctx, params)
+}
+
 func (r *fixedCostRepositorySQLC) UpdateFixedCost(ctx context.Context, id int32, userID string, name string, amount int) error {
 	params := db.UpdateFixedCostParams{
 		ID:     id,

@@ -8,3 +8,8 @@ type FixedCost struct {
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 }
+
+type FixedCostInput struct {
+	Name   string `json:"name"`
+	Amount int    `json:"amount"`
+}
