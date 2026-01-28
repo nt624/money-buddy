@@ -20,6 +20,21 @@ FROM fixed_costs
 WHERE user_id = $1
 ORDER BY id ASC;
 
+-- name: DeleteFixedCostsByUser :exec
+DELETE FROM fixed_costs
+WHERE user_id = $1;
+
+-- name: BulkCreateFixedCosts :exec
+INSERT INTO fixed_costs (
+  user_id,
+  name,
+  amount
+)
+SELECT u.user_id, n.name, a.amount
+FROM UNNEST($1::text[]) WITH ORDINALITY AS u(user_id, ord)
+JOIN UNNEST($2::text[]) WITH ORDINALITY AS n(name, ord) USING (ord)
+JOIN UNNEST($3::int[]) WITH ORDINALITY AS a(amount, ord) USING (ord);
+
 -- name: UpdateFixedCost :exec
 UPDATE fixed_costs
 SET
