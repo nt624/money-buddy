@@ -7,7 +7,32 @@ package db
 
 import (
 	"context"
+
+	"github.com/lib/pq"
 )
+
+const bulkCreateFixedCosts = `-- name: BulkCreateFixedCosts :exec
+INSERT INTO fixed_costs (
+  user_id,
+  name,
+  amount
+)
+SELECT u.user_id, n.name, a.amount
+FROM UNNEST($1::text[]) WITH ORDINALITY AS u(user_id, ord)
+JOIN UNNEST($2::text[]) WITH ORDINALITY AS n(name, ord) USING (ord)
+JOIN UNNEST($3::int[]) WITH ORDINALITY AS a(amount, ord) USING (ord)
+`
+
+type BulkCreateFixedCostsParams struct {
+	Column1 []string
+	Column2 []string
+	Column3 []int32
+}
+
+func (q *Queries) BulkCreateFixedCosts(ctx context.Context, arg BulkCreateFixedCostsParams) error {
+	_, err := q.db.ExecContext(ctx, bulkCreateFixedCosts, pq.Array(arg.Column1), pq.Array(arg.Column2), pq.Array(arg.Column3))
+	return err
+}
 
 const createFixedCost = `-- name: CreateFixedCost :one
 INSERT INTO fixed_costs (
@@ -52,6 +77,16 @@ type DeleteFixedCostParams struct {
 
 func (q *Queries) DeleteFixedCost(ctx context.Context, arg DeleteFixedCostParams) error {
 	_, err := q.db.ExecContext(ctx, deleteFixedCost, arg.ID, arg.UserID)
+	return err
+}
+
+const deleteFixedCostsByUser = `-- name: DeleteFixedCostsByUser :exec
+DELETE FROM fixed_costs
+WHERE user_id = $1
+`
+
+func (q *Queries) DeleteFixedCostsByUser(ctx context.Context, userID string) error {
+	_, err := q.db.ExecContext(ctx, deleteFixedCostsByUser, userID)
 	return err
 }
 
