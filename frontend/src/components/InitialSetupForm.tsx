@@ -66,10 +66,12 @@ export function InitialSetupForm({ onSubmit, isSubmitting }: Props) {
 
   const addFixedCost = () => {
     setFixedCosts([...fixedCosts, { name: '', amount: 0 }])
+    setErrors({ ...errors, fixedCosts: undefined })
   }
 
   const removeFixedCost = (index: number) => {
     setFixedCosts(fixedCosts.filter((_, i) => i !== index))
+    setErrors({ ...errors, fixedCosts: undefined })
   }
 
   const updateFixedCost = (index: number, field: keyof FixedCostInput, value: string | number) => {
@@ -80,6 +82,7 @@ export function InitialSetupForm({ onSubmit, isSubmitting }: Props) {
       updated[index].amount = Number(value)
     }
     setFixedCosts(updated)
+    setErrors({ ...errors, fixedCosts: undefined })
   }
 
   return (
