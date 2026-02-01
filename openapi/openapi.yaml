@@ -1,0 +1,399 @@
+openapi: "3.0.3"
+info:
+  title: "Money Buddy API"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080"
+tags:
+  - name: "expenses"
+    description: "Expense operations"
+  - name: "categories"
+    description: "Category operations"
+  - name: "users"
+    description: "User operations"
+  - name: "setup"
+    description: "Initial setup operations"
+paths:
+  /expenses:
+    post:
+      tags:
+        - "expenses"
+      summary: "Create an expense"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExpenseRequest'
+      responses:
+        "201":
+          description: "Expense created"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateExpenseResponse'
+        "400":
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      tags:
+        - "expenses"
+      summary: "List expenses"
+      parameters: []
+      responses:
+        "200":
+          description: "List of expenses"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  expenses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Expense'
+                required:
+                  - expenses
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /expenses/{id}:
+    put:
+      tags:
+        - "expenses"
+      summary: "Update an expense"
+      description: |
+        Updates an existing expense. Status must be either 'planned' or 'confirmed'.
+        Transition rule on update: 'confirmed' -> 'planned' is prohibited; 'planned' -> 'confirmed' is allowed.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateExpenseRequest'
+      responses:
+        "200":
+          description: "Expense updated"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateExpenseResponse'
+        "400":
+          description: "Validation Error (including invalid status transition)"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - "expenses"
+      summary: "Delete an expense"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: "Expense deleted"
+        "400":
+          description: "Invalid ID or validation error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /categories:
+    get:
+      tags:
+        - "categories"
+      summary: "List categories"
+      responses:
+        "200":
+          description: "List of categories"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+                required:
+                  - categories
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /user/me:
+    get:
+      tags:
+        - "users"
+      summary: "Get current user information"
+      responses:
+        "200":
+          description: "User information"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "404":
+          description: "User not found (initial setup not completed)"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /setup:
+    post:
+      tags:
+        - "setup"
+      summary: "Complete initial setup"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitialSetupRequest'
+      responses:
+        "200":
+          description: "Initial setup completed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitialSetupResponse'
+        "400":
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "422":
+          description: "Business Error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    Expense:
+      type: object
+      properties:
+        id:
+          type: integer
+        amount:
+          type: integer
+          minimum: 1
+        memo:
+          type: string
+        spent_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [planned, confirmed]
+          description: "Expense status. Allowed values are 'planned' or 'confirmed'. Note: Status transition rule on update: 'confirmed' -> 'planned' is prohibited; 'planned' -> 'confirmed' is allowed."
+        catego
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "User ID (Firebase UID)"
+        income:
+          type: integer
+          description: "Monthly income (take-home)"
+        saving_goal:
+          type: integer
+          description: "Monthly saving goal"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - income
+        - saving_goal
+        - created_at
+        - updated_atry:
+          $ref: '#/components/schemas/Category'
+      required:
+        - id
+        - amount
+        - memo
+        - spent_at
+        - status
+        - category
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+        - id
+        - name
+
+    CreateExpenseRequest:
+      type: object
+      properties:
+        amount:
+          type: integer
+          minimum: 1
+        category_id:
+          type: integer
+          minimum: 1
+        memo:
+          type: string
+        spent_at:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: string
+              format: date
+        status:
+          type: string
+          enum: [planned, confirmed]
+          default: confirmed
+          description: "Optional on create. If provided, must be 'planned' or 'confirmed'. Defaults to 'confirmed' when omitted."
+      required:
+        - amount
+        - category_id
+        - spent_at
+
+    CreateExpenseResponse:
+      type: object
+      properties:
+        expense:
+          $ref: '#/components/schemas/Expense'
+      required:
+        - expense
+
+    UpdateExpenseRequest:
+      type: object
+      properties:
+        amount:
+          type: integer
+          minimum: 1
+        category_id:
+          type: integer
+          minimum: 1
+        memo:
+          type: string
+        spent_at:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: string
+              format: date
+        status:
+          type: string
+          enum: [planned, confirmed]
+      required:
+        - amount
+        - category_id
+        - spent_at
+
+    FixedCostInput:
+      type: object
+      properties:
+        name:
+          type: string
+        amount:
+          type: integer
+          minimum: 1
+      required:
+        - name
+        - amount
+
+    InitialSetupRequest:
+      type: object
+      properties:
+        income:
+          type: integer
+          minimum: 1
+        savingGoal:
+          type: integer
+          minimum: 0
+        fixedCosts:
+          type: array
+          items:
+            $ref: '#/components/schemas/FixedCostInput'
+      required:
+        - income
+        - savingGoal
+        - fixedCosts
+
+    UpdateExpenseResponse:
+      type: object
+      properties:
+        expense:
+          $ref: '#/components/schemas/Expense'
+      required:
+        - expense
+
+    InitialSetupResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "ok"
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
