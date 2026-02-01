@@ -24,7 +24,6 @@ export default function Home() {
       await refetchUser() // セットアップ完了後、ユーザー情報を再取得
     } catch (err) {
       setSetupError(err instanceof Error ? err.message : 'unknown error')
-      throw err
     } finally {
       setSetupSubmitting(false)
     }
