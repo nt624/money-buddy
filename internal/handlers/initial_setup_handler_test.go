@@ -45,7 +45,7 @@ func TestInitialSetupHandler_OK(t *testing.T) {
 	NewInitialSetupHandler(router, svc)
 
 	body := `{"income":300000,"savingGoal":50000,"fixedCosts":[{"name":"家賃","amount":80000},{"name":"通信費","amount":5000}]}`
-	req := httptest.NewRequest(http.MethodPost, "/api/setup", strings.NewReader(body))
+	req := httptest.NewRequest(http.MethodPost, "/setup", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	w := httptest.NewRecorder()
@@ -67,7 +67,7 @@ func TestInitialSetupHandler_InvalidJSON(t *testing.T) {
 	NewInitialSetupHandler(router, svc)
 
 	body := `{"income":"bad"}`
-	req := httptest.NewRequest(http.MethodPost, "/api/setup", strings.NewReader(body))
+	req := httptest.NewRequest(http.MethodPost, "/setup", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	w := httptest.NewRecorder()
@@ -88,7 +88,7 @@ func TestInitialSetupHandler_ValidationError(t *testing.T) {
 	NewInitialSetupHandler(router, svc)
 
 	body := `{"income":0,"savingGoal":0,"fixedCosts":[]}`
-	req := httptest.NewRequest(http.MethodPost, "/api/setup", strings.NewReader(body))
+	req := httptest.NewRequest(http.MethodPost, "/setup", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	w := httptest.NewRecorder()
@@ -112,7 +112,7 @@ func TestInitialSetupHandler_BusinessError(t *testing.T) {
 	NewInitialSetupHandler(router, svc)
 
 	body := `{"income":100,"savingGoal":0,"fixedCosts":[]}`
-	req := httptest.NewRequest(http.MethodPost, "/api/setup", strings.NewReader(body))
+	req := httptest.NewRequest(http.MethodPost, "/setup", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	w := httptest.NewRecorder()
@@ -136,7 +136,7 @@ func TestInitialSetupHandler_InternalError(t *testing.T) {
 	NewInitialSetupHandler(router, svc)
 
 	body := `{"income":100,"savingGoal":0,"fixedCosts":[]}`
-	req := httptest.NewRequest(http.MethodPost, "/api/setup", strings.NewReader(body))
+	req := httptest.NewRequest(http.MethodPost, "/setup", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	w := httptest.NewRecorder()
