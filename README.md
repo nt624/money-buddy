@@ -277,7 +277,7 @@ API仕様は OpenAPI 3.0 形式で定義されています。詳細は `backend/
 | memo | TEXT | メモ（任意） |
 | status | TEXT | ステータス（planned / confirmed） |
 | created_at | TIMESTAMP | 作成日時 |
-| update_at | TIMESTAMP | 更新日時 |
+| updated_at | TIMESTAMP | 更新日時 |
 
 ### Categories（カテゴリ）
 | フィールド | 型 | 説明 |
