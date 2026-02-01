@@ -9,6 +9,8 @@ tags:
     description: "Expense operations"
   - name: "categories"
     description: "Category operations"
+  - name: "users"
+    description: "User operations"
   - name: "setup"
     description: "Initial setup operations"
 paths:
@@ -160,7 +162,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/setup:
+  /user/me:
+    get:
+      tags:
+        - "users"
+      summary: "Get current user information"
+      responses:
+        "200":
+          description: "User information"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "404":
+          description: "User not found (initial setup not completed)"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /setup:
     post:
       tags:
         - "setup"
@@ -216,7 +237,32 @@ components:
           type: string
           enum: [planned, confirmed]
           description: "Expense status. Allowed values are 'planned' or 'confirmed'. Note: Status transition rule on update: 'confirmed' -> 'planned' is prohibited; 'planned' -> 'confirmed' is allowed."
-        category:
+        catego
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "User ID (Firebase UID)"
+        income:
+          type: integer
+          description: "Monthly income (take-home)"
+        saving_goal:
+          type: integer
+          description: "Monthly saving goal"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - income
+        - saving_goal
+        - created_at
+        - updated_atry:
           $ref: '#/components/schemas/Category'
       required:
         - id
