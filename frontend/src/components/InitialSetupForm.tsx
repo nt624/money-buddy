@@ -9,11 +9,14 @@ type Props = {
   isSubmitting: boolean
 }
 
+type FixedCostWithId = FixedCostInput & { id: number }
+
 export function InitialSetupForm({ onSubmit, isSubmitting }: Props) {
   const [income, setIncome] = useState('')
   const [savingGoal, setSavingGoal] = useState('')
-  const [fixedCosts, setFixedCosts] = useState<FixedCostInput[]>([
-    { name: '', amount: 0 }
+  const [nextId, setNextId] = useState(1)
+  const [fixedCosts, setFixedCosts] = useState<FixedCostWithId[]>([
+    { id: 0, name: '', amount: 0 }
   ])
 
   const [errors, setErrors] = useState<{
@@ -60,27 +63,29 @@ export function InitialSetupForm({ onSubmit, isSubmitting }: Props) {
     await onSubmit({
       income: Number(income),
       savingGoal: Number(savingGoal),
-      fixedCosts: fixedCosts,
+      fixedCosts: fixedCosts.map(({ id, ...cost }) => cost),
     })
   }
 
   const addFixedCost = () => {
-    setFixedCosts([...fixedCosts, { name: '', amount: 0 }])
+    setFixedCosts([...fixedCosts, { id: nextId, name: '', amount: 0 }])
+    setNextId(nextId + 1)
     setErrors({ ...errors, fixedCosts: undefined })
   }
 
-  const removeFixedCost = (index: number) => {
-    setFixedCosts(fixedCosts.filter((_, i) => i !== index))
+  const removeFixedCost = (id: number) => {
+    setFixedCosts(fixedCosts.filter((cost) => cost.id !== id))
     setErrors({ ...errors, fixedCosts: undefined })
   }
 
-  const updateFixedCost = (index: number, field: keyof FixedCostInput, value: string | number) => {
-    const updated = [...fixedCosts]
-    if (field === 'name') {
-      updated[index].name = value as string
-    } else {
-      updated[index].amount = Number(value)
-    }
+  const updateFixedCost = (id: number, field: keyof FixedCostInput, value: string | number) => {
+    const updated = fixedCosts.map(cost => {
+      if (cost.id !== id) return cost
+      return {
+        ...cost,
+        [field]: field === 'amount' ? Number(value) : value
+      }
+    })
     setFixedCosts(updated)
     setErrors({ ...errors, fixedCosts: undefined })
   }
@@ -121,13 +126,13 @@ export function InitialSetupForm({ onSubmit, isSubmitting }: Props) {
       <div className={styles.field}>
         <label className={styles.label}>固定費</label>
         {fixedCosts.map((cost, index) => (
-          <div key={index} style={{ marginBottom: '1rem', border: '1px solid #ddd', padding: '1rem', borderRadius: '4px' }}>
+          <div key={cost.id} style={{ marginBottom: '1rem', border: '1px solid #ddd', padding: '1rem', borderRadius: '4px' }}>
             <div style={{ marginBottom: '0.5rem' }}>
               <input
                 className={styles.input}
                 type="text"
                 value={cost.name}
-                onChange={(e) => updateFixedCost(index, 'name', e.target.value)}
+                onChange={(e) => updateFixedCost(cost.id, 'name', e.target.value)}
                 placeholder="固定費の名前（例: 家賃）"
               />
             </div>
@@ -136,7 +141,7 @@ export function InitialSetupForm({ onSubmit, isSubmitting }: Props) {
                 className={styles.input}
                 type="number"
                 value={cost.amount || ''}
-                onChange={(e) => updateFixedCost(index, 'amount', e.target.value)}
+                onChange={(e) => updateFixedCost(cost.id, 'amount', e.target.value)}
                 placeholder="金額"
               />
             </div>
@@ -146,7 +151,7 @@ export function InitialSetupForm({ onSubmit, isSubmitting }: Props) {
             {fixedCosts.length > 1 && (
               <button
                 type="button"
-                onClick={() => removeFixedCost(index)}
+                onClick={() => removeFixedCost(cost.id)}
                 style={{ 
                   padding: '0.5rem 1rem',
                   backgroundColor: '#dc3545',
