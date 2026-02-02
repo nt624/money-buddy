@@ -3,6 +3,15 @@ export type CreateExpenseInput = {
     category_id: number
     memo?: string
     spent_at: string // yyyy-mm-dd
+    status?: 'planned' | 'confirmed'
+}
+
+export type UpdateExpenseInput = {
+    amount: number
+    category_id: number
+    memo?: string
+    spent_at: string // yyyy-mm-dd or date-time
+    status?: 'planned' | 'confirmed'
 }
 
 export type Expense = {
@@ -10,6 +19,7 @@ export type Expense = {
     amount: number;
     memo: string | null;
     spent_at: string; // YYYY-MM-DD
+    status: 'planned' | 'confirmed';
     category: {
         id: number;
         name: string;
