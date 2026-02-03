@@ -120,6 +120,8 @@ func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 	userID := DummyUserID
 	exp, err := h.service.UpdateExpense(userID, input)
 	if err != nil {
+		// Log the actual error for debugging
+		println("UpdateExpense error:", err.Error())
 		// Validation errors -> 400
 		var ve *services.ValidationError
 		if errors.As(err, &ve) {

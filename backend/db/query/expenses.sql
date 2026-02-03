@@ -57,14 +57,14 @@ SET
   memo = $4,
   spent_at = $5,
   status = $6,
-  update_at = now()
+  updated_at = now()
 WHERE id = $1 AND user_id = $7;
 
 -- name: UpdateExpenseStatus :exec
 UPDATE expenses
 SET
   status = $2,
-  update_at = now()
+  updated_at = now()
 WHERE id = $1 AND user_id = $3;
 
 -- name: DeleteExpense :exec
