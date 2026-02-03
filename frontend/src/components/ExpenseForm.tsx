@@ -28,6 +28,18 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
             .catch(console.error)
     }, [])
 
+    // initialDataが変更されたらフォーム状態を更新（編集対象切り替え時）
+    useEffect(() => {
+        if (initialData) {
+            setAmount(initialData.amount.toString())
+            setCategoryId(initialData.category.id.toString())
+            setMemo(initialData.memo || '')
+            setSpentAt(initialData.spent_at)
+            setStatus(initialData.status)
+            setErrors({})
+        }
+    }, [initialData])
+
     const [errors, setErrors] = useState<{
         amount?: string
         spent_at?: string
