@@ -16,6 +16,7 @@ export function ExpenseForm({ onSubmit, isSubmitting }: Props) {
     const [categoryId, setCategoryId] = useState('1')
     const [memo, setMemo] = useState('')
     const [spentAt, setSpentAt] = useState('')
+    const [status, setStatus] = useState<'planned' | 'confirmed'>('confirmed')
     const [categories, setCategories] = useState<Category[]>([])
 
     useEffect(() => {
@@ -55,9 +56,10 @@ export function ExpenseForm({ onSubmit, isSubmitting }: Props) {
             category_id: Number(categoryId),
             memo: memo || undefined,
             spent_at: spentAt,
+            status: status,
         })
 
-        // 成功したらリセット
+        // 成功したらリセット（statusは保持）
         setAmount('')
         setCategoryId('1')
         setMemo('')
@@ -122,6 +124,30 @@ export function ExpenseForm({ onSubmit, isSubmitting }: Props) {
                 {errors.spent_at && (
                     <p className={styles.error}>{errors.spent_at}</p>
                 )}
+            </div>
+
+            <div className={styles.field}>
+                <label className={styles.label}>ステータス</label>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <input
+                            type="radio"
+                            value="confirmed"
+                            checked={status === 'confirmed'}
+                            onChange={(e) => setStatus(e.target.value as 'confirmed')}
+                        />
+                        確定
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <input
+                            type="radio"
+                            value="planned"
+                            checked={status === 'planned'}
+                            onChange={(e) => setStatus(e.target.value as 'planned')}
+                        />
+                        予定
+                    </label>
+                </div>
             </div>
 
             <button className={styles.button} type="submit" disabled={isSubmitting}>
