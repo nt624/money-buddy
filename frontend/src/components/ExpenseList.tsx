@@ -4,9 +4,10 @@ type Props = {
   expenses: Expense[]
   onEdit: (expense: Expense) => void
   onDelete: (id: number) => void
+  isSubmitting: boolean
 }
 
-export function ExpenseList({ expenses, onEdit, onDelete }: Props) {
+export function ExpenseList({ expenses, onEdit, onDelete, isSubmitting }: Props) {
   return (
     <ul style={{ listStyle: 'none', padding: 0 }}>
       {expenses.map((e) => (
@@ -44,28 +45,32 @@ export function ExpenseList({ expenses, onEdit, onDelete }: Props) {
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button
               onClick={() => onEdit(e)}
+              disabled={isSubmitting}
               style={{
                 padding: '0.5rem 1rem',
                 backgroundColor: '#007bff',
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.875rem'
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                fontSize: '0.875rem',
+                opacity: isSubmitting ? 0.6 : 1
               }}
             >
               編集
             </button>
             <button
               onClick={() => onDelete(e.id)}
+              disabled={isSubmitting}
               style={{
                 padding: '0.5rem 1rem',
                 backgroundColor: '#dc3545',
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.875rem'
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                fontSize: '0.875rem',
+                opacity: isSubmitting ? 0.6 : 1
               }}
             >
               削除

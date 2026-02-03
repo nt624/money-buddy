@@ -113,7 +113,7 @@ export default function Home() {
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
       <h2>支出一覧</h2>
-      <ExpenseList expenses={expenses} onEdit={handleEdit} onDelete={handleDelete} />
+      <ExpenseList expenses={expenses} onEdit={handleEdit} onDelete={handleDelete} isSubmitting={isSubmitting} />
     </main>
   )
 }
