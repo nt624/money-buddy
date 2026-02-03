@@ -51,7 +51,10 @@ export default function Home() {
     if (!confirm('本当に削除しますか？')) return
     
     await deleteExpense(id)
-    // 削除成功（エラー時はuseExpensesのerror stateに格納される）
+    // 削除成功時、編集中の支出が削除された場合は編集モードを解除
+    if (editingExpense?.id === id) {
+      setEditingExpense(null)
+    }
   }
   
 
