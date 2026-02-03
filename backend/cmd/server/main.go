@@ -49,5 +49,9 @@ func main() {
 	userService := services.NewUserService(userRepo)
 	handlers.NewUserHandler(r, userService)
 
+	dashboardRepo := repository.NewDashboardRepositorySQLC(queries)
+	dashboardService := services.NewDashboardService(dashboardRepo)
+	handlers.NewDashboardHandler(r, dashboardService)
+
 	r.Run() // デフォルトで:8080で起動
 }
