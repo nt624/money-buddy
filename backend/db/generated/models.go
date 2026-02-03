@@ -24,7 +24,7 @@ type Expense struct {
 	SpentAt    time.Time
 	Status     string
 	CreatedAt  time.Time
-	UpdateAt   time.Time
+	UpdatedAt  time.Time
 }
 
 type FixedCost struct {
