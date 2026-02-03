@@ -54,7 +54,6 @@ export function useExpenses() {
             );
         } catch (err) {
             setError(err instanceof Error ? err.message : 'unknown error');
-            throw err;
         } finally {
             setIsSubmitting(false);
         }
@@ -70,7 +69,6 @@ export function useExpenses() {
             setExpenses((prevExpenses) => prevExpenses.filter((exp) => exp.id !== id));
         } catch (err) {
             setError(err instanceof Error ? err.message : 'unknown error');
-            throw err;
         } finally {
             setIsSubmitting(false);
         }

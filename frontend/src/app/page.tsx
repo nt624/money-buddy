@@ -38,12 +38,9 @@ export default function Home() {
   const handleUpdateSubmit = async (input: UpdateExpenseInput) => {
     if (!editingExpense) return
     
-    try {
-      await updateExpense(editingExpense.id, input)
-      setEditingExpense(null)
-    } catch (err) {
-      console.error('更新エラー:', err)
-    }
+    await updateExpense(editingExpense.id, input)
+    // 成功時のみ編集モード解除（エラー時はuseExpensesのerror stateに格納される）
+    setEditingExpense(null)
   }
 
   const handleCancelEdit = () => {
@@ -53,12 +50,10 @@ export default function Home() {
   const handleDelete = async (id: number) => {
     if (!confirm('本当に削除しますか？')) return
     
-    try {
-      await deleteExpense(id)
-    } catch (err) {
-      console.error('削除エラー:', err)
-    }
+    await deleteExpense(id)
+    // 削除成功（エラー時はuseExpensesのerror stateに格納される）
   }
+  
 
   // 初回読み込み中
   if (userLoading) {
