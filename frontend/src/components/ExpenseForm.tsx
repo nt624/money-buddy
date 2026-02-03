@@ -145,6 +145,7 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <input
                             type="radio"
+                            name="status"
                             value="confirmed"
                             checked={status === 'confirmed'}
                             onChange={(e) => setStatus(e.target.value as 'confirmed')}
@@ -154,6 +155,7 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <input
                             type="radio"
+                            name="status"
                             value="planned"
                             checked={status === 'planned'}
                             onChange={(e) => setStatus(e.target.value as 'planned')}
