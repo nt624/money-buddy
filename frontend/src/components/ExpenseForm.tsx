@@ -2,21 +2,24 @@
 
 import { useEffect, useState } from 'react'
 import styles from './ExpenseForm.module.css'
-import { CreateExpenseInput } from '@/lib/types/expense'
+import { CreateExpenseInput, UpdateExpenseInput, Expense } from '@/lib/types/expense'
 import { getCategories } from '@/lib/api/categories'
 import { Category } from '@/lib/types/category'
 
 type Props = {
-    onSubmit: (input: CreateExpenseInput) => Promise<void>
+    mode?: 'create' | 'edit'
+    initialData?: Expense
+    onSubmit: (input: CreateExpenseInput | UpdateExpenseInput) => Promise<void>
+    onCancel?: () => void
     isSubmitting: boolean
 }
 
-export function ExpenseForm({ onSubmit, isSubmitting }: Props) {
-    const [amount, setAmount] = useState('')
-    const [categoryId, setCategoryId] = useState('1')
-    const [memo, setMemo] = useState('')
-    const [spentAt, setSpentAt] = useState('')
-    const [status, setStatus] = useState<'planned' | 'confirmed'>('confirmed')
+export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, isSubmitting }: Props) {
+    const [amount, setAmount] = useState(initialData?.amount.toString() || '')
+    const [categoryId, setCategoryId] = useState(initialData?.category.id.toString() || '1')
+    const [memo, setMemo] = useState(initialData?.memo || '')
+    const [spentAt, setSpentAt] = useState(initialData?.spent_at || '')
+    const [status, setStatus] = useState<'planned' | 'confirmed'>(initialData?.status || 'confirmed')
     const [categories, setCategories] = useState<Category[]>([])
 
     useEffect(() => {
@@ -28,6 +31,7 @@ export function ExpenseForm({ onSubmit, isSubmitting }: Props) {
     const [errors, setErrors] = useState<{
         amount?: string
         spent_at?: string
+        status?: string
     }>({})
 
     const validate = (): boolean => {
@@ -40,6 +44,13 @@ export function ExpenseForm({ onSubmit, isSubmitting }: Props) {
 
         if (!spentAt) {
             newErrors.spent_at = '日付を入力してください'
+        }
+
+        // 編集モードでstatus遷移ルールをチェック
+        if (mode === 'edit' && initialData) {
+            if (initialData.status === 'confirmed' && status === 'planned') {
+                newErrors.status = '確定済みの支出を予定に戻すことはできません'
+            }
         }
 
         setErrors(newErrors)
@@ -59,12 +70,14 @@ export function ExpenseForm({ onSubmit, isSubmitting }: Props) {
             status: status,
         })
 
-        // 成功したらリセット（statusは保持）
-        setAmount('')
-        setCategoryId('1')
-        setMemo('')
-        setSpentAt('')
-        setErrors({})
+        // 作成モードの時のみリセット（statusは保持）
+        if (mode === 'create') {
+            setAmount('')
+            setCategoryId('1')
+            setMemo('')
+            setSpentAt('')
+            setErrors({})
+        }
     }
 
     return (
@@ -144,15 +157,35 @@ export function ExpenseForm({ onSubmit, isSubmitting }: Props) {
                             value="planned"
                             checked={status === 'planned'}
                             onChange={(e) => setStatus(e.target.value as 'planned')}
+                            disabled={mode === 'edit' && initialData?.status === 'confirmed'}
                         />
                         予定
                     </label>
                 </div>
+                {errors.status && <p className={styles.error}>{errors.status}</p>}
             </div>
 
-            <button className={styles.button} type="submit" disabled={isSubmitting}>
-                {isSubmitting ? '送信中...' : '追加'}
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button className={styles.button} type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? '送信中...' : mode === 'edit' ? '更新' : '追加'}
+                </button>
+                {mode === 'edit' && onCancel && (
+                    <button 
+                        type="button" 
+                        onClick={onCancel}
+                        style={{
+                            padding: '0.5rem 1rem',
+                            backgroundColor: '#6c757d',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        キャンセル
+                    </button>
+                )}
+            </div>
         </form>
     )
 }

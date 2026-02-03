@@ -8,12 +8,14 @@ import { ExpenseList } from '@/components/ExpenseList'
 import { InitialSetupForm } from '@/components/InitialSetupForm'
 import { submitInitialSetup } from '@/lib/api/setup'
 import { InitialSetupRequest } from '@/lib/types/setup'
+import { Expense, UpdateExpenseInput } from '@/lib/types/expense'
 
 export default function Home() {
   const { user, needsSetup, isLoading: userLoading, error: userError, refetchUser } = useUser()
-  const { expenses, addExpense, isSubmitting, isLoading, error } = useExpenses()
+  const { expenses, createExpense, updateExpense, deleteExpense, isSubmitting, isLoading, error } = useExpenses()
   const [setupSubmitting, setSetupSubmitting] = useState(false)
   const [setupError, setSetupError] = useState<string | null>(null)
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
 
   const handleSetupSubmit = async (input: InitialSetupRequest) => {
     setSetupSubmitting(true)
@@ -26,6 +28,35 @@ export default function Home() {
       setSetupError(err instanceof Error ? err.message : 'unknown error')
     } finally {
       setSetupSubmitting(false)
+    }
+  }
+
+  const handleEdit = (expense: Expense) => {
+    setEditingExpense(expense)
+  }
+
+  const handleUpdateSubmit = async (input: UpdateExpenseInput) => {
+    if (!editingExpense) return
+    
+    try {
+      await updateExpense(editingExpense.id, input)
+      setEditingExpense(null)
+    } catch (err) {
+      console.error('更新エラー:', err)
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditingExpense(null)
+  }
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('本当に削除しますか？')) return
+    
+    try {
+      await deleteExpense(id)
+    } catch (err) {
+      console.error('削除エラー:', err)
     }
   }
 
@@ -68,13 +99,26 @@ export default function Home() {
         </div>
       )}
 
-      <ExpenseForm onSubmit={addExpense} isSubmitting={isSubmitting} />
+      {editingExpense ? (
+        <>
+          <h2>支出を編集</h2>
+          <ExpenseForm 
+            mode="edit"
+            initialData={editingExpense}
+            onSubmit={handleUpdateSubmit}
+            onCancel={handleCancelEdit}
+            isSubmitting={isSubmitting}
+          />
+        </>
+      ) : (
+        <ExpenseForm onSubmit={createExpense} isSubmitting={isSubmitting} />
+      )}
 
       {isLoading && <p>読み込み中...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
       <h2>支出一覧</h2>
-      <ExpenseList expenses={expenses} />
+      <ExpenseList expenses={expenses} onEdit={handleEdit} onDelete={handleDelete} />
     </main>
   )
 }
