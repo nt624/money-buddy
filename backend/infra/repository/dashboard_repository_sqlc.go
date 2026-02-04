@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 
 	db "money-buddy-backend/db/generated"
 	"money-buddy-backend/internal/repositories"
@@ -19,9 +18,6 @@ func NewDashboardRepositorySQLC(q *db.Queries) repositories.DashboardRepository 
 func (r *dashboardRepositorySQLC) GetMonthlySummary(ctx context.Context, userID string) (*repositories.MonthlySummary, error) {
 	row, err := r.q.GetMonthlySummary(ctx, userID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, err
-		}
 		return nil, err
 	}
 
