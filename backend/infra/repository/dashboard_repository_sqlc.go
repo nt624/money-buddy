@@ -25,18 +25,10 @@ func (r *dashboardRepositorySQLC) GetMonthlySummary(ctx context.Context, userID 
 		return nil, err
 	}
 
-	// interface{} から int64 への変換
-	fixedCosts := int64(0)
-	if row.FixedCosts != nil {
-		if fc, ok := row.FixedCosts.(int64); ok {
-			fixedCosts = fc
-		}
-	}
-
 	return &repositories.MonthlySummary{
 		Income:     int64(row.Income),
 		SavingGoal: int64(row.SavingGoal),
-		FixedCosts: fixedCosts,
+		FixedCosts: row.FixedCosts,
 	}, nil
 }
 
@@ -46,24 +38,8 @@ func (r *dashboardRepositorySQLC) GetMonthlyExpensesSummary(ctx context.Context,
 		return nil, err
 	}
 
-	// interface{} から int64 への変換
-	confirmedExpenses := int64(0)
-	plannedExpenses := int64(0)
-
-	if row.ConfirmedExpenses != nil {
-		if ce, ok := row.ConfirmedExpenses.(int64); ok {
-			confirmedExpenses = ce
-		}
-	}
-
-	if row.PendingExpenses != nil {
-		if pe, ok := row.PendingExpenses.(int64); ok {
-			plannedExpenses = pe
-		}
-	}
-
 	return &repositories.MonthlyExpensesSummary{
-		ConfirmedExpenses: confirmedExpenses,
-		PlannedExpenses:   plannedExpenses,
+		ConfirmedExpenses: row.ConfirmedExpenses,
+		PlannedExpenses:   row.PendingExpenses,
 	}, nil
 }
