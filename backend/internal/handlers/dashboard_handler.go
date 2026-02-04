@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -36,7 +37,7 @@ func (h *DashboardHandler) GetDashboard(c *gin.Context) {
 	dashboard, err := h.service.GetDashboard(c.Request.Context(), userID)
 	if err != nil {
 		// ユーザーが存在しない場合
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 			return
 		}
