@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"money-buddy-backend/internal/models"
 	"money-buddy-backend/internal/repositories"
@@ -51,7 +52,7 @@ func (s *initialSetupService) CompleteInitialSetup(ctx context.Context, userID s
 
 	user, err := s.userRepo.GetUserByID(txCtx, userID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			if err := s.userRepo.CreateUser(txCtx, userID, income, savingGoal); err != nil {
 				_ = tx.Rollback()
 				return err
