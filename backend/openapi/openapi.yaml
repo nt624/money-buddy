@@ -13,6 +13,8 @@ tags:
     description: "User operations"
   - name: "setup"
     description: "Initial setup operations"
+  - name: "dashboard"
+    description: "Dashboard operations"
 paths:
   /expenses:
     post:
@@ -218,6 +220,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /dashboard:
+    get:
+      tags:
+        - "dashboard"
+      summary: "Get dashboard data"
+      description: "Returns dashboard with income, expenses, and remaining budget information"
+      responses:
+        "200":
+          description: "Dashboard data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+        "404":
+          description: "User not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     Expense:
@@ -389,6 +417,46 @@ components:
           example: "ok"
       required:
         - status
+
+    DashboardResponse:
+      type: object
+      properties:
+        income:
+          type: integer
+          format: int64
+          description: "Monthly income (take-home)"
+        saving_goal:
+          type: integer
+          format: int64
+          description: "Monthly saving goal"
+        fixed_costs:
+          type: integer
+          format: int64
+          description: "Total fixed costs for the month"
+        variable_budget:
+          type: integer
+          format: int64
+          description: "Variable budget (income - fixed_costs - saving_goal)"
+        confirmed_expenses:
+          type: integer
+          format: int64
+          description: "Total confirmed expenses for the current month"
+        planned_expenses:
+          type: integer
+          format: int64
+          description: "Total planned expenses for the current month"
+        remaining:
+          type: integer
+          format: int64
+          description: "Remaining budget (variable_budget - confirmed_expenses - planned_expenses)"
+      required:
+        - income
+        - saving_goal
+        - fixed_costs
+        - variable_budget
+        - confirmed_expenses
+        - planned_expenses
+        - remaining
 
     ErrorResponse:
       type: object
