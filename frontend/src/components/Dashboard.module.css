@@ -115,18 +115,3 @@
   font-weight: 600;
   color: #1f2937;
 }
-
-/* Loading and Error States */
-.loading {
-  text-align: center;
-  padding: 2rem;
-  color: #6b7280;
-}
-
-.error {
-  background-color: #fee2e2;
-  color: #991b1b;
-  padding: 1rem;
-  border-radius: 6px;
-  margin-bottom: 1rem;
-}
