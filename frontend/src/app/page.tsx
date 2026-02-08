@@ -2,30 +2,24 @@
 
 import { useState } from 'react'
 import { useExpenses } from '@/hooks/useExpenses'
-import { useFixedCosts } from '@/hooks/useFixedCosts'
 import { useUser } from '@/hooks/useUser'
 import { useDashboard } from '@/hooks/useDashboard'
 import { ExpenseForm } from '@/components/ExpenseForm'
 import { ExpenseList } from '@/components/ExpenseList'
-import { FixedCostList } from '@/components/FixedCostList'
-import { FixedCostForm } from '@/components/FixedCostForm'
 import { InitialSetupForm } from '@/components/InitialSetupForm'
 import { Dashboard } from '@/components/Dashboard'
 import { submitInitialSetup } from '@/lib/api/setup'
 import { InitialSetupRequest } from '@/lib/types/setup'
 import { Expense, UpdateExpenseInput } from '@/lib/types/expense'
-import { FixedCost, UpdateFixedCostInput } from '@/lib/types/fixed-cost'
+import Link from 'next/link'
 
 export default function Home() {
   const { user, needsSetup, isLoading: userLoading, error: userError, refetchUser } = useUser()
   const { expenses, createExpense, updateExpense, deleteExpense, isSubmitting, isLoading, error } = useExpenses()
   const { dashboard, isLoading: dashboardLoading, error: dashboardError, refetch: refetchDashboard } = useDashboard({ enabled: !needsSetup })
-  const { fixedCosts, updateFixedCost, deleteFixedCost, isSubmitting: fcSubmitting, isLoading: fcLoading, error: fcError, refetch: refetchFixedCosts } = useFixedCosts()
   const [setupSubmitting, setSetupSubmitting] = useState(false)
   const [setupError, setSetupError] = useState<string | null>(null)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
-  const [editingFixedCost, setEditingFixedCost] = useState<FixedCost | null>(null)
-  const [showFixedCostForm, setShowFixedCostForm] = useState(false)
 
   const handleSetupSubmit = async (input: InitialSetupRequest) => {
     setSetupSubmitting(true)
@@ -35,7 +29,6 @@ export default function Home() {
       await submitInitialSetup(input)
       await refetchUser() // セットアップ完了後、ユーザー情報を再取得
       refetchDashboard() // ダッシュボードも更新
-      await refetchFixedCosts() // 固定費も再取得
     } catch (err) {
       setSetupError(err instanceof Error ? err.message : 'unknown error')
     } finally {
@@ -74,42 +67,6 @@ export default function Home() {
       refetchDashboard()
     }
   }
-
-  const handleFixedCostEdit = (fixedCost: FixedCost) => {
-    setEditingFixedCost(fixedCost)
-    setShowFixedCostForm(true)
-  }
-
-  const handleFixedCostUpdateSubmit = async (input: UpdateFixedCostInput) => {
-    if (!editingFixedCost) return
-    
-    const success = await updateFixedCost(editingFixedCost.id, input)
-    // 成功時のみ編集モード解除とダッシュボード再取得
-    if (success) {
-      setEditingFixedCost(null)
-      setShowFixedCostForm(false)
-      refetchDashboard()
-    }
-  }
-
-  const handleCancelFixedCostEdit = () => {
-    setEditingFixedCost(null)
-    setShowFixedCostForm(false)
-  }
-
-  const handleFixedCostDelete = async (id: number) => {
-    if (!confirm('本当に削除しますか？')) return
-    
-    const success = await deleteFixedCost(id)
-    // 削除成功時のみダッシュボード再取得と編集モード解除
-    if (success) {
-      if (editingFixedCost?.id === id) {
-        setEditingFixedCost(null)
-        setShowFixedCostForm(false)
-      }
-      refetchDashboard()
-    }
-  }
   
 
   // 初回読み込み中
@@ -143,7 +100,13 @@ export default function Home() {
   // 通常の支出入力画面
   return (
     <main>
-      <h1>支出入力</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h1>ホーム</h1>
+        <Link href="/settings" style={{ color: '#3b82f6', textDecoration: 'none', fontSize: '0.875rem', fontWeight: '500' }}>
+          ⚙️ 設定
+        </Link>
+      </div>
+      
       {user && (
         <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
           <p>月収: ¥{user.income.toLocaleString()}</p>
@@ -156,44 +119,8 @@ export default function Home() {
       {dashboardError && <p style={{ color: 'red' }}>ダッシュボードエラー: {dashboardError}</p>}
       {dashboard && <Dashboard dashboard={dashboard} />}
 
-      {/* 固定費セクション */}
-      <section style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2>固定費</h2>
-          {!showFixedCostForm && (
-            <button 
-              onClick={() => setShowFixedCostForm(true)}
-              style={{ padding: '0.5rem 1rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-            >
-              固定費を追加
-            </button>
-          )}
-        </div>
-        
-        {showFixedCostForm && (
-          <div style={{ marginBottom: '1rem' }}>
-            <FixedCostForm 
-              fixedCost={editingFixedCost}
-              onSubmit={handleFixedCostUpdateSubmit}
-              onCancel={handleCancelFixedCostEdit}
-              isSubmitting={fcSubmitting}
-            />
-          </div>
-        )}
-
-        {fcLoading && <p>読み込み中...</p>}
-        {fcError && <p style={{ color: 'red' }}>{fcError}</p>}
-
-        <FixedCostList 
-          fixedCosts={fixedCosts} 
-          onEdit={handleFixedCostEdit} 
-          onDelete={handleFixedCostDelete} 
-          isSubmitting={fcSubmitting} 
-        />
-      </section>
-
       {/* 支出セクション */}
-      <section>
+      <section style={{ marginTop: '2rem' }}>
         <h2>支出入力</h2>
         {editingExpense ? (
           <>
