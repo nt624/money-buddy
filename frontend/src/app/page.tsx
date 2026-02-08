@@ -42,11 +42,11 @@ export default function Home() {
   const handleUpdateSubmit = async (input: UpdateExpenseInput) => {
     if (!editingExpense) return
     
-    await updateExpense(editingExpense.id, input)
-    // 成功時のみ編集モード解除（エラー時はuseExpensesのerror stateに格納される）
-    if (!error) {
+    const success = await updateExpense(editingExpense.id, input)
+    // 成功時のみ編集モード解除とダッシュボード再取得
+    if (success) {
       setEditingExpense(null)
-      refetchDashboard() // 更新後にダッシュボードを再取得
+      refetchDashboard()
     }
   }
 
@@ -57,12 +57,14 @@ export default function Home() {
   const handleDelete = async (id: number) => {
     if (!confirm('本当に削除しますか？')) return
     
-    await deleteExpense(id)
-    // 削除成功時、編集中の支出が削除された場合は編集モードを解除
-    if (editingExpense?.id === id) {
-      setEditingExpense(null)
+    const success = await deleteExpense(id)
+    // 削除成功時のみダッシュボード再取得と編集モード解除
+    if (success) {
+      if (editingExpense?.id === id) {
+        setEditingExpense(null)
+      }
+      refetchDashboard()
     }
-    refetchDashboard() // 削除後にダッシュボードを再取得
   }
   
 
@@ -124,8 +126,10 @@ export default function Home() {
       ) : (
         <ExpenseForm 
           onSubmit={async (input) => {
-            await createExpense(input)
-            refetchDashboard() // 作成後にダッシュボードを再取得
+            const success = await createExpense(input)
+            if (success) {
+              refetchDashboard() // 作成成功時のみダッシュボードを再取得
+            }
           }}
           isSubmitting={isSubmitting}
         />

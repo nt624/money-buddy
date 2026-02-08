@@ -28,22 +28,24 @@ export function useExpenses() {
     }, []);
 
     // POST
-    const handleCreateExpense = async (input: CreateExpenseInput) => {
+    const handleCreateExpense = async (input: CreateExpenseInput): Promise<boolean> => {
         setIsSubmitting(true);
         setError(null);
 
         try {
             const expense = await createExpense(input);
             setExpenses((prevExpenses) => [...prevExpenses, expense]);
+            return true;
         } catch (err) {
             setError(err instanceof Error ? err.message : 'unknown error');
+            return false;
         } finally {
             setIsSubmitting(false);
         }
     }
 
     // PUT
-    const handleUpdateExpense = async (id: number, input: UpdateExpenseInput) => {
+    const handleUpdateExpense = async (id: number, input: UpdateExpenseInput): Promise<boolean> => {
         setIsSubmitting(true);
         setError(null);
 
@@ -52,23 +54,27 @@ export function useExpenses() {
             setExpenses((prevExpenses) =>
                 prevExpenses.map((exp) => (exp.id === id ? updatedExpense : exp))
             );
+            return true;
         } catch (err) {
             setError(err instanceof Error ? err.message : 'unknown error');
+            return false;
         } finally {
             setIsSubmitting(false);
         }
     }
 
     // DELETE
-    const handleDeleteExpense = async (id: number) => {
+    const handleDeleteExpense = async (id: number): Promise<boolean> => {
         setIsSubmitting(true);
         setError(null);
 
         try {
             await deleteExpense(id);
             setExpenses((prevExpenses) => prevExpenses.filter((exp) => exp.id !== id));
+            return true;
         } catch (err) {
             setError(err instanceof Error ? err.message : 'unknown error');
+            return false;
         } finally {
             setIsSubmitting(false);
         }
