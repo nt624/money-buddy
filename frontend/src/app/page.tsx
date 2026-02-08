@@ -3,9 +3,11 @@
 import { useState } from 'react'
 import { useExpenses } from '@/hooks/useExpenses'
 import { useUser } from '@/hooks/useUser'
+import { useDashboard } from '@/hooks/useDashboard'
 import { ExpenseForm } from '@/components/ExpenseForm'
 import { ExpenseList } from '@/components/ExpenseList'
 import { InitialSetupForm } from '@/components/InitialSetupForm'
+import { Dashboard } from '@/components/Dashboard'
 import { submitInitialSetup } from '@/lib/api/setup'
 import { InitialSetupRequest } from '@/lib/types/setup'
 import { Expense, UpdateExpenseInput } from '@/lib/types/expense'
@@ -13,6 +15,7 @@ import { Expense, UpdateExpenseInput } from '@/lib/types/expense'
 export default function Home() {
   const { user, needsSetup, isLoading: userLoading, error: userError, refetchUser } = useUser()
   const { expenses, createExpense, updateExpense, deleteExpense, isSubmitting, isLoading, error } = useExpenses()
+  const { dashboard, isLoading: dashboardLoading, error: dashboardError, refetch: refetchDashboard } = useDashboard()
   const [setupSubmitting, setSetupSubmitting] = useState(false)
   const [setupError, setSetupError] = useState<string | null>(null)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
@@ -24,6 +27,7 @@ export default function Home() {
     try {
       await submitInitialSetup(input)
       await refetchUser() // セットアップ完了後、ユーザー情報を再取得
+      refetchDashboard() // ダッシュボードも更新
     } catch (err) {
       setSetupError(err instanceof Error ? err.message : 'unknown error')
     } finally {
@@ -40,7 +44,10 @@ export default function Home() {
     
     await updateExpense(editingExpense.id, input)
     // 成功時のみ編集モード解除（エラー時はuseExpensesのerror stateに格納される）
-    setEditingExpense(null)
+    if (!error) {
+      setEditingExpense(null)
+      refetchDashboard() // 更新後にダッシュボードを再取得
+    }
   }
 
   const handleCancelEdit = () => {
@@ -55,6 +62,7 @@ export default function Home() {
     if (editingExpense?.id === id) {
       setEditingExpense(null)
     }
+    refetchDashboard() // 削除後にダッシュボードを再取得
   }
   
 
@@ -97,6 +105,11 @@ export default function Home() {
         </div>
       )}
 
+      {/* Dashboard Section */}
+      {dashboardLoading && <p>ダッシュボード読み込み中...</p>}
+      {dashboardError && <p style={{ color: 'red' }}>ダッシュボードエラー: {dashboardError}</p>}
+      {dashboard && <Dashboard dashboard={dashboard} />}
+
       {editingExpense ? (
         <>
           <h2>支出を編集</h2>
@@ -109,7 +122,13 @@ export default function Home() {
           />
         </>
       ) : (
-        <ExpenseForm onSubmit={createExpense} isSubmitting={isSubmitting} />
+        <ExpenseForm 
+          onSubmit={async (input) => {
+            await createExpense(input)
+            refetchDashboard() // 作成後にダッシュボードを再取得
+          }}
+          isSubmitting={isSubmitting}
+        />
       )}
 
       {isLoading && <p>読み込み中...</p>}
