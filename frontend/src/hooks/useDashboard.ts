@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { getDashboard } from "@/lib/api/dashboard";
 import { Dashboard } from "@/lib/types/dashboard";
 
-export function useDashboard() {
+type UseDashboardOptions = {
+  enabled?: boolean; // trueの場合のみ自動fetch、デフォルトtrue
+};
+
+export function useDashboard(options: UseDashboardOptions = {}) {
+  const { enabled = true } = options;
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,10 +26,12 @@ export function useDashboard() {
     }
   };
 
-  // Initial fetch on mount
+  // Initial fetch on mount (enabledがtrueの場合のみ)
   useEffect(() => {
-    fetchDashboard();
-  }, []);
+    if (enabled) {
+      fetchDashboard();
+    }
+  }, [enabled]);
 
   // Refetch function for manual updates
   const refetch = () => {
