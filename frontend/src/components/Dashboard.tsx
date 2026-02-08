@@ -6,8 +6,15 @@ type DashboardProps = {
 };
 
 function getRemainingColor(remaining: number, variableBudget: number): string {
-  if (variableBudget === 0) return "green";
+  // 残額がマイナスの場合は常に赤
+  if (remaining < 0) return "red";
   
+  // 変動費がゼロ以下の場合は赤（使える余裕がない状態）
+  if (variableBudget <= 0) {
+    return "red";
+  }
+  
+  // 通常の割合ベースの色分け
   const percentage = (remaining / variableBudget) * 100;
   
   if (percentage >= 70) return "green";
