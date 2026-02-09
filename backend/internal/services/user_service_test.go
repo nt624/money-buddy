@@ -12,7 +12,8 @@ import (
 )
 
 type mockUserRepo struct {
-	getUserByIDFunc func(ctx context.Context, id string) (models.User, error)
+	getUserByIDFunc        func(ctx context.Context, id string) (models.User, error)
+	updateUserSettingsFunc func(ctx context.Context, id string, income int, savingGoal int) error
 }
 
 func (m *mockUserRepo) CreateUser(ctx context.Context, id string, income int, savingGoal int) error {
@@ -27,6 +28,9 @@ func (m *mockUserRepo) GetUserByID(ctx context.Context, id string) (models.User,
 }
 
 func (m *mockUserRepo) UpdateUserSettings(ctx context.Context, id string, income int, savingGoal int) error {
+	if m.updateUserSettingsFunc != nil {
+		return m.updateUserSettingsFunc(ctx, id, income, savingGoal)
+	}
 	return errors.New("not implemented")
 }
 
@@ -83,5 +87,121 @@ func TestUserService_GetUserByID_RepositoryError(t *testing.T) {
 
 	require.Error(t, err)
 	require.Nil(t, user)
+	assert.Contains(t, err.Error(), "database connection error")
+}
+
+func TestUpdateUserSettings_Success(t *testing.T) {
+	called := false
+	repo := &mockUserRepo{
+		updateUserSettingsFunc: func(ctx context.Context, id string, income int, savingGoal int) error {
+			called = true
+			assert.Equal(t, "test-user", id)
+			assert.Equal(t, 300000, income)
+			assert.Equal(t, 50000, savingGoal)
+			return nil
+		},
+	}
+
+	service := NewUserService(repo)
+	err := service.UpdateUserSettings(context.Background(), "test-user", 300000, 50000)
+
+	require.NoError(t, err)
+	assert.True(t, called, "repository method should be called")
+}
+
+func TestUpdateUserSettings_InvalidIncome(t *testing.T) {
+	testCases := []struct {
+		name   string
+		income int
+	}{
+		{"zero income", 0},
+		{"negative income", -100},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			called := false
+			repo := &mockUserRepo{
+				updateUserSettingsFunc: func(ctx context.Context, id string, income int, savingGoal int) error {
+					called = true
+					return nil
+				},
+			}
+
+			service := NewUserService(repo)
+			err := service.UpdateUserSettings(context.Background(), "test-user", tc.income, 50000)
+
+			require.Error(t, err)
+			assert.False(t, called, "repository should not be called for invalid input")
+			assert.Contains(t, err.Error(), "income must be greater than 0")
+		})
+	}
+}
+
+func TestUpdateUserSettings_InvalidSavingGoal(t *testing.T) {
+	called := false
+	repo := &mockUserRepo{
+		updateUserSettingsFunc: func(ctx context.Context, id string, income int, savingGoal int) error {
+			called = true
+			return nil
+		},
+	}
+
+	service := NewUserService(repo)
+	err := service.UpdateUserSettings(context.Background(), "test-user", 300000, -100)
+
+	require.Error(t, err)
+	assert.False(t, called, "repository should not be called for invalid input")
+	assert.Contains(t, err.Error(), "saving goal must be greater than or equal to 0")
+}
+
+func TestUpdateUserSettings_IncomeExceedsLimit(t *testing.T) {
+	called := false
+	repo := &mockUserRepo{
+		updateUserSettingsFunc: func(ctx context.Context, id string, income int, savingGoal int) error {
+			called = true
+			return nil
+		},
+	}
+
+	service := NewUserService(repo)
+	err := service.UpdateUserSettings(context.Background(), "test-user", 1000000001, 50000)
+
+	require.Error(t, err)
+	assert.False(t, called, "repository should not be called for invalid input")
+	assert.Contains(t, err.Error(), "income must be 10億 or less")
+}
+
+func TestUpdateUserSettings_SavingGoalExceedsLimit(t *testing.T) {
+	called := false
+	repo := &mockUserRepo{
+		updateUserSettingsFunc: func(ctx context.Context, id string, income int, savingGoal int) error {
+			called = true
+			return nil
+		},
+	}
+
+	service := NewUserService(repo)
+	err := service.UpdateUserSettings(context.Background(), "test-user", 300000, 1000000001)
+
+	require.Error(t, err)
+	assert.False(t, called, "repository should not be called for invalid input")
+	assert.Contains(t, err.Error(), "saving goal must be 10億 or less")
+}
+
+func TestUpdateUserSettings_RepositoryError(t *testing.T) {
+	called := false
+	repo := &mockUserRepo{
+		updateUserSettingsFunc: func(ctx context.Context, id string, income int, savingGoal int) error {
+			called = true
+			return errors.New("database connection error")
+		},
+	}
+
+	service := NewUserService(repo)
+	err := service.UpdateUserSettings(context.Background(), "test-user", 300000, 50000)
+
+	require.Error(t, err)
+	assert.True(t, called, "repository method should be called")
 	assert.Contains(t, err.Error(), "database connection error")
 }
