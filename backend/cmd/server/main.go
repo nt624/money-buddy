@@ -49,6 +49,9 @@ func main() {
 	userService := services.NewUserService(userRepo)
 	handlers.NewUserHandler(r, userService)
 
+	fixedCostService := services.NewFixedCostService(fixedCostRepo)
+	handlers.NewFixedCostHandler(r, fixedCostService)
+
 	dashboardRepo := repository.NewDashboardRepositorySQLC(queries)
 	dashboardService := services.NewDashboardService(dashboardRepo)
 	handlers.NewDashboardHandler(r, dashboardService)

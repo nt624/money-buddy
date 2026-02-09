@@ -11,6 +11,7 @@ import { Dashboard } from '@/components/Dashboard'
 import { submitInitialSetup } from '@/lib/api/setup'
 import { InitialSetupRequest } from '@/lib/types/setup'
 import { Expense, UpdateExpenseInput } from '@/lib/types/expense'
+import Link from 'next/link'
 
 export default function Home() {
   const { user, needsSetup, isLoading: userLoading, error: userError, refetchUser } = useUser()
@@ -99,7 +100,13 @@ export default function Home() {
   // 通常の支出入力画面
   return (
     <main>
-      <h1>支出入力</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h1>ホーム</h1>
+        <Link href="/settings" style={{ color: '#3b82f6', textDecoration: 'none', fontSize: '0.875rem', fontWeight: '500' }}>
+          ⚙️ 設定
+        </Link>
+      </div>
+      
       {user && (
         <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
           <p>月収: ¥{user.income.toLocaleString()}</p>
@@ -112,34 +119,38 @@ export default function Home() {
       {dashboardError && <p style={{ color: 'red' }}>ダッシュボードエラー: {dashboardError}</p>}
       {dashboard && <Dashboard dashboard={dashboard} />}
 
-      {editingExpense ? (
-        <>
-          <h2>支出を編集</h2>
+      {/* 支出セクション */}
+      <section style={{ marginTop: '2rem' }}>
+        <h2>支出入力</h2>
+        {editingExpense ? (
+          <>
+            <h3>支出を編集</h3>
+            <ExpenseForm 
+              mode="edit"
+              initialData={editingExpense}
+              onSubmit={handleUpdateSubmit}
+              onCancel={handleCancelEdit}
+              isSubmitting={isSubmitting}
+            />
+          </>
+        ) : (
           <ExpenseForm 
-            mode="edit"
-            initialData={editingExpense}
-            onSubmit={handleUpdateSubmit}
-            onCancel={handleCancelEdit}
+            onSubmit={async (input) => {
+              const success = await createExpense(input)
+              if (success) {
+                refetchDashboard() // 作成成功時のみダッシュボードを再取得
+              }
+            }}
             isSubmitting={isSubmitting}
           />
-        </>
-      ) : (
-        <ExpenseForm 
-          onSubmit={async (input) => {
-            const success = await createExpense(input)
-            if (success) {
-              refetchDashboard() // 作成成功時のみダッシュボードを再取得
-            }
-          }}
-          isSubmitting={isSubmitting}
-        />
-      )}
+        )}
 
-      {isLoading && <p>読み込み中...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+        {isLoading && <p>読み込み中...</p>}
+        {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      <h2>支出一覧</h2>
-      <ExpenseList expenses={expenses} onEdit={handleEdit} onDelete={handleDelete} isSubmitting={isSubmitting} />
+        <h3>支出一覧</h3>
+        <ExpenseList expenses={expenses} onEdit={handleEdit} onDelete={handleDelete} isSubmitting={isSubmitting} />
+      </section>
     </main>
   )
 }

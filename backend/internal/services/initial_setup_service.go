@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 
 	"money-buddy-backend/internal/models"
 	"money-buddy-backend/internal/repositories"
@@ -34,12 +35,27 @@ func (s *initialSetupService) CompleteInitialSetup(ctx context.Context, userID s
 	if savingGoal < 0 {
 		return &ValidationError{Message: "saving_goal must be greater than or equal to 0"}
 	}
-	for _, fc := range fixedCosts {
+
+	// 固定費の正規化とバリデーション
+	normalizedFixedCosts := make([]models.FixedCostInput, len(fixedCosts))
+	for i, fc := range fixedCosts {
+		// 名前を正規化（前後の空白を除去）
+		trimmedName := strings.TrimSpace(fc.Name)
+
 		if fc.Amount <= 0 {
 			return &ValidationError{Message: "fixed_cost.amount must be greater than 0"}
 		}
-		if fc.Name == "" {
+		if trimmedName == "" {
 			return &ValidationError{Message: "fixed_cost.name must be provided"}
+		}
+		if len(trimmedName) > FixedCostNameMaxLen {
+			return &ValidationError{Message: "fixed_cost.name is too long"}
+		}
+
+		// 正規化された値を使用
+		normalizedFixedCosts[i] = models.FixedCostInput{
+			Name:   trimmedName,
+			Amount: fc.Amount,
 		}
 	}
 
@@ -72,7 +88,8 @@ func (s *initialSetupService) CompleteInitialSetup(ctx context.Context, userID s
 		_ = tx.Rollback()
 		return err
 	}
-	if err := s.fixedCostRepo.BulkCreateFixedCosts(txCtx, userID, fixedCosts); err != nil {
+	// 正規化された固定費を使用
+	if err := s.fixedCostRepo.BulkCreateFixedCosts(txCtx, userID, normalizedFixedCosts); err != nil {
 		_ = tx.Rollback()
 		return err
 	}
