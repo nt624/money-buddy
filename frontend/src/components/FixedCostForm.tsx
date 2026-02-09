@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { FixedCost, UpdateFixedCostInput } from "@/lib/types/fixed-cost";
+import { FixedCost, CreateFixedCostInput, UpdateFixedCostInput } from "@/lib/types/fixed-cost";
 import styles from "./FixedCostForm.module.css";
 
 type Props = {
   fixedCost: FixedCost | null;
-  onSubmit: (input: UpdateFixedCostInput) => void;
+  onSubmit: (input: CreateFixedCostInput | UpdateFixedCostInput) => void;
   onCancel: () => void;
   isSubmitting: boolean;
 };

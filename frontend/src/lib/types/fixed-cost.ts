@@ -7,9 +7,18 @@ export type FixedCost = {
   updated_at: string
 }
 
+export type CreateFixedCostInput = {
+  name: string
+  amount: number
+}
+
 export type UpdateFixedCostInput = {
   name: string
   amount: number
+}
+
+export type CreateFixedCostResponse = {
+  fixed_cost: FixedCost
 }
 
 export type GetFixedCostsResponse = {
