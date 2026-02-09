@@ -33,8 +33,8 @@ func (h *UserHandler) GetCurrentUser(c *gin.Context) {
 }
 
 type UpdateUserSettingsRequest struct {
-	Income     int `json:"income" binding:"required"`
-	SavingGoal int `json:"saving_goal" binding:"required"`
+	Income     int `json:"income"`
+	SavingGoal int `json:"saving_goal"`
 }
 
 func (h *UserHandler) UpdateUserSettings(c *gin.Context) {

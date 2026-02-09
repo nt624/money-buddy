@@ -142,6 +142,50 @@ func (s *expenseService) DeleteExpense(userID string, id int) error {
 }
 
 func (s *expenseService) UpdateExpense(userID string, input models.UpdateExpenseInput) (models.Expense, error) {
+	// 金額チェック
+	if input.Amount == nil {
+		return models.Expense{}, &ValidationError{Message: "amount must be provided"}
+	}
+	if *input.Amount <= 0 {
+		return models.Expense{}, &ValidationError{Message: "amount must be greater than 0"}
+	}
+	if *input.Amount > BusinessMaxAmount {
+		return models.Expense{}, &ValidationError{Message: "amount exceeds maximum allowed"}
+	}
+
+	// カテゴリID チェック
+	if input.CategoryID == nil {
+		return models.Expense{}, &ValidationError{Message: "category_id must be provided"}
+	}
+	if *input.CategoryID <= 0 {
+		return models.Expense{}, &ValidationError{Message: "category_id must be greater than 0"}
+	}
+
+	// SpentAt の非空チェック
+	if input.SpentAt == "" {
+		return models.Expense{}, &ValidationError{Message: "spent_at must be provided"}
+	}
+
+	// 日付フォーマットの検証
+	var spentAt time.Time
+	var err error
+	spentAt, err = time.Parse(time.RFC3339, input.SpentAt)
+	if err != nil {
+		spentAt, err = time.Parse("2006-01-02", input.SpentAt)
+		if err != nil {
+			return models.Expense{}, &ValidationError{Message: "spent_at is invalid"}
+		}
+		spentAt = time.Date(spentAt.Year(), spentAt.Month(), spentAt.Day(), 0, 0, 0, 0, time.UTC)
+	}
+	if spentAt.IsZero() {
+		return models.Expense{}, &ValidationError{Message: "spent_at must be a non-zero time"}
+	}
+
+	// Memo 長チェック
+	if len(input.Memo) > MemoMaxLen {
+		return models.Expense{}, &ValidationError{Message: "memo exceeds maximum length"}
+	}
+
 	// 現在の状態を取得し、ステータス遷移のバリデーションを行う
 	current, err := s.repo.GetExpenseByID(userID, int32(input.ID))
 	if err != nil {
@@ -150,6 +194,15 @@ func (s *expenseService) UpdateExpense(userID string, input models.UpdateExpense
 			return models.Expense{}, ErrInvalidStatusTransition
 		}
 		return models.Expense{}, &InternalError{Message: "internal error"}
+	}
+
+	// カテゴリ存在チェック（現在のExpense取得後に実施）
+	exists, err := s.categoryRepo.CategoryExists(context.Background(), int32(*input.CategoryID))
+	if err != nil {
+		return models.Expense{}, &InternalError{Message: "internal error"}
+	}
+	if !exists {
+		return models.Expense{}, &ValidationError{Message: "category_id is invalid"}
 	}
 
 	// 変更後ステータスの決定（未指定なら現状維持）

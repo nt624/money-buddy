@@ -178,13 +178,17 @@ func (m *mockRepoErr) CreateExpense(userID string, input models.CreateExpenseInp
 	return models.Expense{}, m.returnErr
 }
 
-func (m *mockRepoErr) FindAll(userID string) ([]models.Expense, error) { return nil, errors.New("not implemented") }
+func (m *mockRepoErr) FindAll(userID string) ([]models.Expense, error) {
+	return nil, errors.New("not implemented")
+}
 
 func (m *mockRepoErr) GetExpenseByID(userID string, id int32) (models.Expense, error) {
 	return models.Expense{}, errors.New("not implemented")
 }
 
-func (m *mockRepoErr) DeleteExpense(userID string, id int32) error { return errors.New("not implemented") }
+func (m *mockRepoErr) DeleteExpense(userID string, id int32) error {
+	return errors.New("not implemented")
+}
 
 func (m *mockRepoErr) UpdateExpense(userID string, input models.UpdateExpenseInput) (models.Expense, error) {
 	return models.Expense{}, errors.New("not implemented")
@@ -394,7 +398,9 @@ func (m *mockUpdateRepo) GetExpenseByID(userID string, id int32) (models.Expense
 	return m.current, nil
 }
 
-func (m *mockUpdateRepo) DeleteExpense(userID string, id int32) error { return errors.New("not implemented") }
+func (m *mockUpdateRepo) DeleteExpense(userID string, id int32) error {
+	return errors.New("not implemented")
+}
 
 // UpdateExpense updates fields; if Status is empty, keep current status
 func (m *mockUpdateRepo) UpdateExpense(userID string, input models.UpdateExpenseInput) (models.Expense, error) {
@@ -427,7 +433,7 @@ func TestUpdateExpense_NormalCases(t *testing.T) {
 		t.Parallel()
 
 		repo := &mockUpdateRepo{current: models.Expense{ID: 1, Amount: 100, Memo: "old", SpentAt: "2025-01-01", Status: "planned", Category: models.Category{ID: 1}}}
-		cr := &mockCategoryRepo{}
+		cr := &mockCategoryRepo{exists: map[int32]bool{2: true}}
 		s := &expenseService{repo: repo, categoryRepo: cr}
 
 		input := models.UpdateExpenseInput{
@@ -454,7 +460,7 @@ func TestUpdateExpense_NormalCases(t *testing.T) {
 		t.Parallel()
 
 		repo := &mockUpdateRepo{current: models.Expense{ID: 2, Amount: 300, Memo: "c-old", SpentAt: "2025-03-01", Status: "confirmed", Category: models.Category{ID: 3}}}
-		cr := &mockCategoryRepo{}
+		cr := &mockCategoryRepo{exists: map[int32]bool{4: true}}
 		s := &expenseService{repo: repo, categoryRepo: cr}
 
 		input := models.UpdateExpenseInput{
@@ -481,7 +487,7 @@ func TestUpdateExpense_NormalCases(t *testing.T) {
 		t.Parallel()
 
 		repo := &mockUpdateRepo{current: models.Expense{ID: 3, Amount: 500, Memo: "p-old", SpentAt: "2025-04-01", Status: "planned", Category: models.Category{ID: 5}}}
-		cr := &mockCategoryRepo{}
+		cr := &mockCategoryRepo{exists: map[int32]bool{6: true}}
 		s := &expenseService{repo: repo, categoryRepo: cr}
 
 		input := models.UpdateExpenseInput{
@@ -508,7 +514,7 @@ func TestUpdateExpense_InvalidTransition_ConfirmedToPlanned(t *testing.T) {
 	t.Parallel()
 
 	repo := &mockUpdateRepo{current: models.Expense{ID: 100, Amount: 1000, Memo: "confirmed item", SpentAt: "2025-05-01", Status: "confirmed", Category: models.Category{ID: 10}}}
-	cr := &mockCategoryRepo{}
+	cr := &mockCategoryRepo{exists: map[int32]bool{11: true}}
 	s := &expenseService{repo: repo, categoryRepo: cr}
 
 	input := models.UpdateExpenseInput{
