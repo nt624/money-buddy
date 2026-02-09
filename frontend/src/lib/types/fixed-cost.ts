@@ -7,15 +7,15 @@ export type FixedCost = {
   updated_at: string
 }
 
-export type CreateFixedCostInput = {
+// フォーム入力用の共通型
+export type FixedCostInput = {
   name: string
   amount: number
 }
 
-export type UpdateFixedCostInput = {
-  name: string
-  amount: number
-}
+// API型定義（互換性のため残す）
+export type CreateFixedCostInput = FixedCostInput
+export type UpdateFixedCostInput = FixedCostInput
 
 export type CreateFixedCostResponse = {
   fixed_cost: FixedCost

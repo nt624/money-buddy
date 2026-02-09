@@ -5,7 +5,7 @@ import { useFixedCosts } from '@/hooks/useFixedCosts'
 import { useDashboard } from '@/hooks/useDashboard'
 import { FixedCostList } from '@/components/FixedCostList'
 import { FixedCostForm } from '@/components/FixedCostForm'
-import { FixedCost, CreateFixedCostInput, UpdateFixedCostInput } from '@/lib/types/fixed-cost'
+import { FixedCost, FixedCostInput } from '@/lib/types/fixed-cost'
 import Link from 'next/link'
 
 export default function SettingsPage() {
@@ -19,7 +19,7 @@ export default function SettingsPage() {
     setShowFixedCostForm(true)
   }
 
-  const handleFixedCostCreateSubmit = async (input: CreateFixedCostInput) => {
+  const handleFixedCostCreateSubmit = async (input: FixedCostInput) => {
     const success = await createFixedCost(input)
     // 成功時のみフォーム閉じてダッシュボード再取得
     if (success) {
@@ -28,7 +28,7 @@ export default function SettingsPage() {
     }
   }
 
-  const handleFixedCostUpdateSubmit = async (input: UpdateFixedCostInput) => {
+  const handleFixedCostUpdateSubmit = async (input: FixedCostInput) => {
     if (!editingFixedCost) return
     
     const success = await updateFixedCost(editingFixedCost.id, input)
@@ -40,11 +40,11 @@ export default function SettingsPage() {
     }
   }
 
-  const handleFixedCostSubmit = async (input: CreateFixedCostInput | UpdateFixedCostInput) => {
+  const handleFixedCostSubmit = async (input: FixedCostInput) => {
     if (editingFixedCost) {
-      await handleFixedCostUpdateSubmit(input as UpdateFixedCostInput)
+      await handleFixedCostUpdateSubmit(input)
     } else {
-      await handleFixedCostCreateSubmit(input as CreateFixedCostInput)
+      await handleFixedCostCreateSubmit(input)
     }
   }
 
