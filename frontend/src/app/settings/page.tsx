@@ -5,11 +5,11 @@ import { useFixedCosts } from '@/hooks/useFixedCosts'
 import { useDashboard } from '@/hooks/useDashboard'
 import { FixedCostList } from '@/components/FixedCostList'
 import { FixedCostForm } from '@/components/FixedCostForm'
-import { FixedCost, UpdateFixedCostInput } from '@/lib/types/fixed-cost'
+import { FixedCost, FixedCostInput } from '@/lib/types/fixed-cost'
 import Link from 'next/link'
 
 export default function SettingsPage() {
-  const { fixedCosts, updateFixedCost, deleteFixedCost, isSubmitting: fcSubmitting, isLoading: fcLoading, error: fcError } = useFixedCosts()
+  const { fixedCosts, createFixedCost, updateFixedCost, deleteFixedCost, isSubmitting: fcSubmitting, isLoading: fcLoading, error: fcError } = useFixedCosts()
   const { refetch: refetchDashboard } = useDashboard({ enabled: false })
   const [editingFixedCost, setEditingFixedCost] = useState<FixedCost | null>(null)
   const [showFixedCostForm, setShowFixedCostForm] = useState(false)
@@ -19,7 +19,16 @@ export default function SettingsPage() {
     setShowFixedCostForm(true)
   }
 
-  const handleFixedCostUpdateSubmit = async (input: UpdateFixedCostInput) => {
+  const handleFixedCostCreateSubmit = async (input: FixedCostInput) => {
+    const success = await createFixedCost(input)
+    // 成功時のみフォーム閉じてダッシュボード再取得
+    if (success) {
+      setShowFixedCostForm(false)
+      refetchDashboard()
+    }
+  }
+
+  const handleFixedCostUpdateSubmit = async (input: FixedCostInput) => {
     if (!editingFixedCost) return
     
     const success = await updateFixedCost(editingFixedCost.id, input)
@@ -28,6 +37,14 @@ export default function SettingsPage() {
       setEditingFixedCost(null)
       setShowFixedCostForm(false)
       refetchDashboard()
+    }
+  }
+
+  const handleFixedCostSubmit = async (input: FixedCostInput) => {
+    if (editingFixedCost) {
+      await handleFixedCostUpdateSubmit(input)
+    } else {
+      await handleFixedCostCreateSubmit(input)
     }
   }
 
@@ -84,7 +101,7 @@ export default function SettingsPage() {
           <div style={{ marginBottom: '1rem' }}>
             <FixedCostForm 
               fixedCost={editingFixedCost}
-              onSubmit={handleFixedCostUpdateSubmit}
+              onSubmit={handleFixedCostSubmit}
               onCancel={handleCancelFixedCostEdit}
               isSubmitting={fcSubmitting}
             />

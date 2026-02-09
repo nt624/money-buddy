@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import {
+  createFixedCost,
   getFixedCosts,
   updateFixedCost,
   deleteFixedCost,
 } from "@/lib/api/fixed-costs";
-import { FixedCost, UpdateFixedCostInput } from "@/lib/types/fixed-cost";
+import { FixedCost, CreateFixedCostInput, UpdateFixedCostInput } from "@/lib/types/fixed-cost";
 
 export function useFixedCosts() {
   const [fixedCosts, setFixedCosts] = useState<FixedCost[]>([]);
@@ -43,6 +44,25 @@ export function useFixedCosts() {
       setError(err instanceof Error ? err.message : "unknown error");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // POST
+  const handleCreateFixedCost = async (
+    input: CreateFixedCostInput
+  ): Promise<boolean> => {
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const newFixedCost = await createFixedCost(input);
+      setFixedCosts((prevFixedCosts) => [...prevFixedCosts, newFixedCost]);
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "unknown error");
+      return false;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -92,6 +112,7 @@ export function useFixedCosts() {
     isLoading,
     isSubmitting,
     error,
+    createFixedCost: handleCreateFixedCost,
     updateFixedCost: handleUpdateFixedCost,
     deleteFixedCost: handleDeleteFixedCost,
     refetch: refetchFixedCosts,

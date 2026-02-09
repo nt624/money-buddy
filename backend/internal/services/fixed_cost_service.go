@@ -14,6 +14,7 @@ const (
 )
 
 type FixedCostService interface {
+	CreateFixedCost(ctx context.Context, userID string, name string, amount int) (models.FixedCost, error)
 	ListFixedCosts(ctx context.Context, userID string) ([]models.FixedCost, error)
 	UpdateFixedCost(ctx context.Context, userID string, id int, name string, amount int) (models.FixedCost, error)
 	DeleteFixedCost(ctx context.Context, userID string, id int) error
@@ -25,6 +26,19 @@ type fixedCostService struct {
 
 func NewFixedCostService(repo repositories.FixedCostRepository) FixedCostService {
 	return &fixedCostService{repo: repo}
+}
+
+func (s *fixedCostService) CreateFixedCost(ctx context.Context, userID string, name string, amount int) (models.FixedCost, error) {
+	// 名前を正規化（前後の空白を除去）
+	name = strings.TrimSpace(name)
+
+	// バリデーション
+	if err := validateFixedCostInput(name, amount); err != nil {
+		return models.FixedCost{}, err
+	}
+
+	// 作成実行
+	return s.repo.CreateFixedCost(ctx, userID, name, amount)
 }
 
 func (s *fixedCostService) ListFixedCosts(ctx context.Context, userID string) ([]models.FixedCost, error) {

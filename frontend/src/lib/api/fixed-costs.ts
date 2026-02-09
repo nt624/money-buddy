@@ -1,11 +1,39 @@
 import {
   FixedCost,
+  CreateFixedCostInput,
   UpdateFixedCostInput,
+  CreateFixedCostResponse,
   GetFixedCostsResponse,
   UpdateFixedCostResponse,
 } from "@/lib/types/fixed-cost";
 
 const API_BASE_URL = "http://localhost:8080";
+
+export async function createFixedCost(
+  input: CreateFixedCostInput
+): Promise<FixedCost> {
+  const res = await fetch(`${API_BASE_URL}/fixed-costs`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to create fixed cost: ${res.status} ${text}`);
+  }
+
+  const data: CreateFixedCostResponse = await res.json();
+  if (!data || !data.fixed_cost) {
+    throw new Error(
+      `Invalid createFixedCost response: ${JSON.stringify(data)}`
+    );
+  }
+
+  return data.fixed_cost;
+}
 
 export async function getFixedCosts(): Promise<GetFixedCostsResponse> {
   const res = await fetch(`${API_BASE_URL}/fixed-costs`, {
