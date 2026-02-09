@@ -13,7 +13,26 @@ export function useFixedCosts() {
   const [error, setError] = useState<string | null>(null);
 
   // GET
-  const fetchFixedCosts = async () => {
+  useEffect(() => {
+    const fetchFixedCosts = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const data = await getFixedCosts();
+        setFixedCosts(data.fixed_costs);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "unknown error");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFixedCosts();
+  }, []);
+
+  // Refetch
+  const refetchFixedCosts = async () => {
     setIsLoading(true);
     setError(null);
 
@@ -26,10 +45,6 @@ export function useFixedCosts() {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchFixedCosts();
-  }, []);
 
   // PUT
   const handleUpdateFixedCost = async (
@@ -79,6 +94,6 @@ export function useFixedCosts() {
     error,
     updateFixedCost: handleUpdateFixedCost,
     deleteFixedCost: handleDeleteFixedCost,
-    refetch: fetchFixedCosts,
+    refetch: refetchFixedCosts,
   };
 }
