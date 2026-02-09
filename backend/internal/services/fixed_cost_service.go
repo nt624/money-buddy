@@ -62,6 +62,25 @@ func (s *fixedCostService) UpdateFixedCost(ctx context.Context, userID string, i
 }
 
 func (s *fixedCostService) DeleteFixedCost(ctx context.Context, userID string, id int) error {
+	// 削除前に対象が存在するか確認
+	fixedCosts, err := s.repo.ListFixedCostsByUser(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	found := false
+	for _, fc := range fixedCosts {
+		if fc.ID == id {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return &NotFoundError{Message: "fixed cost not found"}
+	}
+
+	// 削除実行
 	return s.repo.DeleteFixedCost(ctx, int32(id), userID)
 }
 

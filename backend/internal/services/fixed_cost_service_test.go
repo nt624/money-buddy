@@ -194,12 +194,34 @@ func TestDeleteFixedCost(t *testing.T) {
 
 	t.Run("正常に固定費を削除できる", func(t *testing.T) {
 		repo := new(mockFixedCostRepo)
+		// 存在確認のためのListFixedCostsByUser
+		repo.On("ListFixedCostsByUser", ctx, "user1").Return([]models.FixedCost{
+			{ID: 1, Name: "家賃", Amount: 80000},
+			{ID: 2, Name: "光熱費", Amount: 15000},
+		}, nil)
 		repo.On("DeleteFixedCost", ctx, int32(1), "user1").Return(nil)
 
 		service := NewFixedCostService(repo)
 		err := service.DeleteFixedCost(ctx, "user1", 1)
 
 		assert.NoError(t, err)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("存在しない固定費を削除しようとするとNotFoundError", func(t *testing.T) {
+		repo := new(mockFixedCostRepo)
+		// 存在確認のためのListFixedCostsByUser（ID=999は存在しない）
+		repo.On("ListFixedCostsByUser", ctx, "user1").Return([]models.FixedCost{
+			{ID: 1, Name: "家賃", Amount: 80000},
+			{ID: 2, Name: "光熱費", Amount: 15000},
+		}, nil)
+
+		service := NewFixedCostService(repo)
+		err := service.DeleteFixedCost(ctx, "user1", 999)
+
+		assert.Error(t, err)
+		var ne *NotFoundError
+		assert.ErrorAs(t, err, &ne)
 		repo.AssertExpectations(t)
 	})
 }
