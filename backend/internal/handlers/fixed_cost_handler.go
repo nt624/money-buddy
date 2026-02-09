@@ -17,9 +17,43 @@ type FixedCostHandler struct {
 func NewFixedCostHandler(r *gin.Engine, service services.FixedCostService) {
 	handler := &FixedCostHandler{service: service}
 
+	r.POST("/fixed-costs", handler.CreateFixedCost)
 	r.GET("/fixed-costs", handler.ListFixedCosts)
 	r.PUT("/fixed-costs/:id", handler.UpdateFixedCost)
 	r.DELETE("/fixed-costs/:id", handler.DeleteFixedCost)
+}
+
+// CreateFixedCostRequest は固定費作成のリクエストボディです
+type CreateFixedCostRequest struct {
+	Name   string `json:"name" binding:"required"`
+	Amount int    `json:"amount" binding:"required,gt=0"`
+}
+
+// CreateFixedCost は固定費を作成します
+func (h *FixedCostHandler) CreateFixedCost(c *gin.Context) {
+	// TODO: Extract userID from authentication context when auth is implemented
+	userID := DummyUserID
+
+	// リクエストボディ取得
+	var req CreateFixedCostRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 作成実行
+	fixedCost, err := h.service.CreateFixedCost(c.Request.Context(), userID, req.Name, req.Amount)
+	if err != nil {
+		var ve *services.ValidationError
+		if errors.As(err, &ve) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": ve.Message})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create fixed cost"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"fixed_cost": fixedCost})
 }
 
 // ListFixedCosts は固定費一覧を取得します

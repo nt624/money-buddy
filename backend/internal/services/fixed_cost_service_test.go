@@ -81,6 +81,109 @@ func TestListFixedCosts(t *testing.T) {
 	})
 }
 
+// TestCreateFixedCost は固定費作成のテストです
+func TestCreateFixedCost(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("正常に固定費を作成できる", func(t *testing.T) {
+		repo := new(mockFixedCostRepo)
+		expected := models.FixedCost{
+			ID:     1,
+			UserID: "user1",
+			Name:   "家賃",
+			Amount: 80000,
+		}
+		repo.On("CreateFixedCost", ctx, "user1", "家賃", 80000).Return(expected, nil)
+
+		service := NewFixedCostService(repo)
+		result, err := service.CreateFixedCost(ctx, "user1", "家賃", 80000)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("名前の前後の空白がトリムされる", func(t *testing.T) {
+		repo := new(mockFixedCostRepo)
+		expected := models.FixedCost{
+			ID:     1,
+			UserID: "user1",
+			Name:   "家賃",
+			Amount: 80000,
+		}
+		// トリム後の値で呼ばれることを確認
+		repo.On("CreateFixedCost", ctx, "user1", "家賃", 80000).Return(expected, nil)
+
+		service := NewFixedCostService(repo)
+		result, err := service.CreateFixedCost(ctx, "user1", "  家賃  ", 80000)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("名前が空の場合はエラー", func(t *testing.T) {
+		repo := new(mockFixedCostRepo)
+
+		service := NewFixedCostService(repo)
+		_, err := service.CreateFixedCost(ctx, "user1", "", 80000)
+
+		assert.Error(t, err)
+		var ve *ValidationError
+		assert.ErrorAs(t, err, &ve)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("名前が空白のみの場合はエラー", func(t *testing.T) {
+		repo := new(mockFixedCostRepo)
+
+		service := NewFixedCostService(repo)
+		_, err := service.CreateFixedCost(ctx, "user1", "   ", 80000)
+
+		assert.Error(t, err)
+		var ve *ValidationError
+		assert.ErrorAs(t, err, &ve)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("名前が最大長を超える場合はエラー", func(t *testing.T) {
+		repo := new(mockFixedCostRepo)
+		longName := string(make([]byte, 101))
+
+		service := NewFixedCostService(repo)
+		_, err := service.CreateFixedCost(ctx, "user1", longName, 80000)
+
+		assert.Error(t, err)
+		var ve *ValidationError
+		assert.ErrorAs(t, err, &ve)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("金額が0以下の場合はエラー", func(t *testing.T) {
+		repo := new(mockFixedCostRepo)
+
+		service := NewFixedCostService(repo)
+		_, err := service.CreateFixedCost(ctx, "user1", "家賃", 0)
+
+		assert.Error(t, err)
+		var ve *ValidationError
+		assert.ErrorAs(t, err, &ve)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("金額が上限を超える場合はエラー", func(t *testing.T) {
+		repo := new(mockFixedCostRepo)
+
+		service := NewFixedCostService(repo)
+		_, err := service.CreateFixedCost(ctx, "user1", "家賃", BusinessMaxAmount+1)
+
+		assert.Error(t, err)
+		var ve *ValidationError
+		assert.ErrorAs(t, err, &ve)
+		repo.AssertExpectations(t)
+	})
+}
+
 // TestUpdateFixedCost は固定費更新のテストです
 func TestUpdateFixedCost(t *testing.T) {
 	ctx := context.Background()
