@@ -159,24 +159,95 @@ func TestUpdateFixedCost_InvalidID(t *testing.T) {
 
 // TestUpdateFixedCost_ValidationError はバリデーションエラーをテストします
 func TestUpdateFixedCost_ValidationError(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	router := gin.New()
+	t.Run("名前が空白のみの場合", func(t *testing.T) {
+		gin.SetMode(gin.TestMode)
+		router := gin.New()
 
-	svc := &fixedCostServiceMock{
-		UpdateFixedCostFunc: func(ctx context.Context, userID string, id int, name string, amount int) (models.FixedCost, error) {
-			return models.FixedCost{}, &services.ValidationError{Message: "amount must be greater than 0"}
-		},
-	}
-	NewFixedCostHandler(router, svc)
+		called := false
+		svc := &fixedCostServiceMock{
+			UpdateFixedCostFunc: func(ctx context.Context, userID string, id int, name string, amount int) (models.FixedCost, error) {
+				called = true
+				require.Equal(t, "   ", name)
+				return models.FixedCost{}, &services.ValidationError{Message: "name is required"}
+			},
+		}
+		NewFixedCostHandler(router, svc)
 
-	body := `{"name":"家賃","amount":0}`
-	req := httptest.NewRequest(http.MethodPut, "/fixed-costs/1", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+		body := `{"name":"   ","amount":80000}`
+		req := httptest.NewRequest(http.MethodPut, "/fixed-costs/1", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
 
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
 
-	require.Equal(t, http.StatusBadRequest, w.Code)
+		require.True(t, called, "UpdateFixedCostFunc should be called")
+		require.Equal(t, http.StatusBadRequest, w.Code)
+
+		var resp map[string]string
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		require.NoError(t, err)
+		require.Equal(t, "name is required", resp["error"])
+	})
+
+	t.Run("名前が最大長を超える場合", func(t *testing.T) {
+		gin.SetMode(gin.TestMode)
+		router := gin.New()
+
+		called := false
+		longName := strings.Repeat("あ", 101)
+		svc := &fixedCostServiceMock{
+			UpdateFixedCostFunc: func(ctx context.Context, userID string, id int, name string, amount int) (models.FixedCost, error) {
+				called = true
+				return models.FixedCost{}, &services.ValidationError{Message: "name is too long"}
+			},
+		}
+		NewFixedCostHandler(router, svc)
+
+		body := `{"name":"` + longName + `","amount":80000}`
+		req := httptest.NewRequest(http.MethodPut, "/fixed-costs/1", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		require.True(t, called, "UpdateFixedCostFunc should be called")
+		require.Equal(t, http.StatusBadRequest, w.Code)
+
+		var resp map[string]string
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		require.NoError(t, err)
+		require.Equal(t, "name is too long", resp["error"])
+	})
+
+	t.Run("金額が上限を超える場合", func(t *testing.T) {
+		gin.SetMode(gin.TestMode)
+		router := gin.New()
+
+		called := false
+		svc := &fixedCostServiceMock{
+			UpdateFixedCostFunc: func(ctx context.Context, userID string, id int, name string, amount int) (models.FixedCost, error) {
+				called = true
+				require.Equal(t, 1000000001, amount)
+				return models.FixedCost{}, &services.ValidationError{Message: "amount exceeds maximum allowed"}
+			},
+		}
+		NewFixedCostHandler(router, svc)
+
+		body := `{"name":"家賃","amount":1000000001}`
+		req := httptest.NewRequest(http.MethodPut, "/fixed-costs/1", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		require.True(t, called, "UpdateFixedCostFunc should be called")
+		require.Equal(t, http.StatusBadRequest, w.Code)
+
+		var resp map[string]string
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		require.NoError(t, err)
+		require.Equal(t, "amount exceeds maximum allowed", resp["error"])
+	})
 }
 
 // TestUpdateFixedCost_NotFound は固定費が見つからない場合をテストします
@@ -308,23 +379,92 @@ func TestCreateFixedCost_InvalidJSON(t *testing.T) {
 
 // TestCreateFixedCost_ValidationError はバリデーションエラーをテストします
 func TestCreateFixedCost_ValidationError(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	router := gin.New()
+	t.Run("名前が空白のみの場合", func(t *testing.T) {
+		gin.SetMode(gin.TestMode)
+		router := gin.New()
 
-	svc := &fixedCostServiceMock{
-		CreateFixedCostFunc: func(ctx context.Context, userID string, name string, amount int) (models.FixedCost, error) {
-			return models.FixedCost{}, &services.ValidationError{Message: "name is required"}
-		},
-	}
-	NewFixedCostHandler(router, svc)
+		called := false
+		svc := &fixedCostServiceMock{
+			CreateFixedCostFunc: func(ctx context.Context, userID string, name string, amount int) (models.FixedCost, error) {
+				called = true
+				require.Equal(t, "   ", name)
+				return models.FixedCost{}, &services.ValidationError{Message: "name is required"}
+			},
+		}
+		NewFixedCostHandler(router, svc)
 
-	body := `{"name":"","amount":80000}`
-	req := httptest.NewRequest(http.MethodPost, "/fixed-costs", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+		body := `{"name":"   ","amount":80000}`
+		req := httptest.NewRequest(http.MethodPost, "/fixed-costs", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
 
-	require.Equal(t, http.StatusBadRequest, w.Code)
+		require.True(t, called, "CreateFixedCostFunc should be called")
+		require.Equal(t, http.StatusBadRequest, w.Code)
+
+		var resp map[string]string
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		require.NoError(t, err)
+		require.Equal(t, "name is required", resp["error"])
+	})
+
+	t.Run("名前が最大長を超える場合", func(t *testing.T) {
+		gin.SetMode(gin.TestMode)
+		router := gin.New()
+
+		called := false
+		longName := strings.Repeat("あ", 101)
+		svc := &fixedCostServiceMock{
+			CreateFixedCostFunc: func(ctx context.Context, userID string, name string, amount int) (models.FixedCost, error) {
+				called = true
+				return models.FixedCost{}, &services.ValidationError{Message: "name is too long"}
+			},
+		}
+		NewFixedCostHandler(router, svc)
+
+		body := `{"name":"` + longName + `","amount":80000}`
+		req := httptest.NewRequest(http.MethodPost, "/fixed-costs", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		require.True(t, called, "CreateFixedCostFunc should be called")
+		require.Equal(t, http.StatusBadRequest, w.Code)
+
+		var resp map[string]string
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		require.NoError(t, err)
+		require.Equal(t, "name is too long", resp["error"])
+	})
+
+	t.Run("金額が上限を超える場合", func(t *testing.T) {
+		gin.SetMode(gin.TestMode)
+		router := gin.New()
+
+		called := false
+		svc := &fixedCostServiceMock{
+			CreateFixedCostFunc: func(ctx context.Context, userID string, name string, amount int) (models.FixedCost, error) {
+				called = true
+				require.Equal(t, 1000000001, amount)
+				return models.FixedCost{}, &services.ValidationError{Message: "amount exceeds maximum allowed"}
+			},
+		}
+		NewFixedCostHandler(router, svc)
+
+		body := `{"name":"家賃","amount":1000000001}`
+		req := httptest.NewRequest(http.MethodPost, "/fixed-costs", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		require.True(t, called, "CreateFixedCostFunc should be called")
+		require.Equal(t, http.StatusBadRequest, w.Code)
+
+		var resp map[string]string
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		require.NoError(t, err)
+		require.Equal(t, "amount exceeds maximum allowed", resp["error"])
+	})
 }
 
 // TestCreateFixedCost_ServiceError はサービスエラーをテストします

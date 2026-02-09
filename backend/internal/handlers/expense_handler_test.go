@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -93,35 +94,110 @@ func TestCreateExpenseHandler_InvalidJSON_Skip(t *testing.T) {
 }
 
 func TestCreateExpenseHandler_ValidationError(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	router := gin.New()
+	t.Run("金額が0の場合", func(t *testing.T) {
+		gin.SetMode(gin.TestMode)
+		router := gin.New()
 
-	// mock service that returns ValidationError
-	svc := &expenseServiceMock{
-		CreateExpenseFunc: func(userID string, input models.CreateExpenseInput) (models.Expense, error) {
-			return models.Expense{}, &services.ValidationError{Message: "amount must be greater than 0"}
-		},
-	}
-	NewExpenseHandler(router, svc)
+		called := false
+		amount := 0
+		svc := &expenseServiceMock{
+			CreateExpenseFunc: func(userID string, input models.CreateExpenseInput) (models.Expense, error) {
+				called = true
+				require.NotNil(t, input.Amount)
+				require.Equal(t, 0, *input.Amount)
+				return models.Expense{}, &services.ValidationError{Message: "amount must be greater than 0"}
+			},
+		}
+		NewExpenseHandler(router, svc)
 
-	// amount=0 would fail Gin's binding `required` check (zero value),
-	// so use -1 to let binding pass and exercise service-side validation.
-	body := `{"amount":0,"category_id":2,"memo":"lunch","spent_at":"2025-12-30"}`
-	req := httptest.NewRequest(http.MethodPost, "/expenses", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+		body := fmt.Sprintf(`{"amount":%d,"category_id":2,"memo":"lunch","spent_at":"2025-12-30"}`, amount)
+		req := httptest.NewRequest(http.MethodPost, "/expenses", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
 
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
 
-	require.Equal(t, http.StatusBadRequest, w.Code)
+		require.True(t, called, "CreateExpenseFunc should be called")
+		require.Equal(t, http.StatusBadRequest, w.Code)
 
-	var resp map[string]string
-	err := json.Unmarshal(w.Body.Bytes(), &resp)
-	require.NoError(t, err)
+		var resp map[string]string
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		require.NoError(t, err)
 
-	msg, ok := resp["error"]
-	require.True(t, ok)
-	require.Equal(t, "amount must be greater than 0", msg)
+		msg, ok := resp["error"]
+		require.True(t, ok)
+		require.Equal(t, "amount must be greater than 0", msg)
+	})
+
+	t.Run("金額が負数の場合", func(t *testing.T) {
+		gin.SetMode(gin.TestMode)
+		router := gin.New()
+
+		called := false
+		amount := -100
+		svc := &expenseServiceMock{
+			CreateExpenseFunc: func(userID string, input models.CreateExpenseInput) (models.Expense, error) {
+				called = true
+				require.NotNil(t, input.Amount)
+				require.Equal(t, -100, *input.Amount)
+				return models.Expense{}, &services.ValidationError{Message: "amount must be greater than 0"}
+			},
+		}
+		NewExpenseHandler(router, svc)
+
+		body := fmt.Sprintf(`{"amount":%d,"category_id":2,"memo":"lunch","spent_at":"2025-12-30"}`, amount)
+		req := httptest.NewRequest(http.MethodPost, "/expenses", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		require.True(t, called, "CreateExpenseFunc should be called")
+		require.Equal(t, http.StatusBadRequest, w.Code)
+
+		var resp map[string]string
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		require.NoError(t, err)
+
+		msg, ok := resp["error"]
+		require.True(t, ok)
+		require.Equal(t, "amount must be greater than 0", msg)
+	})
+
+	t.Run("金額が上限を超える場合", func(t *testing.T) {
+		gin.SetMode(gin.TestMode)
+		router := gin.New()
+
+		called := false
+		amount := 1000000001
+		svc := &expenseServiceMock{
+			CreateExpenseFunc: func(userID string, input models.CreateExpenseInput) (models.Expense, error) {
+				called = true
+				require.NotNil(t, input.Amount)
+				require.Equal(t, 1000000001, *input.Amount)
+				return models.Expense{}, &services.ValidationError{Message: "amount exceeds maximum allowed"}
+			},
+		}
+		NewExpenseHandler(router, svc)
+
+		body := fmt.Sprintf(`{"amount":%d,"category_id":2,"memo":"lunch","spent_at":"2025-12-30"}`, amount)
+		req := httptest.NewRequest(http.MethodPost, "/expenses", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		require.True(t, called, "CreateExpenseFunc should be called")
+		require.Equal(t, http.StatusBadRequest, w.Code)
+
+		var resp map[string]string
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		require.NoError(t, err)
+
+		msg, ok := resp["error"]
+		require.True(t, ok)
+		require.Equal(t, "amount exceeds maximum allowed", msg)
+	})
 }
 
 // (Removed dedicated validation error mock; unified mock covers it)
@@ -155,7 +231,9 @@ func (m *mockExpenseServiceUpdateValidationErr) CreateExpense(userID string, inp
 func (m *mockExpenseServiceUpdateValidationErr) ListExpenses(userID string) ([]models.Expense, error) {
 	return nil, nil
 }
-func (m *mockExpenseServiceUpdateValidationErr) DeleteExpense(userID string, id int) error { return nil }
+func (m *mockExpenseServiceUpdateValidationErr) DeleteExpense(userID string, id int) error {
+	return nil
+}
 func (m *mockExpenseServiceUpdateValidationErr) UpdateExpense(userID string, input models.UpdateExpenseInput) (models.Expense, error) {
 	return models.Expense{}, &services.ValidationError{Message: m.msg}
 }
@@ -168,7 +246,9 @@ func (m *mockExpenseServiceUpdateTransitionErr) CreateExpense(userID string, inp
 func (m *mockExpenseServiceUpdateTransitionErr) ListExpenses(userID string) ([]models.Expense, error) {
 	return nil, nil
 }
-func (m *mockExpenseServiceUpdateTransitionErr) DeleteExpense(userID string, id int) error { return nil }
+func (m *mockExpenseServiceUpdateTransitionErr) DeleteExpense(userID string, id int) error {
+	return nil
+}
 func (m *mockExpenseServiceUpdateTransitionErr) UpdateExpense(userID string, input models.UpdateExpenseInput) (models.Expense, error) {
 	return models.Expense{}, services.ErrInvalidStatusTransition
 }
@@ -232,25 +312,101 @@ func TestUpdateExpenseHandler_InvalidJSON(t *testing.T) {
 }
 
 func TestUpdateExpenseHandler_ValidationError(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	router := gin.New()
+	t.Run("金額が0の場合", func(t *testing.T) {
+		gin.SetMode(gin.TestMode)
+		router := gin.New()
 
-	svc := &mockExpenseServiceUpdateValidationErr{msg: "amount must be greater than 0"}
-	NewExpenseHandler(router, svc)
+		called := false
+		amount := 0
+		svc := &expenseServiceMock{
+			UpdateExpenseFunc: func(userID string, input models.UpdateExpenseInput) (models.Expense, error) {
+				called = true
+				require.NotNil(t, input.Amount)
+				require.Equal(t, 0, *input.Amount)
+				return models.Expense{}, &services.ValidationError{Message: "amount must be greater than 0"}
+			},
+		}
+		NewExpenseHandler(router, svc)
 
-	body := `{"amount":0,"category_id":2,"memo":"x","spent_at":"2025-01-01"}`
-	req := httptest.NewRequest(http.MethodPut, "/expenses/1", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
+		body := fmt.Sprintf(`{"amount":%d,"category_id":2,"memo":"x","spent_at":"2025-01-01"}`, amount)
+		req := httptest.NewRequest(http.MethodPut, "/expenses/1", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
 
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
 
-	// Note: Gin binding may fail for amount=0 because pointer is required.
-	// Use valid body to ensure service-level validation can be exercised.
-	// For simplicity here, we still assert 400, whether from binding or service.
-	require.Equal(t, http.StatusBadRequest, w.Code)
-	var resp map[string]string
-	_ = json.Unmarshal(w.Body.Bytes(), &resp)
+		require.True(t, called, "UpdateExpenseFunc should be called")
+		require.Equal(t, http.StatusBadRequest, w.Code)
+
+		var resp map[string]string
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		require.NoError(t, err)
+		require.Equal(t, "amount must be greater than 0", resp["error"])
+	})
+
+	t.Run("金額が負数の場合", func(t *testing.T) {
+		gin.SetMode(gin.TestMode)
+		router := gin.New()
+
+		called := false
+		amount := -50
+		svc := &expenseServiceMock{
+			UpdateExpenseFunc: func(userID string, input models.UpdateExpenseInput) (models.Expense, error) {
+				called = true
+				require.NotNil(t, input.Amount)
+				require.Equal(t, -50, *input.Amount)
+				return models.Expense{}, &services.ValidationError{Message: "amount must be greater than 0"}
+			},
+		}
+		NewExpenseHandler(router, svc)
+
+		body := fmt.Sprintf(`{"amount":%d,"category_id":2,"memo":"x","spent_at":"2025-01-01"}`, amount)
+		req := httptest.NewRequest(http.MethodPut, "/expenses/1", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		require.True(t, called, "UpdateExpenseFunc should be called")
+		require.Equal(t, http.StatusBadRequest, w.Code)
+
+		var resp map[string]string
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		require.NoError(t, err)
+		require.Equal(t, "amount must be greater than 0", resp["error"])
+	})
+
+	t.Run("金額が上限を超える場合", func(t *testing.T) {
+		gin.SetMode(gin.TestMode)
+		router := gin.New()
+
+		called := false
+		amount := 1000000001
+		svc := &expenseServiceMock{
+			UpdateExpenseFunc: func(userID string, input models.UpdateExpenseInput) (models.Expense, error) {
+				called = true
+				require.NotNil(t, input.Amount)
+				require.Equal(t, 1000000001, *input.Amount)
+				return models.Expense{}, &services.ValidationError{Message: "amount exceeds maximum allowed"}
+			},
+		}
+		NewExpenseHandler(router, svc)
+
+		body := fmt.Sprintf(`{"amount":%d,"category_id":2,"memo":"x","spent_at":"2025-01-01"}`, amount)
+		req := httptest.NewRequest(http.MethodPut, "/expenses/1", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		require.True(t, called, "UpdateExpenseFunc should be called")
+		require.Equal(t, http.StatusBadRequest, w.Code)
+
+		var resp map[string]string
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		require.NoError(t, err)
+		require.Equal(t, "amount exceeds maximum allowed", resp["error"])
+	})
 }
 
 func TestUpdateExpenseHandler_StatusTransitionConflict(t *testing.T) {
@@ -348,7 +504,9 @@ func TestDeleteExpenseHandler_ValidationError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 
-	svc := &expenseServiceMock{DeleteExpenseFunc: func(userID string, id int) error { return &services.ValidationError{Message: "cannot delete planned expense"} }}
+	svc := &expenseServiceMock{DeleteExpenseFunc: func(userID string, id int) error {
+		return &services.ValidationError{Message: "cannot delete planned expense"}
+	}}
 	NewExpenseHandler(router, svc)
 
 	req := httptest.NewRequest(http.MethodDelete, "/expenses/10", nil)
@@ -466,10 +624,12 @@ func TestUpdateExpenseHandler_Cases(t *testing.T) {
 			wantStatus: http.StatusInternalServerError,
 		},
 		{
-			name:       "invalid id",
-			path:       "/expenses/abc",
-			body:       `{"amount":100,"category_id":1,"memo":"x","spent_at":"2025-01-01"}`,
-			mockUpdate: func(userID string, in models.UpdateExpenseInput) (models.Expense, error) { return models.Expense{}, nil },
+			name: "invalid id",
+			path: "/expenses/abc",
+			body: `{"amount":100,"category_id":1,"memo":"x","spent_at":"2025-01-01"}`,
+			mockUpdate: func(userID string, in models.UpdateExpenseInput) (models.Expense, error) {
+				return models.Expense{}, nil
+			},
 			wantStatus: http.StatusBadRequest,
 		},
 	}
