@@ -32,12 +32,15 @@ func (s *fixedCostService) ListFixedCosts(ctx context.Context, userID string) ([
 }
 
 func (s *fixedCostService) UpdateFixedCost(ctx context.Context, userID string, id int, name string, amount int) (models.FixedCost, error) {
+	// 名前を正規化（前後の空白を除去）
+	name = strings.TrimSpace(name)
+
 	// バリデーション
 	if err := validateFixedCostInput(name, amount); err != nil {
 		return models.FixedCost{}, err
 	}
 
-	// 更新実行
+	// 更新実行（トリム済みのnameを使用）
 	if err := s.repo.UpdateFixedCost(ctx, int32(id), userID, name, amount); err != nil {
 		return models.FixedCost{}, err
 	}
@@ -64,8 +67,7 @@ func (s *fixedCostService) DeleteFixedCost(ctx context.Context, userID string, i
 
 // validateFixedCostInput は固定費の入力バリデーションを行います
 func validateFixedCostInput(name string, amount int) error {
-	// 名前チェック
-	name = strings.TrimSpace(name)
+	// 名前チェック（呼び出し側で既にTrimSpaceされていることを前提）
 	if name == "" {
 		return &ValidationError{Message: "name is required"}
 	}

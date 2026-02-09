@@ -133,6 +133,30 @@ func TestCompleteInitialSetup(t *testing.T) {
 			wantCalls:    []string{"begin", "get_user", "create_user", "delete_fixed", "bulk_create", "commit"},
 		},
 		{
+			name:       "固定費名が前後に空白を含む場合トリムされる",
+			income:     300000,
+			savingGoal: 50000,
+			fixedCosts: []models.FixedCostInput{
+				{Name: "  rent  ", Amount: 50000},
+				{Name: "phone", Amount: 6000},
+			},
+			setupMocks: func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *fixedCostRepoMock, calls *[]string) {
+				tm.On("Begin", mock.Anything).Return(tx, nil)
+				ur.On("GetUserByID", mock.Anything, userID).Return(models.User{}, sql.ErrNoRows)
+				ur.On("CreateUser", mock.Anything, userID, 300000, 50000).Return(nil)
+				fr.On("DeleteFixedCostsByUser", mock.Anything, userID).Return(nil)
+				// トリム後の値で呼ばれることを確認
+				trimmedFixedCosts := []models.FixedCostInput{
+					{Name: "rent", Amount: 50000},
+					{Name: "phone", Amount: 6000},
+				}
+				fr.On("BulkCreateFixedCosts", mock.Anything, userID, trimmedFixedCosts).Return(nil)
+				tx.On("Commit").Return(nil)
+			},
+			wantCommit:   true,
+			wantRollback: false,
+		},
+		{
 			name:         "income が 0 以下でエラー",
 			income:       0,
 			savingGoal:   0,
@@ -146,6 +170,33 @@ func TestCompleteInitialSetup(t *testing.T) {
 			income:       100,
 			savingGoal:   0,
 			fixedCosts:   []models.FixedCostInput{{Name: "rent", Amount: 0}},
+			setupMocks:   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *fixedCostRepoMock, calls *[]string) {},
+			wantErr:      true,
+			wantValidate: true,
+		},
+		{
+			name:         "固定費 name が空文字列でエラー",
+			income:       100,
+			savingGoal:   0,
+			fixedCosts:   []models.FixedCostInput{{Name: "", Amount: 10000}},
+			setupMocks:   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *fixedCostRepoMock, calls *[]string) {},
+			wantErr:      true,
+			wantValidate: true,
+		},
+		{
+			name:         "固定費 name が空白のみでエラー",
+			income:       100,
+			savingGoal:   0,
+			fixedCosts:   []models.FixedCostInput{{Name: "   ", Amount: 10000}},
+			setupMocks:   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *fixedCostRepoMock, calls *[]string) {},
+			wantErr:      true,
+			wantValidate: true,
+		},
+		{
+			name:         "固定費 name が長すぎる場合エラー",
+			income:       100,
+			savingGoal:   0,
+			fixedCosts:   []models.FixedCostInput{{Name: string(make([]byte, 101)), Amount: 10000}},
 			setupMocks:   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *fixedCostRepoMock, calls *[]string) {},
 			wantErr:      true,
 			wantValidate: true,
