@@ -15,7 +15,7 @@ export async function submitInitialSetup(
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Failed to submit initial setup: ${res.status} ${text}`);
+    throw new Error(`初期設定の送信に失敗しました: ${res.status} ${text}`);
   }
 
   const data = await res.json();

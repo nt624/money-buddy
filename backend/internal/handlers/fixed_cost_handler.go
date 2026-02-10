@@ -49,7 +49,7 @@ func (h *FixedCostHandler) CreateFixedCost(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": ve.Message})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create fixed cost"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "固定費の作成に失敗しました"})
 		return
 	}
 
@@ -63,7 +63,7 @@ func (h *FixedCostHandler) ListFixedCosts(c *gin.Context) {
 
 	fixedCosts, err := h.service.ListFixedCosts(c.Request.Context(), userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list fixed costs"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "固定費の取得に失敗しました"})
 		return
 	}
 
@@ -85,7 +85,7 @@ func (h *FixedCostHandler) UpdateFixedCost(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDが正しくありません"})
 		return
 	}
 
@@ -109,7 +109,7 @@ func (h *FixedCostHandler) UpdateFixedCost(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": ne.Message})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update fixed cost"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "固定費の更新に失敗しました"})
 		return
 	}
 
@@ -125,7 +125,7 @@ func (h *FixedCostHandler) DeleteFixedCost(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDが正しくありません"})
 		return
 	}
 
@@ -137,7 +137,7 @@ func (h *FixedCostHandler) DeleteFixedCost(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": ne.Message})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete fixed cost"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "固定費の削除に失敗しました"})
 		return
 	}
 

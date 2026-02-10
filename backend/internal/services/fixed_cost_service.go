@@ -102,18 +102,18 @@ func (s *fixedCostService) DeleteFixedCost(ctx context.Context, userID string, i
 func validateFixedCostInput(name string, amount int) error {
 	// 名前チェック（呼び出し側で既にTrimSpaceされていることを前提）
 	if name == "" {
-		return &ValidationError{Message: "name is required"}
+		return &ValidationError{Message: "名前を入力してください"}
 	}
 	if len(name) > FixedCostNameMaxLen {
-		return &ValidationError{Message: "name is too long"}
+		return &ValidationError{Message: "名前は100文字以内で入力してください"}
 	}
 
 	// 金額チェック
 	if amount <= 0 {
-		return &ValidationError{Message: "amount must be greater than 0"}
+		return &ValidationError{Message: "金額は1円以上で入力してください"}
 	}
 	if amount > BusinessMaxAmount {
-		return &ValidationError{Message: "amount exceeds maximum allowed"}
+		return &ValidationError{Message: "金額は10億円以下で入力してください"}
 	}
 
 	return nil

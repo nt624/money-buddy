@@ -9,7 +9,7 @@ export async function getDashboard(): Promise<Dashboard> {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Failed to fetch dashboard: ${res.status} ${text}`);
+    throw new Error(`ダッシュボードの取得に失敗しました: ${res.status} ${text}`);
   }
 
   const data = await res.json();

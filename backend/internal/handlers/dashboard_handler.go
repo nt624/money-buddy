@@ -38,11 +38,11 @@ func (h *DashboardHandler) GetDashboard(c *gin.Context) {
 	if err != nil {
 		// ユーザーが存在しない場合
 		if errors.Is(err, sql.ErrNoRows) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "ユーザーが見つかりません"})
 			return
 		}
 		// その他のエラー
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "サーバーエラーが発生しました"})
 		return
 	}
 

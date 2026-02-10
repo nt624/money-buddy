@@ -41,7 +41,7 @@ func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": ve.Message})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "サーバーエラーが発生しました"})
 		return
 	}
 
@@ -53,7 +53,7 @@ func (h *ExpenseHandler) ListExpenses(c *gin.Context) {
 	userID := DummyUserID
 	expenses, err := h.service.ListExpenses(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list expenses"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "支出の取得に失敗しました"})
 		return
 	}
 
@@ -63,7 +63,7 @@ func (h *ExpenseHandler) ListExpenses(c *gin.Context) {
 func (h *ExpenseHandler) DeleteExpense(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid expense ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "支出IDが正しくありません"})
 		return
 	}
 
@@ -76,7 +76,7 @@ func (h *ExpenseHandler) DeleteExpense(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": ve.Message})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "サーバーエラーが発生しました"})
 		return
 	}
 
@@ -88,7 +88,7 @@ func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 	// Path param ID
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid expense ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "支出IDが正しくありません"})
 		return
 	}
 
@@ -128,11 +128,11 @@ func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 		}
 		// Status transition error -> 409
 		if errors.Is(err, services.ErrInvalidStatusTransition) {
-			c.JSON(http.StatusConflict, gin.H{"error": "invalid status transition"})
+			c.JSON(http.StatusConflict, gin.H{"error": "ステータスの変更ができません（確定済みは予定に戻せません）"})
 			return
 		}
 		// Others -> 500
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "サーバーエラーが発生しました"})
 		return
 	}
 

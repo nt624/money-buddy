@@ -47,7 +47,7 @@ func (h *InitialSetupHandler) CompleteInitialSetup(c *gin.Context) {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": be.Message})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "サーバーエラーが発生しました"})
 		return
 	}
 
