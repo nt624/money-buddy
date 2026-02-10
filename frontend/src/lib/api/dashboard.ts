@@ -9,7 +9,11 @@ export async function getDashboard(): Promise<Dashboard> {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`ダッシュボードの取得に失敗しました: ${res.status} ${text}`);
+    console.error("ダッシュボード取得に失敗しました", {
+      status: res.status,
+      body: text,
+    });
+    throw new Error("ダッシュボードの取得に失敗しました。時間をおいて再度お試しください。");
   }
 
   const data = await res.json();
