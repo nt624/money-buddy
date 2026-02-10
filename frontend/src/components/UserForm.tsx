@@ -62,7 +62,7 @@ export function UserForm({
           value={income}
           onChange={(e) => setIncome(Number(e.target.value))}
           disabled={isSubmitting}
-          min="0"
+          min="1"
           max="1000000000"
           required
           style={{
