@@ -408,7 +408,7 @@ func TestUpdateExpenseHandler_StatusTransitionConflict(t *testing.T) {
 	require.Equal(t, http.StatusConflict, w.Code)
 	var resp map[string]string
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
-	require.Equal(t, "invalid status transition", resp["error"])
+	require.Equal(t, "ステータスの変更ができません（確定済みは予定に戻せません）", resp["error"])
 }
 
 func TestUpdateExpenseHandler_InternalError(t *testing.T) {
@@ -428,7 +428,7 @@ func TestUpdateExpenseHandler_InternalError(t *testing.T) {
 	require.Equal(t, http.StatusInternalServerError, w.Code)
 	var resp map[string]string
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
-	require.Equal(t, "internal server error", resp["error"])
+	require.Equal(t, "サーバーエラーが発生しました", resp["error"])
 }
 
 func TestUpdateExpenseHandler_InvalidID(t *testing.T) {
@@ -448,7 +448,7 @@ func TestUpdateExpenseHandler_InvalidID(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, w.Code)
 	var resp map[string]string
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
-	require.Equal(t, "invalid expense ID", resp["error"])
+	require.Equal(t, "支出IDが正しくありません", resp["error"])
 }
 
 func TestDeleteExpenseHandler_NoContent(t *testing.T) {
@@ -479,7 +479,7 @@ func TestDeleteExpenseHandler_InvalidID(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, w.Code)
 	var resp map[string]string
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
-	require.Equal(t, "invalid expense ID", resp["error"])
+	require.Equal(t, "支出IDが正しくありません", resp["error"])
 }
 
 func TestDeleteExpenseHandler_ValidationError(t *testing.T) {
@@ -516,7 +516,7 @@ func TestDeleteExpenseHandler_NotFoundMapsTo500Currently(t *testing.T) {
 	require.Equal(t, http.StatusInternalServerError, w.Code)
 	var resp map[string]string
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
-	require.Equal(t, "internal server error", resp["error"])
+	require.Equal(t, "サーバーエラーが発生しました", resp["error"])
 }
 
 func TestDeleteExpenseHandler_InternalError(t *testing.T) {
@@ -533,7 +533,7 @@ func TestDeleteExpenseHandler_InternalError(t *testing.T) {
 	require.Equal(t, http.StatusInternalServerError, w.Code)
 	var resp map[string]string
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
-	require.Equal(t, "internal server error", resp["error"])
+	require.Equal(t, "サーバーエラーが発生しました", resp["error"])
 }
 
 // --- PUT /expenses/:id handler tests (table-driven) ---

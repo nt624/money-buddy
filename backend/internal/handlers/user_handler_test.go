@@ -87,7 +87,7 @@ func TestUserHandler_GetCurrentUser_NotFound(t *testing.T) {
 	var resp map[string]string
 	err := json.Unmarshal(w.Body.Bytes(), &resp)
 	require.NoError(t, err)
-	require.Equal(t, "user not found", resp["error"])
+	require.Equal(t, "ユーザーが見つかりません", resp["error"])
 }
 
 func TestUserHandler_GetCurrentUser_RepositoryError(t *testing.T) {
@@ -110,7 +110,7 @@ func TestUserHandler_GetCurrentUser_RepositoryError(t *testing.T) {
 	var resp map[string]string
 	err := json.Unmarshal(w.Body.Bytes(), &resp)
 	require.NoError(t, err)
-	require.Equal(t, "user not found", resp["error"])
+	require.Equal(t, "ユーザーが見つかりません", resp["error"])
 }
 
 func TestUpdateUserSettingsHandler_Success(t *testing.T) {
@@ -293,5 +293,5 @@ func TestUpdateUserSettingsHandler_ServiceError(t *testing.T) {
 	var resp map[string]string
 	err := json.Unmarshal(w.Body.Bytes(), &resp)
 	require.NoError(t, err)
-	require.Equal(t, "failed to update user settings", resp["error"])
+	require.Equal(t, "ユーザー設定の更新に失敗しました", resp["error"])
 }

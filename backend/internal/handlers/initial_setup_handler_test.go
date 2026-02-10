@@ -106,7 +106,7 @@ func TestInitialSetupHandler_BusinessError(t *testing.T) {
 
 	svc := &initialSetupServiceMock{
 		CompleteInitialSetupFunc: func(userID string, income, savingGoal int, fixedCosts []models.FixedCostInput) error {
-			return &services.NotFoundError{Message: "user not found"}
+			return &services.NotFoundError{Message: "ユーザーが見つかりません"}
 		},
 	}
 	NewInitialSetupHandler(router, svc)
@@ -121,7 +121,7 @@ func TestInitialSetupHandler_BusinessError(t *testing.T) {
 	require.Equal(t, http.StatusUnprocessableEntity, w.Code)
 	var resp map[string]string
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
-	require.Equal(t, "user not found", resp["error"])
+	require.Equal(t, "ユーザーが見つかりません", resp["error"])
 }
 
 func TestInitialSetupHandler_InternalError(t *testing.T) {
