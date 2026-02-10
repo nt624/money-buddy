@@ -15,12 +15,14 @@ export async function createExpense(
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(`支出の作成に失敗しました: ${res.status} ${text}`)
+    console.error('支出の作成に失敗しました', { status: res.status, body: text })
+    throw new Error('支出の作成に失敗しました')
   }
 
   const data = await res.json()
   if (!data || !data.expense) {
-    throw new Error(`支出のレスポンスが正しくありません: ${JSON.stringify(data)}`)
+    console.error('支出のレスポンスが正しくありません', { data })
+    throw new Error('支出のレスポンスが正しくありません')
   }
 
   return data.expense
@@ -38,7 +40,8 @@ export async function getExpenses(): Promise<GetExpensesResponse> {
 
   const data = await res.json();
   if (!data || !Array.isArray(data.expenses)) {
-    throw new Error(`支出のレスポンスが正しくありません: ${JSON.stringify(data)}`)
+    console.error('支出のレスポンスが正しくありません', { data })
+    throw new Error('支出のレスポンスが正しくありません')
   }
 
   return data;
@@ -58,12 +61,14 @@ export async function updateExpense(
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(`支出の更新に失敗しました: ${res.status} ${text}`)
+    console.error('支出の更新に失敗しました', { status: res.status, body: text })
+    throw new Error('支出の更新に失敗しました')
   }
 
   const data = await res.json()
   if (!data || !data.expense) {
-    throw new Error(`支出のレスポンスが正しくありません: ${JSON.stringify(data)}`)
+    console.error('支出のレスポンスが正しくありません', { data })
+    throw new Error('支出のレスポンスが正しくありません')
   }
 
   return data.expense
@@ -76,6 +81,7 @@ export async function deleteExpense(id: number): Promise<void> {
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(`支出の削除に失敗しました: ${res.status} ${text}`)
+    console.error('支出の削除に失敗しました', { status: res.status, body: text })
+    throw new Error('支出の削除に失敗しました')
   }
 }

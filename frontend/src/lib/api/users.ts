@@ -19,8 +19,17 @@ export async function getMe(): Promise<User> {
   }
 
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`ユーザー情報の取得に失敗しました: ${res.status} ${text}`);
+    // Try to parse JSON error response from backend
+    try {
+      const errorData = await res.json();
+      if (errorData && typeof errorData.error === 'string') {
+        throw new Error(errorData.error);
+      }
+    } catch (parseError) {
+      // If JSON parsing fails, use generic message
+      console.error('ユーザー情報の取得に失敗しました', { status: res.status, parseError });
+    }
+    throw new Error('ユーザー情報の取得に失敗しました');
   }
 
   const data = await res.json();
