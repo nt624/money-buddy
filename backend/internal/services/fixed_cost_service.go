@@ -72,7 +72,7 @@ func (s *fixedCostService) UpdateFixedCost(ctx context.Context, userID string, i
 		}
 	}
 
-	return models.FixedCost{}, &NotFoundError{Message: "fixed cost not found after update"}
+	return models.FixedCost{}, &NotFoundError{Message: "固定費が見つかりません"}
 }
 
 func (s *fixedCostService) DeleteFixedCost(ctx context.Context, userID string, id int) error {
@@ -91,7 +91,7 @@ func (s *fixedCostService) DeleteFixedCost(ctx context.Context, userID string, i
 	}
 
 	if !found {
-		return &NotFoundError{Message: "fixed cost not found"}
+		return &NotFoundError{Message: "固定費が見つかりません"}
 	}
 
 	// 削除実行

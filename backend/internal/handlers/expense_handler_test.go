@@ -506,7 +506,7 @@ func TestDeleteExpenseHandler_NotFoundMapsTo500Currently(t *testing.T) {
 	router := gin.New()
 
 	// Current handler maps non-ValidationError to 500
-	svc := &expenseServiceMock{DeleteExpenseFunc: func(userID string, id int) error { return &services.NotFoundError{Message: "expense not found"} }}
+	svc := &expenseServiceMock{DeleteExpenseFunc: func(userID string, id int) error { return &services.NotFoundError{Message: "支出が見つかりません"} }}
 	NewExpenseHandler(router, svc)
 
 	req := httptest.NewRequest(http.MethodDelete, "/expenses/9999", nil)

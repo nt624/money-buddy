@@ -30,7 +30,7 @@ export default function Home() {
       await refetchUser() // セットアップ完了後、ユーザー情報を再取得
       refetchDashboard() // ダッシュボードも更新
     } catch (err) {
-      setSetupError(err instanceof Error ? err.message : 'unknown error')
+      setSetupError(err instanceof Error ? err.message : 'エラーが発生しました')
     } finally {
       setSetupSubmitting(false)
     }

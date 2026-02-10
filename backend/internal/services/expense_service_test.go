@@ -125,7 +125,7 @@ func TestCreateExpense_DBErrorMapping(t *testing.T) {
 		wantType string
 		wantMsg  string
 	}{
-		{name: "sql.ErrNoRows の場合は NotFoundError", repoErr: sqlErrNoRows(), wantType: "NotFoundError", wantMsg: "not found"},
+		{name: "sql.ErrNoRows の場合は NotFoundError", repoErr: sqlErrNoRows(), wantType: "NotFoundError", wantMsg: "見つかりません"},
 		{name: "外部キー(category_id)違反は ValidationError", repoErr: errors.New("pq: insert or update on table \"expenses\" violates foreign key constraint \"expenses_category_id_fkey\""), wantType: "ValidationError", wantMsg: "カテゴリが存在しません"},
 		{name: "その他の DB エラーは InternalError", repoErr: errors.New("some db problem"), wantType: "InternalError", wantMsg: "internal error"},
 	}

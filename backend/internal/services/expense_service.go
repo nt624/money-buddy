@@ -104,7 +104,7 @@ func (s *expenseService) CreateExpense(userID string, input models.CreateExpense
 	if err != nil {
 		// sql.ErrNoRows -> NotFoundError
 		if errors.Is(err, sql.ErrNoRows) {
-			return models.Expense{}, &NotFoundError{Message: "expense not found"}
+			return models.Expense{}, &NotFoundError{Message: "支出が見つかりません"}
 		}
 
 		// 外部キー制約（category_id）の検出。
@@ -130,12 +130,12 @@ func (s *expenseService) DeleteExpense(userID string, id int) error {
 	expense, err := s.repo.GetExpenseByID(userID, int32(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return &NotFoundError{Message: "expense not found"}
+			return &NotFoundError{Message: "支出が見つかりません"}
 		}
 		return &InternalError{Message: "internal error"}
 	}
 	if expense == (models.Expense{}) {
-		return &NotFoundError{Message: "expense not found"}
+		return &NotFoundError{Message: "支出が見つかりません"}
 	}
 
 	return s.repo.DeleteExpense(userID, int32(id))
