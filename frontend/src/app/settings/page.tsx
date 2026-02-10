@@ -11,9 +11,8 @@ import { UpdateUserInput } from '@/lib/types/user'
 import Link from 'next/link'
 
 export default function SettingsPage() {
-  const { dashboard, updateUserSettings, isSubmitting: userSubmitting, isLoading: dashboardLoading, error: dashboardError } = useDashboard()
+  const { dashboard, updateUserSettings, isSubmitting: userSubmitting, isLoading: dashboardLoading, error: dashboardError, refetch: refetchDashboard } = useDashboard()
   const { fixedCosts, createFixedCost, updateFixedCost, deleteFixedCost, isSubmitting: fcSubmitting, isLoading: fcLoading, error: fcError } = useFixedCosts()
-  const { refetch: refetchDashboard } = useDashboard({ enabled: false })
   const [editingFixedCost, setEditingFixedCost] = useState<FixedCost | null>(null)
   const [showFixedCostForm, setShowFixedCostForm] = useState(false)
   const [showUserForm, setShowUserForm] = useState(false)
