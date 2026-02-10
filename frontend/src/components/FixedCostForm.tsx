@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { FixedCost, FixedCostInput } from "@/lib/types/fixed-cost";
+import { BUSINESS_MAX_AMOUNT, FIXED_COST_NAME_MAX_LENGTH } from "@/lib/constants";
 import styles from "./FixedCostForm.module.css";
 
 type Props = {
@@ -43,7 +44,7 @@ export function FixedCostForm({
       return;
     }
 
-    if (trimmedName.length > 100) {
+    if (trimmedName.length > FIXED_COST_NAME_MAX_LENGTH) {
       setError("固定費名は100文字以内で入力してください");
       return;
     }
@@ -53,7 +54,7 @@ export function FixedCostForm({
       return;
     }
 
-    if (amountNum > 1000000000) {
+    if (amountNum > BUSINESS_MAX_AMOUNT) {
       setError("金額は10億円以下で入力してください");
       return;
     }
@@ -84,7 +85,7 @@ export function FixedCostForm({
           disabled={isSubmitting}
           className={styles.input}
           placeholder="例: 家賃、光熱費"
-          maxLength={100}
+          maxLength={FIXED_COST_NAME_MAX_LENGTH}
         />
       </div>
 
@@ -101,7 +102,7 @@ export function FixedCostForm({
           className={styles.input}
           placeholder="10000"
           min="1"
-          max="1000000000"
+          max={BUSINESS_MAX_AMOUNT}
         />
       </div>
 

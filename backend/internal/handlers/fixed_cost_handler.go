@@ -25,8 +25,8 @@ func NewFixedCostHandler(r *gin.Engine, service services.FixedCostService) {
 
 // CreateFixedCostRequest は固定費作成のリクエストボディです
 type CreateFixedCostRequest struct {
-	Name   string `json:"name" binding:"required"`
-	Amount int    `json:"amount" binding:"required,gt=0"`
+	Name   string `json:"name"`
+	Amount int    `json:"amount"`
 }
 
 // CreateFixedCost は固定費を作成します
@@ -72,8 +72,8 @@ func (h *FixedCostHandler) ListFixedCosts(c *gin.Context) {
 
 // UpdateFixedCostRequest は固定費更新のリクエストボディです
 type UpdateFixedCostRequest struct {
-	Name   string `json:"name" binding:"required"`
-	Amount int    `json:"amount" binding:"required,gt=0"`
+	Name   string `json:"name"`
+	Amount int    `json:"amount"`
 }
 
 // UpdateFixedCost は固定費を更新します
