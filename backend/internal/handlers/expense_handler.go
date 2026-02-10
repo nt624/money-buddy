@@ -94,10 +94,10 @@ func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 
 	// Bind JSON body without ID (ID comes from path)
 	type updateBody struct {
-		Amount     *int   `json:"amount" binding:"required"`
-		CategoryID *int   `json:"category_id" binding:"required"`
+		Amount     *int   `json:"amount"`
+		CategoryID *int   `json:"category_id"`
 		Memo       string `json:"memo"`
-		SpentAt    string `json:"spent_at" binding:"required"`
+		SpentAt    string `json:"spent_at"`
 		Status     string `json:"status"`
 	}
 	var body updateBody

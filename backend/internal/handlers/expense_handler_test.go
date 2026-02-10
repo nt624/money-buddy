@@ -293,24 +293,6 @@ func TestUpdateExpenseHandler_Success(t *testing.T) {
 	require.Equal(t, "confirmed", exp.Status)
 }
 
-func TestUpdateExpenseHandler_InvalidJSON(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	router := gin.New()
-
-	svc := &mockExpenseServiceUpdateSuccess{}
-	NewExpenseHandler(router, svc)
-
-	// Missing required amount/category_id/spent_at
-	body := `{"memo":"x"}`
-	req := httptest.NewRequest(http.MethodPut, "/expenses/1", strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
-
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	require.Equal(t, http.StatusBadRequest, w.Code)
-}
-
 func TestUpdateExpenseHandler_ValidationError(t *testing.T) {
 	t.Run("金額が0の場合", func(t *testing.T) {
 		gin.SetMode(gin.TestMode)
@@ -588,11 +570,11 @@ func TestUpdateExpenseHandler_Cases(t *testing.T) {
 			},
 		},
 		{
-			name: "invalid json",
+			name: "missing required fields",
 			path: "/expenses/1",
 			body: `{"memo":"x"}`,
 			mockUpdate: func(userID string, in models.UpdateExpenseInput) (models.Expense, error) {
-				return models.Expense{}, nil
+				return models.Expense{}, &services.ValidationError{Message: "amount must be provided"}
 			},
 			wantStatus: http.StatusBadRequest,
 		},
