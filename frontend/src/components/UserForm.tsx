@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { UpdateUserInput } from '@/lib/types/user'
+import { BUSINESS_MAX_AMOUNT } from '@/lib/constants'
 
 type UserFormProps = {
   initialIncome?: number
@@ -63,7 +64,7 @@ export function UserForm({
           onChange={(e) => setIncome(Number(e.target.value))}
           disabled={isSubmitting}
           min="1"
-          max="1000000000"
+          max={BUSINESS_MAX_AMOUNT}
           required
           style={{
             width: '100%',
@@ -86,7 +87,7 @@ export function UserForm({
           onChange={(e) => setSavingGoal(Number(e.target.value))}
           disabled={isSubmitting}
           min="0"
-          max="1000000000"
+          max={BUSINESS_MAX_AMOUNT}
           required
           style={{
             width: '100%',

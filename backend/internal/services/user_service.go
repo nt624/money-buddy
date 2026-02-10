@@ -35,7 +35,7 @@ func (s *userService) UpdateUserSettings(ctx context.Context, userID string, inc
 	if income <= 0 {
 		return &ValidationError{Message: "income must be greater than 0"}
 	}
-	if income > 1000000000 {
+	if income > BusinessMaxAmount {
 		return &ValidationError{Message: "income must be 10億 or less"}
 	}
 
@@ -43,7 +43,7 @@ func (s *userService) UpdateUserSettings(ctx context.Context, userID string, inc
 	if savingGoal < 0 {
 		return &ValidationError{Message: "saving goal must be greater than or equal to 0"}
 	}
-	if savingGoal > 1000000000 {
+	if savingGoal > BusinessMaxAmount {
 		return &ValidationError{Message: "saving goal must be 10億 or less"}
 	}
 
