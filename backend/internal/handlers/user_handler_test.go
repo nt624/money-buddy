@@ -167,6 +167,54 @@ func TestUpdateUserSettingsHandler_InvalidJSON(t *testing.T) {
 	require.False(t, called, "service should not be called for invalid JSON")
 }
 
+func TestUpdateUserSettingsHandler_MissingFields(t *testing.T) {
+	testCases := []struct {
+		name         string
+		body         string
+		errorMessage string
+	}{
+		{
+			name:         "missing income",
+			body:         `{"saving_goal": 50000}`,
+			errorMessage: "income is required",
+		},
+		{
+			name:         "missing saving_goal",
+			body:         `{"income": 300000}`,
+			errorMessage: "saving_goal is required",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			gin.SetMode(gin.TestMode)
+			router := gin.New()
+
+			called := false
+			svc := &userServiceMock{
+				UpdateUserSettingsFunc: func(ctx context.Context, userID string, income int, savingGoal int) error {
+					called = true
+					return nil
+				},
+			}
+			NewUserHandler(router, svc)
+
+			req := httptest.NewRequest(http.MethodPut, "/user/me", strings.NewReader(tc.body))
+			req.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			require.Equal(t, http.StatusBadRequest, w.Code)
+			require.False(t, called, "service should not be called")
+
+			var resp map[string]string
+			err := json.Unmarshal(w.Body.Bytes(), &resp)
+			require.NoError(t, err)
+			require.Equal(t, tc.errorMessage, resp["error"])
+		})
+	}
+}
+
 func TestUpdateUserSettingsHandler_ValidationError(t *testing.T) {
 	testCases := []struct {
 		name         string

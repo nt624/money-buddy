@@ -33,8 +33,8 @@ func (h *UserHandler) GetCurrentUser(c *gin.Context) {
 }
 
 type UpdateUserSettingsRequest struct {
-	Income     int `json:"income"`
-	SavingGoal int `json:"saving_goal"`
+	Income     *int `json:"income"`
+	SavingGoal *int `json:"saving_goal"`
 }
 
 func (h *UserHandler) UpdateUserSettings(c *gin.Context) {
@@ -47,7 +47,17 @@ func (h *UserHandler) UpdateUserSettings(c *gin.Context) {
 		return
 	}
 
-	err := h.service.UpdateUserSettings(c.Request.Context(), userID, req.Income, req.SavingGoal)
+	// 必須フィールドのチェック
+	if req.Income == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "income is required"})
+		return
+	}
+	if req.SavingGoal == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "saving_goal is required"})
+		return
+	}
+
+	err := h.service.UpdateUserSettings(c.Request.Context(), userID, *req.Income, *req.SavingGoal)
 	if err != nil {
 		var validationErr *services.ValidationError
 		if errors.As(err, &validationErr) {
