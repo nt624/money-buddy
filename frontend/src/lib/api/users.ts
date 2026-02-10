@@ -37,7 +37,29 @@ export async function updateUser(input: UpdateUserInput): Promise<void> {
   });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ error: "不明なエラー" }));
-    throw new Error(error.error || `ユーザー情報の更新に失敗しました: ${res.status}`);
+    let errorMessage = "ユーザー情報の更新に失敗しました";
+    let errorDetail: string | undefined;
+
+    try {
+      const data: unknown = await res.json();
+      if (data && typeof (data as any).error === "string") {
+        errorDetail = (data as any).error;
+      }
+    } catch (parseError) {
+      // JSON パースに失敗した場合も、ステータス情報は必ず保持する
+      console.error("updateUser: failed to parse error response JSON", {
+        status: res.status,
+        error: parseError,
+      });
+    }
+
+    if (errorDetail) {
+      errorMessage += `: ${errorDetail}`;
+    }
+
+    // 開発者向けにステータスコードを必ず含める
+    errorMessage += ` (status: ${res.status})`;
+
+    throw new Error(errorMessage);
   }
 }
