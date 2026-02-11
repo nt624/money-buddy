@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"money-buddy-backend/internal/middleware"
 	"money-buddy-backend/internal/services"
 )
 
@@ -31,8 +32,7 @@ func NewDashboardHandler(r gin.IRouter, service services.DashboardService) {
 }
 
 func (h *DashboardHandler) GetDashboard(c *gin.Context) {
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID := middleware.GetUserID(c)
 
 	dashboard, err := h.service.GetDashboard(c.Request.Context(), userID)
 	if err != nil {

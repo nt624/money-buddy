@@ -1,7 +1,12 @@
 import { Category } from "@/lib/types/category";
+import { API_BASE_URL, getAuthHeaders } from "./client";
 
 export async function getCategories(): Promise<Category[]> {
-  const res = await fetch("http://localhost:8080/categories")
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${API_BASE_URL}/categories`, {
+    method: "GET",
+    headers,
+  })
 
   if (!res.ok) {
     const text = await res.text()

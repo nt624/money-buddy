@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"money-buddy-backend/internal/middleware"
 	"money-buddy-backend/internal/models"
 	"money-buddy-backend/internal/services"
 )
@@ -32,8 +33,7 @@ func (h *InitialSetupHandler) CompleteInitialSetup(c *gin.Context) {
 		return
 	}
 
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID := middleware.GetUserID(c)
 
 	err := h.service.CompleteInitialSetup(c.Request.Context(), userID, req.Income, req.SavingGoal, req.FixedCosts)
 	if err != nil {

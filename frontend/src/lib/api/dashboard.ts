@@ -1,10 +1,11 @@
 import { Dashboard } from "@/lib/types/dashboard";
-
-const API_BASE_URL = "http://localhost:8080";
+import { API_BASE_URL, getAuthHeaders } from "./client";
 
 export async function getDashboard(): Promise<Dashboard> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/dashboard`, {
     method: "GET",
+    headers,
   });
 
   if (!res.ok) {

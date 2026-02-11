@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"money-buddy-backend/internal/middleware"
 	"money-buddy-backend/internal/services"
 )
 
@@ -31,8 +32,7 @@ type CreateFixedCostRequest struct {
 
 // CreateFixedCost は固定費を作成します
 func (h *FixedCostHandler) CreateFixedCost(c *gin.Context) {
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID := middleware.GetUserID(c)
 
 	// リクエストボディ取得
 	var req CreateFixedCostRequest
@@ -58,8 +58,7 @@ func (h *FixedCostHandler) CreateFixedCost(c *gin.Context) {
 
 // ListFixedCosts は固定費一覧を取得します
 func (h *FixedCostHandler) ListFixedCosts(c *gin.Context) {
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID := middleware.GetUserID(c)
 
 	fixedCosts, err := h.service.ListFixedCosts(c.Request.Context(), userID)
 	if err != nil {
@@ -78,8 +77,7 @@ type UpdateFixedCostRequest struct {
 
 // UpdateFixedCost は固定費を更新します
 func (h *FixedCostHandler) UpdateFixedCost(c *gin.Context) {
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID := middleware.GetUserID(c)
 
 	// IDパラメータ取得
 	idStr := c.Param("id")
@@ -118,8 +116,7 @@ func (h *FixedCostHandler) UpdateFixedCost(c *gin.Context) {
 
 // DeleteFixedCost は固定費を削除します
 func (h *FixedCostHandler) DeleteFixedCost(c *gin.Context) {
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID := middleware.GetUserID(c)
 
 	// IDパラメータ取得
 	idStr := c.Param("id")

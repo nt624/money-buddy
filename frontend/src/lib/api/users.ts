@@ -1,6 +1,5 @@
 import { User, UpdateUserInput } from "@/lib/types/user";
-
-const API_BASE_URL = "http://localhost:8080";
+import { API_BASE_URL, getAuthHeaders } from "./client";
 
 export class UserNotFoundError extends Error {
   constructor(message: string = "User not found") {
@@ -10,8 +9,10 @@ export class UserNotFoundError extends Error {
 }
 
 export async function getMe(): Promise<User> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/user/me`, {
     method: "GET",
+    headers,
   });
 
   if (res.status === 404) {
@@ -41,11 +42,10 @@ export async function getMe(): Promise<User> {
 }
 
 export async function updateUser(input: UpdateUserInput): Promise<void> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/user/me`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify(input),
   });
 

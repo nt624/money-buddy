@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"money-buddy-backend/internal/middleware"
 	"money-buddy-backend/internal/services"
 )
 
@@ -20,8 +21,7 @@ func NewUserHandler(r gin.IRouter, service services.UserService) {
 }
 
 func (h *UserHandler) GetCurrentUser(c *gin.Context) {
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID := middleware.GetUserID(c)
 
 	user, err := h.service.GetUserByID(c.Request.Context(), userID)
 	if err != nil {
@@ -38,8 +38,7 @@ type UpdateUserSettingsRequest struct {
 }
 
 func (h *UserHandler) UpdateUserSettings(c *gin.Context) {
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID := middleware.GetUserID(c)
 
 	var req UpdateUserSettingsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

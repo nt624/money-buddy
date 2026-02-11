@@ -6,17 +6,15 @@ import {
   GetFixedCostsResponse,
   UpdateFixedCostResponse,
 } from "@/lib/types/fixed-cost";
-
-const API_BASE_URL = "http://localhost:8080";
+import { API_BASE_URL, getAuthHeaders } from "./client";
 
 export async function createFixedCost(
   input: CreateFixedCostInput
 ): Promise<FixedCost> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/fixed-costs`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify(input),
   });
 
@@ -36,8 +34,10 @@ export async function createFixedCost(
 }
 
 export async function getFixedCosts(): Promise<GetFixedCostsResponse> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/fixed-costs`, {
     method: "GET",
+    headers,
   });
 
   if (!res.ok) {
@@ -59,11 +59,10 @@ export async function updateFixedCost(
   id: number,
   input: UpdateFixedCostInput
 ): Promise<FixedCost> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/fixed-costs/${id}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify(input),
   });
 
@@ -83,8 +82,10 @@ export async function updateFixedCost(
 }
 
 export async function deleteFixedCost(id: number): Promise<void> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/fixed-costs/${id}`, {
     method: "DELETE",
+    headers,
   });
 
   if (!res.ok) {

@@ -1,15 +1,13 @@
 import { CreateExpenseInput, UpdateExpenseInput, Expense, GetExpensesResponse } from "@/lib/types/expense";
-
-const API_BASE_URL = "http://localhost:8080";
+import { API_BASE_URL, getAuthHeaders } from "./client";
 
 export async function createExpense(
   input: CreateExpenseInput
 ): Promise<Expense> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/expenses`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify(input),
   })
 
@@ -32,8 +30,10 @@ export async function createExpense(
 
 
 export async function getExpenses(): Promise<GetExpensesResponse> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/expenses`, {
     method: "GET",
+    headers,
   });
 
   if (!res.ok) {
@@ -55,11 +55,10 @@ export async function updateExpense(
   id: number,
   input: UpdateExpenseInput
 ): Promise<Expense> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/expenses/${id}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify(input),
   })
 
@@ -81,8 +80,10 @@ export async function updateExpense(
 }
 
 export async function deleteExpense(id: number): Promise<void> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/expenses/${id}`, {
     method: 'DELETE',
+    headers,
   })
 
   if (!res.ok) {

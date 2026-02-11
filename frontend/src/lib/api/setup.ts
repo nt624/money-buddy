@@ -1,15 +1,13 @@
 import { InitialSetupRequest, InitialSetupResponse } from "@/lib/types/setup";
-
-const API_BASE_URL = "http://localhost:8080";
+import { API_BASE_URL, getAuthHeaders } from "./client";
 
 export async function submitInitialSetup(
   input: InitialSetupRequest
 ): Promise<InitialSetupResponse> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/setup`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify(input),
   });
 

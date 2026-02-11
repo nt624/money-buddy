@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"money-buddy-backend/internal/middleware"
 	"money-buddy-backend/internal/models"
 	"money-buddy-backend/internal/services"
 	"strconv"
@@ -32,8 +33,7 @@ func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 		return
 	}
 
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID := middleware.GetUserID(c)
 	expense, err := h.service.CreateExpense(userID, input)
 	if err != nil {
 		var ve *services.ValidationError
@@ -49,8 +49,7 @@ func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 }
 
 func (h *ExpenseHandler) ListExpenses(c *gin.Context) {
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID := middleware.GetUserID(c)
 	expenses, err := h.service.ListExpenses(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "支出の取得に失敗しました"})
@@ -67,8 +66,7 @@ func (h *ExpenseHandler) DeleteExpense(c *gin.Context) {
 		return
 	}
 
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID := middleware.GetUserID(c)
 	err = h.service.DeleteExpense(userID, int(id))
 	if err != nil {
 		var ve *services.ValidationError
@@ -116,8 +114,7 @@ func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 		Status:     body.Status,
 	}
 
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID := middleware.GetUserID(c)
 	exp, err := h.service.UpdateExpense(userID, input)
 	if err != nil {
 		// Validation errors -> 400
