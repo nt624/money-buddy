@@ -103,16 +103,16 @@ export default function Home() {
     <Container className="py-6 space-y-6" maxWidth="lg">
       {/* User Info Card */}
       {user && (
-        <section className="bg-card border border-border rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-foreground mb-4">基本情報</h2>
-          <div className="grid grid-cols-2 gap-4">
+        <section className="bg-card border border-border rounded-lg shadow-sm p-4 sm:p-6">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">基本情報</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-1">
-              <div className="text-sm text-muted-foreground">月収</div>
-              <div className="text-xl font-semibold text-foreground">¥{user.income.toLocaleString()}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">月収</div>
+              <div className="text-lg sm:text-xl font-semibold text-foreground">¥{user.income.toLocaleString()}</div>
             </div>
             <div className="space-y-1">
-              <div className="text-sm text-muted-foreground">貯金目標</div>
-              <div className="text-xl font-semibold text-foreground">¥{user.saving_goal.toLocaleString()}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">貯金目標</div>
+              <div className="text-lg sm:text-xl font-semibold text-foreground">¥{user.saving_goal.toLocaleString()}</div>
             </div>
           </div>
         </section>

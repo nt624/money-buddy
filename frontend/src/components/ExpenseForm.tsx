@@ -92,9 +92,9 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
     }
 
     return (
-        <form onSubmit={handleSubmit} className="w-full max-w-lg mx-auto p-4 bg-card rounded-lg border border-border shadow-sm space-y-4">
+        <form onSubmit={handleSubmit} className="w-full max-w-lg mx-auto p-3 sm:p-4 bg-card rounded-lg border border-border shadow-sm space-y-3 sm:space-y-4">
             <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground">
+                <label className="block text-xs sm:text-sm font-medium text-foreground">
                     金額
                     <input
                         className="mt-1 block w-full px-3 py-2 bg-input border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
@@ -103,11 +103,11 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
                         onChange={(e) => setAmount(e.target.value)}
                     />
                 </label>
-                {errors.amount && <p className="text-sm text-danger">{errors.amount}</p>}
+                {errors.amount && <p className="text-xs sm:text-sm text-danger">{errors.amount}</p>}
             </div>
 
             <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground">
+                <label className="block text-xs sm:text-sm font-medium text-foreground">
                     カテゴリ
                     <select
                         className="mt-1 block w-full px-3 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
@@ -125,7 +125,7 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
             </div>
 
             <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground">
+                <label className="block text-xs sm:text-sm font-medium text-foreground">
                     メモ
                     <input
                         className="mt-1 block w-full px-3 py-2 bg-input border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
@@ -137,7 +137,7 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
             </div>
 
             <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground">
+                <label className="block text-xs sm:text-sm font-medium text-foreground">
                     日付
                     <input
                         className="mt-1 block w-full px-3 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
@@ -147,14 +147,14 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
                     />
                 </label>
                 {errors.spent_at && (
-                    <p className="text-sm text-danger">{errors.spent_at}</p>
+                    <p className="text-xs sm:text-sm text-danger">{errors.spent_at}</p>
                 )}
             </div>
 
             <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground">ステータス</label>
-                <div className="flex gap-4">
-                    <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
+                <label className="block text-xs sm:text-sm font-medium text-foreground">ステータス</label>
+                <div className="flex gap-3 sm:gap-4">
+                    <label className="flex items-center gap-2 text-xs sm:text-sm text-foreground cursor-pointer">
                         <input
                             className="w-4 h-4 text-primary focus:ring-2 focus:ring-ring"
                             type="radio"
@@ -165,7 +165,7 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
                         />
                         確定
                     </label>
-                    <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
+                    <label className="flex items-center gap-2 text-xs sm:text-sm text-foreground cursor-pointer">
                         <input
                             className="w-4 h-4 text-primary focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
                             type="radio"
@@ -178,10 +178,10 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
                         予定
                     </label>
                 </div>
-                {errors.status && <p className="text-sm text-danger">{errors.status}</p>}
+                {errors.status && <p className="text-xs sm:text-sm text-danger">{errors.status}</p>}
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
                 <button 
                     className="flex-1 px-4 py-2 text-sm font-medium rounded bg-primary hover:bg-primary-hover text-primary-foreground disabled:opacity-60 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-ring" 
                     type="submit" 

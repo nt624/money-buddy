@@ -37,48 +37,48 @@ export function Dashboard({ dashboard }: DashboardProps) {
   return (
     <div className="w-full max-w-5xl mx-auto space-y-6">
       {/* Remaining Section */}
-      <section className="bg-card border border-border rounded-lg shadow-sm p-6 text-center">
-        <h2 className="text-lg font-semibold text-foreground mb-4">今月あといくら使える？</h2>
-        <div className={`text-5xl font-bold my-4 ${remainingColorClasses[colorClass as keyof typeof remainingColorClasses]}`}>
+      <section className="bg-card border border-border rounded-lg shadow-sm p-4 sm:p-6 text-center">
+        <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">今月あといくら使える？</h2>
+        <div className={`text-3xl sm:text-4xl lg:text-5xl font-bold my-3 sm:my-4 ${remainingColorClasses[colorClass as keyof typeof remainingColorClasses]}`}>
           ¥{formatAmount(dashboard.remaining)}
         </div>
-        <p className="text-sm text-muted-foreground">残り使える金額</p>
+        <p className="text-xs sm:text-sm text-muted-foreground">残り使える金額</p>
       </section>
 
       {/* Summary Grid */}
-      <section className="bg-card border border-border rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">月次サマリー</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <section className="bg-card border border-border rounded-lg shadow-sm p-4 sm:p-6">
+        <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">月次サマリー</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">収入</div>
-            <div className="text-xl font-semibold text-foreground">¥{formatAmount(dashboard.income)}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">収入</div>
+            <div className="text-lg sm:text-xl font-semibold text-foreground">¥{formatAmount(dashboard.income)}</div>
           </div>
           <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">貯金目標</div>
-            <div className="text-xl font-semibold text-foreground">¥{formatAmount(dashboard.saving_goal)}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">貯金目標</div>
+            <div className="text-lg sm:text-xl font-semibold text-foreground">¥{formatAmount(dashboard.saving_goal)}</div>
           </div>
           <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">固定費</div>
-            <div className="text-xl font-semibold text-foreground">¥{formatAmount(dashboard.fixed_costs)}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">固定費</div>
+            <div className="text-lg sm:text-xl font-semibold text-foreground">¥{formatAmount(dashboard.fixed_costs)}</div>
           </div>
           <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">変動費</div>
-            <div className="text-xl font-semibold text-foreground">¥{formatAmount(dashboard.variable_budget)}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">変動費</div>
+            <div className="text-lg sm:text-xl font-semibold text-foreground">¥{formatAmount(dashboard.variable_budget)}</div>
           </div>
         </div>
       </section>
 
       {/* Expenses Grid */}
-      <section className="bg-card border border-border rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">今月の支出</h2>
-        <div className="grid grid-cols-2 gap-4">
+      <section className="bg-card border border-border rounded-lg shadow-sm p-4 sm:p-6">
+        <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">今月の支出</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">確定支出</div>
-            <div className="text-xl font-semibold text-foreground">¥{formatAmount(dashboard.confirmed_expenses)}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">確定支出</div>
+            <div className="text-lg sm:text-xl font-semibold text-foreground">¥{formatAmount(dashboard.confirmed_expenses)}</div>
           </div>
           <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">予定支出</div>
-            <div className="text-xl font-semibold text-foreground">¥{formatAmount(dashboard.planned_expenses)}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">予定支出</div>
+            <div className="text-lg sm:text-xl font-semibold text-foreground">¥{formatAmount(dashboard.planned_expenses)}</div>
           </div>
         </div>
       </section>

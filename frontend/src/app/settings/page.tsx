@@ -87,9 +87,9 @@ export default function SettingsPage() {
       <h1 className="text-2xl sm:text-3xl font-bold text-foreground">設定</h1>
 
       {/* 基本情報セクション */}
-      <section className="bg-card border border-border rounded-lg shadow-sm p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-foreground">基本情報</h2>
+      <section className="bg-card border border-border rounded-lg shadow-sm p-4 sm:p-6">
+        <div className="flex justify-between items-center mb-3 sm:mb-4">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground">基本情報</h2>
           {!showUserForm && (
             <Button 
               onClick={() => setShowUserForm(true)}
@@ -104,14 +104,14 @@ export default function SettingsPage() {
         {dashboardLoading && <p className="text-muted-foreground">読み込み中...</p>}
 
         {!dashboardLoading && !showUserForm && dashboard && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-1">
-              <div className="text-sm text-muted-foreground">月収（手取り）</div>
-              <div className="text-xl font-semibold text-foreground">¥{dashboard.income.toLocaleString()}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">月収（手取り）</div>
+              <div className="text-lg sm:text-xl font-semibold text-foreground">¥{dashboard.income.toLocaleString()}</div>
             </div>
             <div className="space-y-1">
-              <div className="text-sm text-muted-foreground">貯金目標額（月）</div>
-              <div className="text-xl font-semibold text-foreground">¥{dashboard.saving_goal.toLocaleString()}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">貯金目標額（月）</div>
+              <div className="text-lg sm:text-xl font-semibold text-foreground">¥{dashboard.saving_goal.toLocaleString()}</div>
             </div>
           </div>
         )}
@@ -129,9 +129,9 @@ export default function SettingsPage() {
       </section>
 
       {/* 固定費セクション */}
-      <section className="bg-card border border-border rounded-lg shadow-sm p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-foreground">固定費</h2>
+      <section className="bg-card border border-border rounded-lg shadow-sm p-4 sm:p-6">
+        <div className="flex justify-between items-center mb-3 sm:mb-4">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground">固定費</h2>
           {!showFixedCostForm && (
             <Button 
               onClick={() => setShowFixedCostForm(true)}
