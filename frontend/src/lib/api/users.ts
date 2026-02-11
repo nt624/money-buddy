@@ -19,16 +19,20 @@ export async function getMe(): Promise<User> {
   }
 
   if (!res.ok) {
-    // Try to parse JSON error response from backend
+    // 開発者向けログ: 詳細なエラー情報を出力
     try {
       const errorData = await res.json();
-      if (errorData && typeof errorData.error === 'string') {
-        throw new Error(errorData.error);
-      }
+      console.error('[Dev] ユーザー情報の取得に失敗しました', { 
+        status: res.status, 
+        error: errorData 
+      });
     } catch (parseError) {
-      // If JSON parsing fails, use generic message
-      console.error('ユーザー情報の取得に失敗しました', { status: res.status, parseError });
+      console.error('[Dev] ユーザー情報の取得に失敗しました（JSON parse error）', { 
+        status: res.status, 
+        parseError 
+      });
     }
+    // ユーザー向けエラー: 固定文言のみ
     throw new Error('ユーザー情報の取得に失敗しました');
   }
 
@@ -46,29 +50,21 @@ export async function updateUser(input: UpdateUserInput): Promise<void> {
   });
 
   if (!res.ok) {
-    let errorMessage = "ユーザー情報の更新に失敗しました";
-    let errorDetail: string | undefined;
-
+    // 開発者向けログ: 詳細なエラー情報を出力
     try {
       const data: unknown = await res.json();
-      if (data && typeof (data as any).error === "string") {
-        errorDetail = (data as any).error;
-      }
+      console.error('[Dev] ユーザー情報の更新に失敗しました', {
+        status: res.status,
+        error: data
+      });
     } catch (parseError) {
-      // JSON パースに失敗した場合も、ステータス情報は必ず保持する
-      console.error("updateUser: failed to parse error response JSON", {
+      console.error('[Dev] ユーザー情報の更新に失敗しました（JSON parse error）', {
         status: res.status,
         error: parseError,
       });
     }
 
-    if (errorDetail) {
-      errorMessage += `: ${errorDetail}`;
-    }
-
-    // 開発者向けにステータスコードを必ず含める
-    errorMessage += ` (status: ${res.status})`;
-
-    throw new Error(errorMessage);
+    // ユーザー向けエラー: 固定文言のみ
+    throw new Error('ユーザー情報の更新に失敗しました');
   }
 }

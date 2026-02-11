@@ -21,7 +21,9 @@ export async function createExpense(
 
   const data = await res.json()
   if (!data || !data.expense) {
-    console.error('支出のレスポンスが正しくありません', { data })
+    // 開発者向けログ: 詳細なレスポンス内容を出力
+    console.error('[Dev] 支出のレスポンスが正しくありません', { data })
+    // ユーザー向けエラー: 固定文言のみ
     throw new Error('支出のレスポンスが正しくありません')
   }
 
@@ -40,7 +42,9 @@ export async function getExpenses(): Promise<GetExpensesResponse> {
 
   const data = await res.json();
   if (!data || !Array.isArray(data.expenses)) {
-    console.error('支出のレスポンスが正しくありません', { data })
+    // 開発者向けログ: 詳細なレスポンス内容を出力
+    console.error('[Dev] 支出のレスポンスが正しくありません', { data })
+    // ユーザー向けエラー: 固定文言のみ
     throw new Error('支出のレスポンスが正しくありません')
   }
 
@@ -67,7 +71,9 @@ export async function updateExpense(
 
   const data = await res.json()
   if (!data || !data.expense) {
-    console.error('支出のレスポンスが正しくありません', { data })
+    // 開発者向けログ: 詳細なレスポンス内容を出力
+    console.error('[Dev] 支出のレスポンスが正しくありません', { data })
+    // ユーザー向けエラー: 固定文言のみ
     throw new Error('支出のレスポンスが正しくありません')
   }
 
