@@ -2,9 +2,11 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTheme } from '@/hooks/useTheme'
 
 export function Header() {
   const pathname = usePathname()
+  const { theme, toggleTheme, mounted } = useTheme()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -33,12 +35,18 @@ export function Header() {
             設定
           </Link>
 
-          {/* Dark Mode Toggle Button (Placeholder for Phase 4) */}
+          {/* Dark Mode Toggle Button */}
           <button
+            onClick={toggleTheme}
             className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-muted h-9 w-9"
             aria-label="ダークモード切り替え"
           >
-            <span className="text-lg">🌙</span>
+            {/* SSR時のハイドレーションミスマッチを防ぐ */}
+            {mounted && (
+              <span className="text-lg">
+                {theme === 'dark' ? '☀️' : '🌙'}
+              </span>
+            )}
           </button>
         </nav>
       </div>
