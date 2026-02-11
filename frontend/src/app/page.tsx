@@ -8,10 +8,10 @@ import { ExpenseForm } from '@/components/ExpenseForm'
 import { ExpenseList } from '@/components/ExpenseList'
 import { InitialSetupForm } from '@/components/InitialSetupForm'
 import { Dashboard } from '@/components/Dashboard'
+import { Container } from '@/components/Layout/Container'
 import { submitInitialSetup } from '@/lib/api/setup'
 import { InitialSetupRequest } from '@/lib/types/setup'
 import { Expense, UpdateExpenseInput } from '@/lib/types/expense'
-import Link from 'next/link'
 
 export default function Home() {
   const { user, needsSetup, isLoading: userLoading, error: userError, refetchUser } = useUser()
@@ -72,59 +72,62 @@ export default function Home() {
   // 初回読み込み中
   if (userLoading) {
     return (
-      <main>
-        <p>読み込み中...</p>
-      </main>
+      <Container className="py-12">
+        <p className="text-center text-muted-foreground">読み込み中...</p>
+      </Container>
     )
   }
 
   // ユーザー情報取得エラー（404以外）
   if (userError) {
     return (
-      <main>
-        <p style={{ color: 'red' }}>エラー: {userError}</p>
-      </main>
+      <Container className="py-12">
+        <p className="text-danger text-center">エラー: {userError}</p>
+      </Container>
     )
   }
 
   // 初期セットアップが必要
   if (needsSetup) {
     return (
-      <main>
+      <div className="min-h-screen py-12 px-4">
         <InitialSetupForm onSubmit={handleSetupSubmit} isSubmitting={setupSubmitting} />
-        {setupError && <p style={{ color: 'red' }}>エラー: {setupError}</p>}
-      </main>
+        {setupError && <p className="text-danger text-center mt-4">エラー: {setupError}</p>}
+      </div>
     )
   }
 
   // 通常の支出入力画面
   return (
-    <main>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h1>ホーム</h1>
-        <Link href="/settings" style={{ color: '#3b82f6', textDecoration: 'none', fontSize: '0.875rem', fontWeight: '500' }}>
-          ⚙️ 設定
-        </Link>
-      </div>
-      
+    <Container className="py-6 space-y-6" maxWidth="lg">
+      {/* User Info Card */}
       {user && (
-        <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
-          <p>月収: ¥{user.income.toLocaleString()}</p>
-          <p>貯蓄目標: ¥{user.saving_goal.toLocaleString()}</p>
-        </div>
+        <section className="bg-card border border-border rounded-lg shadow-sm p-4 sm:p-6">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">基本情報</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="space-y-1">
+              <div className="text-xs sm:text-sm text-muted-foreground">月収</div>
+              <div className="text-lg sm:text-xl font-semibold text-foreground">¥{user.income.toLocaleString()}</div>
+            </div>
+            <div className="space-y-1">
+              <div className="text-xs sm:text-sm text-muted-foreground">貯金目標</div>
+              <div className="text-lg sm:text-xl font-semibold text-foreground">¥{user.saving_goal.toLocaleString()}</div>
+            </div>
+          </div>
+        </section>
       )}
 
       {/* Dashboard Section */}
-      {dashboardLoading && <p>ダッシュボード読み込み中...</p>}
-      {dashboardError && <p style={{ color: 'red' }}>ダッシュボードエラー: {dashboardError}</p>}
+      {dashboardLoading && <p className="text-muted-foreground">ダッシュボード読み込み中...</p>}
+      {dashboardError && <p className="text-danger">ダッシュボードエラー: {dashboardError}</p>}
       {dashboard && <Dashboard dashboard={dashboard} />}
 
-      {/* 支出セクション */}
-      <section style={{ marginTop: '2rem' }}>
-        <h2>支出入力</h2>
+      {/* Expense Section */}
+      <section className="space-y-4">
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground">支出入力</h2>
         {editingExpense ? (
-          <>
-            <h3>支出を編集</h3>
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-foreground">支出を編集</h3>
             <ExpenseForm 
               mode="edit"
               initialData={editingExpense}
@@ -132,25 +135,27 @@ export default function Home() {
               onCancel={handleCancelEdit}
               isSubmitting={isSubmitting}
             />
-          </>
+          </div>
         ) : (
           <ExpenseForm 
             onSubmit={async (input) => {
               const success = await createExpense(input)
               if (success) {
-                refetchDashboard() // 作成成功時のみダッシュボードを再取得
+                refetchDashboard()
               }
             }}
             isSubmitting={isSubmitting}
           />
         )}
 
-        {isLoading && <p>読み込み中...</p>}
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {isLoading && <p className="text-muted-foreground">読み込み中...</p>}
+        {error && <p className="text-danger">{error}</p>}
 
-        <h3>支出一覧</h3>
-        <ExpenseList expenses={expenses} onEdit={handleEdit} onDelete={handleDelete} isSubmitting={isSubmitting} />
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold text-foreground">支出一覧</h3>
+          <ExpenseList expenses={expenses} onEdit={handleEdit} onDelete={handleDelete} isSubmitting={isSubmitting} />
+        </div>
       </section>
-    </main>
+    </Container>
   )
 }

@@ -9,69 +9,59 @@ type Props = {
 
 export function ExpenseList({ expenses, onEdit, onDelete, isSubmitting }: Props) {
   return (
-    <ul style={{ listStyle: 'none', padding: 0 }}>
+    <ul className="list-none p-0 space-y-4">
       {expenses.map((e) => (
-        <li key={e.id} style={{ 
-          marginBottom: '1rem', 
-          padding: '1rem', 
-          border: '1px solid #ddd', 
-          borderRadius: '4px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: '1rem'
-        }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ marginBottom: '0.5rem' }}>
-              <span style={{
-                display: 'inline-block',
-                padding: '0.25rem 0.5rem',
-                borderRadius: '4px',
-                fontSize: '0.875rem',
-                fontWeight: 'bold',
-                backgroundColor: e.status === 'confirmed' ? '#28a745' : '#ffc107',
-                color: e.status === 'confirmed' ? 'white' : '#000',
-              }}>
+        <li 
+          key={e.id} 
+          className="p-4 border border-border bg-card rounded-lg flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex-1 space-y-2">
+            <div>
+              <span className={`
+                inline-block px-2 py-1 rounded text-xs font-bold
+                ${e.status === 'confirmed' 
+                  ? 'bg-success text-success-foreground' 
+                  : 'bg-warning text-warning-foreground'}
+              `}>
                 {e.status === 'confirmed' ? '確定' : '予定'}
               </span>
             </div>
-            <div>
-              <span>{e.spent_at}</span> / 
-              <span>¥{e.amount.toLocaleString()}</span> / 
-              <span>カテゴリ: {e.category.name}</span>
-              {e.memo && <span> / {e.memo}</span>}
+            <div className="text-sm text-foreground space-x-2">
+              <span className="font-medium">{e.spent_at}</span>
+              <span className="text-muted-foreground">/</span>
+              <span className="font-semibold">¥{e.amount.toLocaleString()}</span>
+              <span className="text-muted-foreground">/</span>
+              <span className="text-muted-foreground">カテゴリ: {e.category.name}</span>
+              {e.memo && (
+                <>
+                  <span className="text-muted-foreground">/</span>
+                  <span className="text-sm">{e.memo}</span>
+                </>
+              )}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="flex gap-2 sm:flex-shrink-0">
             <button
               onClick={() => onEdit(e)}
               disabled={isSubmitting}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                fontSize: '0.875rem',
-                opacity: isSubmitting ? 0.6 : 1
-              }}
+              className="
+                px-4 py-2 text-sm font-medium rounded
+                bg-primary hover:bg-primary-hover text-primary-foreground
+                disabled:opacity-60 disabled:cursor-not-allowed
+                transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+              "
             >
               編集
             </button>
             <button
               onClick={() => onDelete(e.id)}
               disabled={isSubmitting}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: '#dc3545',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                fontSize: '0.875rem',
-                opacity: isSubmitting ? 0.6 : 1
-              }}
+              className="
+                px-4 py-2 text-sm font-medium rounded
+                bg-danger hover:bg-danger-hover text-danger-foreground
+                disabled:opacity-60 disabled:cursor-not-allowed
+                transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+              "
             >
               削除
             </button>
@@ -81,3 +71,4 @@ export function ExpenseList({ expenses, onEdit, onDelete, isSubmitting }: Props)
     </ul>
   )
 }
+
