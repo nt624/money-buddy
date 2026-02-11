@@ -8,10 +8,11 @@ import { ExpenseForm } from '@/components/ExpenseForm'
 import { ExpenseList } from '@/components/ExpenseList'
 import { InitialSetupForm } from '@/components/InitialSetupForm'
 import { Dashboard } from '@/components/Dashboard'
+import { Container } from '@/components/Layout/Container'
+import { Card } from '@/components/ui/Card'
 import { submitInitialSetup } from '@/lib/api/setup'
 import { InitialSetupRequest } from '@/lib/types/setup'
 import { Expense, UpdateExpenseInput } from '@/lib/types/expense'
-import Link from 'next/link'
 
 export default function Home() {
   const { user, needsSetup, isLoading: userLoading, error: userError, refetchUser } = useUser()
@@ -72,55 +73,49 @@ export default function Home() {
   // 初回読み込み中
   if (userLoading) {
     return (
-      <main className="max-w-4xl mx-auto p-6">
+      <Container className="py-12">
         <p className="text-center text-muted-foreground">読み込み中...</p>
-      </main>
+      </Container>
     )
   }
 
   // ユーザー情報取得エラー（404以外）
   if (userError) {
     return (
-      <main className="max-w-4xl mx-auto p-6">
+      <Container className="py-12">
         <p className="text-danger text-center">エラー: {userError}</p>
-      </main>
+      </Container>
     )
   }
 
   // 初期セットアップが必要
   if (needsSetup) {
     return (
-      <main className="min-h-screen py-12 px-4">
+      <div className="min-h-screen py-12 px-4">
         <InitialSetupForm onSubmit={handleSetupSubmit} isSubmitting={setupSubmitting} />
         {setupError && <p className="text-danger text-center mt-4">エラー: {setupError}</p>}
-      </main>
+      </div>
     )
   }
 
   // 通常の支出入力画面
   return (
-    <main className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">ホーム</h1>
-        <Link 
-          href="/settings" 
-          className="inline-flex items-center gap-1 text-primary hover:text-primary-hover text-sm font-medium transition-colors"
-        >
-          ⚙️ 設定
-        </Link>
-      </div>
-      
+    <Container className="py-6 space-y-6" maxWidth="lg">
       {/* User Info Card */}
       {user && (
-        <div className="p-4 bg-card border border-border rounded-lg space-y-2 shadow-sm">
-          <p className="text-foreground">
-            <span className="font-medium">月収:</span> ¥{user.income.toLocaleString()}
-          </p>
-          <p className="text-foreground">
-            <span className="font-medium">貯蓄目標:</span> ¥{user.saving_goal.toLocaleString()}
-          </p>
-        </div>
+        <section className="bg-card border border-border rounded-lg shadow-sm p-6">
+          <h2 className="text-lg font-semibold text-foreground mb-4">基本情報</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <div className="text-sm text-muted-foreground">月収</div>
+              <div className="text-xl font-semibold text-foreground">¥{user.income.toLocaleString()}</div>
+            </div>
+            <div className="space-y-1">
+              <div className="text-sm text-muted-foreground">貯金目標</div>
+              <div className="text-xl font-semibold text-foreground">¥{user.saving_goal.toLocaleString()}</div>
+            </div>
+          </div>
+        </section>
       )}
 
       {/* Dashboard Section */}
@@ -162,6 +157,6 @@ export default function Home() {
           <ExpenseList expenses={expenses} onEdit={handleEdit} onDelete={handleDelete} isSubmitting={isSubmitting} />
         </div>
       </section>
-    </main>
+    </Container>
   )
 }

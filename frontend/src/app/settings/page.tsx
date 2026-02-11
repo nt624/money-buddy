@@ -8,7 +8,8 @@ import { FixedCostForm } from '@/components/FixedCostForm'
 import { UserForm } from '@/components/UserForm'
 import { FixedCost, FixedCostInput } from '@/lib/types/fixed-cost'
 import { UpdateUserInput } from '@/lib/types/user'
-import Link from 'next/link'
+import { Container } from '@/components/Layout/Container'
+import { Button } from '@/components/ui/Button'
 
 export default function SettingsPage() {
   const { dashboard, updateUserSettings, isSubmitting: userSubmitting, isLoading: dashboardLoading, error: dashboardError, refetch: refetchDashboard } = useDashboard()
@@ -82,46 +83,35 @@ export default function SettingsPage() {
   }
 
   return (
-    <main style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <Link href="/" style={{ color: '#3b82f6', textDecoration: 'none' }}>
-          ← ホームに戻る
-        </Link>
-      </div>
-
-      <h1 style={{ marginBottom: '2rem' }}>設定</h1>
+    <Container className="py-6 space-y-6" maxWidth="lg">
+      <h1 className="text-2xl sm:text-3xl font-bold text-foreground">設定</h1>
 
       {/* 基本情報セクション */}
-      <section style={{ marginBottom: '3rem', padding: '1.5rem', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: '600' }}>基本情報</h2>
+      <section className="bg-card border border-border rounded-lg shadow-sm p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-foreground">基本情報</h2>
           {!showUserForm && (
-            <button 
+            <Button 
               onClick={() => setShowUserForm(true)}
               disabled={dashboardLoading}
-              style={{ 
-                padding: '0.5rem 1rem', 
-                backgroundColor: dashboardLoading ? '#9ca3af' : '#3b82f6', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '6px', 
-                cursor: dashboardLoading ? 'not-allowed' : 'pointer' 
-              }}
+              size="sm"
             >
               編集
-            </button>
+            </Button>
           )}
         </div>
 
-        {dashboardLoading && <p>読み込み中...</p>}
+        {dashboardLoading && <p className="text-muted-foreground">読み込み中...</p>}
 
         {!dashboardLoading && !showUserForm && dashboard && (
-          <div style={{ color: '#374151' }}>
-            <div style={{ marginBottom: '0.5rem' }}>
-              <span style={{ fontWeight: 500 }}>月収（手取り）:</span> {dashboard.income.toLocaleString()}円
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <div className="text-sm text-muted-foreground">月収（手取り）</div>
+              <div className="text-xl font-semibold text-foreground">¥{dashboard.income.toLocaleString()}</div>
             </div>
-            <div>
-              <span style={{ fontWeight: 500 }}>貯金目標額（月）:</span> {dashboard.saving_goal.toLocaleString()}円
+            <div className="space-y-1">
+              <div className="text-sm text-muted-foreground">貯金目標額（月）</div>
+              <div className="text-xl font-semibold text-foreground">¥{dashboard.saving_goal.toLocaleString()}</div>
             </div>
           </div>
         )}
@@ -139,21 +129,21 @@ export default function SettingsPage() {
       </section>
 
       {/* 固定費セクション */}
-      <section style={{ marginBottom: '3rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: '600' }}>固定費</h2>
+      <section className="bg-card border border-border rounded-lg shadow-sm p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-foreground">固定費</h2>
           {!showFixedCostForm && (
-            <button 
+            <Button 
               onClick={() => setShowFixedCostForm(true)}
-              style={{ padding: '0.5rem 1rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+              size="sm"
             >
               固定費を追加
-            </button>
+            </Button>
           )}
         </div>
         
         {showFixedCostForm && (
-          <div style={{ marginBottom: '1rem' }}>
+          <div className="mb-4">
             <FixedCostForm 
               fixedCost={editingFixedCost}
               onSubmit={handleFixedCostSubmit}
@@ -163,8 +153,8 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {fcLoading && <p>読み込み中...</p>}
-        {fcError && <p style={{ color: 'red' }}>{fcError}</p>}
+        {fcLoading && <p className="text-muted-foreground">読み込み中...</p>}
+        {fcError && <p className="text-danger">{fcError}</p>}
 
         <FixedCostList 
           fixedCosts={fixedCosts} 
@@ -173,6 +163,6 @@ export default function SettingsPage() {
           isSubmitting={fcSubmitting} 
         />
       </section>
-    </main>
+    </Container>
   )
 }
