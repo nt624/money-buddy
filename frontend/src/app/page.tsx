@@ -72,8 +72,8 @@ export default function Home() {
   // 初回読み込み中
   if (userLoading) {
     return (
-      <main>
-        <p>読み込み中...</p>
+      <main className="max-w-4xl mx-auto p-6">
+        <p className="text-center text-muted-foreground">読み込み中...</p>
       </main>
     )
   }
@@ -81,8 +81,8 @@ export default function Home() {
   // ユーザー情報取得エラー（404以外）
   if (userError) {
     return (
-      <main>
-        <p style={{ color: 'red' }}>エラー: {userError}</p>
+      <main className="max-w-4xl mx-auto p-6">
+        <p className="text-danger text-center">エラー: {userError}</p>
       </main>
     )
   }
@@ -90,41 +90,50 @@ export default function Home() {
   // 初期セットアップが必要
   if (needsSetup) {
     return (
-      <main>
+      <main className="min-h-screen py-12 px-4">
         <InitialSetupForm onSubmit={handleSetupSubmit} isSubmitting={setupSubmitting} />
-        {setupError && <p style={{ color: 'red' }}>エラー: {setupError}</p>}
+        {setupError && <p className="text-danger text-center mt-4">エラー: {setupError}</p>}
       </main>
     )
   }
 
   // 通常の支出入力画面
   return (
-    <main>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h1>ホーム</h1>
-        <Link href="/settings" style={{ color: '#3b82f6', textDecoration: 'none', fontSize: '0.875rem', fontWeight: '500' }}>
+    <main className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">ホーム</h1>
+        <Link 
+          href="/settings" 
+          className="inline-flex items-center gap-1 text-primary hover:text-primary-hover text-sm font-medium transition-colors"
+        >
           ⚙️ 設定
         </Link>
       </div>
       
+      {/* User Info Card */}
       {user && (
-        <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
-          <p>月収: ¥{user.income.toLocaleString()}</p>
-          <p>貯蓄目標: ¥{user.saving_goal.toLocaleString()}</p>
+        <div className="p-4 bg-card border border-border rounded-lg space-y-2 shadow-sm">
+          <p className="text-foreground">
+            <span className="font-medium">月収:</span> ¥{user.income.toLocaleString()}
+          </p>
+          <p className="text-foreground">
+            <span className="font-medium">貯蓄目標:</span> ¥{user.saving_goal.toLocaleString()}
+          </p>
         </div>
       )}
 
       {/* Dashboard Section */}
-      {dashboardLoading && <p>ダッシュボード読み込み中...</p>}
-      {dashboardError && <p style={{ color: 'red' }}>ダッシュボードエラー: {dashboardError}</p>}
+      {dashboardLoading && <p className="text-muted-foreground">ダッシュボード読み込み中...</p>}
+      {dashboardError && <p className="text-danger">ダッシュボードエラー: {dashboardError}</p>}
       {dashboard && <Dashboard dashboard={dashboard} />}
 
-      {/* 支出セクション */}
-      <section style={{ marginTop: '2rem' }}>
-        <h2>支出入力</h2>
+      {/* Expense Section */}
+      <section className="space-y-4">
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground">支出入力</h2>
         {editingExpense ? (
-          <>
-            <h3>支出を編集</h3>
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-foreground">支出を編集</h3>
             <ExpenseForm 
               mode="edit"
               initialData={editingExpense}
@@ -132,24 +141,26 @@ export default function Home() {
               onCancel={handleCancelEdit}
               isSubmitting={isSubmitting}
             />
-          </>
+          </div>
         ) : (
           <ExpenseForm 
             onSubmit={async (input) => {
               const success = await createExpense(input)
               if (success) {
-                refetchDashboard() // 作成成功時のみダッシュボードを再取得
+                refetchDashboard()
               }
             }}
             isSubmitting={isSubmitting}
           />
         )}
 
-        {isLoading && <p>読み込み中...</p>}
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {isLoading && <p className="text-muted-foreground">読み込み中...</p>}
+        {error && <p className="text-danger">{error}</p>}
 
-        <h3>支出一覧</h3>
-        <ExpenseList expenses={expenses} onEdit={handleEdit} onDelete={handleDelete} isSubmitting={isSubmitting} />
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold text-foreground">支出一覧</h3>
+          <ExpenseList expenses={expenses} onEdit={handleEdit} onDelete={handleDelete} isSubmitting={isSubmitting} />
+        </div>
       </section>
     </main>
   )

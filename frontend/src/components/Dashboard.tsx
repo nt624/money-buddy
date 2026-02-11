@@ -1,5 +1,4 @@
 import { Dashboard as DashboardType } from "@/lib/types/dashboard";
-import styles from "./Dashboard.module.css";
 
 type DashboardProps = {
   dashboard: DashboardType;
@@ -28,52 +27,58 @@ function formatAmount(amount: number): string {
 
 export function Dashboard({ dashboard }: DashboardProps) {
   const colorClass = getRemainingColor(dashboard.remaining, dashboard.variable_budget);
+  
+  const remainingColorClasses = {
+    green: "text-success",
+    yellow: "text-warning", 
+    red: "text-danger"
+  }
 
   return (
-    <div className={styles.container}>
+    <div className="w-full max-w-5xl mx-auto space-y-6">
       {/* Remaining Section */}
-      <section className={`${styles.section} ${styles.remainingSection}`}>
-        <h2 className={styles.sectionTitle}>今月あといくら使える？</h2>
-        <div className={`${styles.remainingAmount} ${styles[colorClass]}`}>
+      <section className="bg-card border border-border rounded-lg shadow-sm p-6 text-center">
+        <h2 className="text-lg font-semibold text-foreground mb-4">今月あといくら使える？</h2>
+        <div className={`text-5xl font-bold my-4 ${remainingColorClasses[colorClass as keyof typeof remainingColorClasses]}`}>
           ¥{formatAmount(dashboard.remaining)}
         </div>
-        <p className={styles.remainingLabel}>残り使える金額</p>
+        <p className="text-sm text-muted-foreground">残り使える金額</p>
       </section>
 
       {/* Summary Grid */}
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>月次サマリー</h2>
-        <div className={styles.summaryGrid}>
-          <div className={styles.summaryItem}>
-            <div className={styles.summaryLabel}>収入</div>
-            <div className={styles.summaryValue}>¥{formatAmount(dashboard.income)}</div>
+      <section className="bg-card border border-border rounded-lg shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">月次サマリー</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="space-y-1">
+            <div className="text-sm text-muted-foreground">収入</div>
+            <div className="text-xl font-semibold text-foreground">¥{formatAmount(dashboard.income)}</div>
           </div>
-          <div className={styles.summaryItem}>
-            <div className={styles.summaryLabel}>貯金目標</div>
-            <div className={styles.summaryValue}>¥{formatAmount(dashboard.saving_goal)}</div>
+          <div className="space-y-1">
+            <div className="text-sm text-muted-foreground">貯金目標</div>
+            <div className="text-xl font-semibold text-foreground">¥{formatAmount(dashboard.saving_goal)}</div>
           </div>
-          <div className={styles.summaryItem}>
-            <div className={styles.summaryLabel}>固定費</div>
-            <div className={styles.summaryValue}>¥{formatAmount(dashboard.fixed_costs)}</div>
+          <div className="space-y-1">
+            <div className="text-sm text-muted-foreground">固定費</div>
+            <div className="text-xl font-semibold text-foreground">¥{formatAmount(dashboard.fixed_costs)}</div>
           </div>
-          <div className={styles.summaryItem}>
-            <div className={styles.summaryLabel}>変動費</div>
-            <div className={styles.summaryValue}>¥{formatAmount(dashboard.variable_budget)}</div>
+          <div className="space-y-1">
+            <div className="text-sm text-muted-foreground">変動費</div>
+            <div className="text-xl font-semibold text-foreground">¥{formatAmount(dashboard.variable_budget)}</div>
           </div>
         </div>
       </section>
 
       {/* Expenses Grid */}
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>今月の支出</h2>
-        <div className={styles.expensesGrid}>
-          <div className={styles.expenseItem}>
-            <div className={styles.expenseLabel}>確定支出</div>
-            <div className={styles.expenseValue}>¥{formatAmount(dashboard.confirmed_expenses)}</div>
+      <section className="bg-card border border-border rounded-lg shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">今月の支出</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <div className="text-sm text-muted-foreground">確定支出</div>
+            <div className="text-xl font-semibold text-foreground">¥{formatAmount(dashboard.confirmed_expenses)}</div>
           </div>
-          <div className={styles.expenseItem}>
-            <div className={styles.expenseLabel}>予定支出</div>
-            <div className={styles.expenseValue}>¥{formatAmount(dashboard.planned_expenses)}</div>
+          <div className="space-y-1">
+            <div className="text-sm text-muted-foreground">予定支出</div>
+            <div className="text-xl font-semibold text-foreground">¥{formatAmount(dashboard.planned_expenses)}</div>
           </div>
         </div>
       </section>

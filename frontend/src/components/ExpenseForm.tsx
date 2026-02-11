@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import styles from './ExpenseForm.module.css'
 import { CreateExpenseInput, UpdateExpenseInput, Expense } from '@/lib/types/expense'
 import { getCategories } from '@/lib/api/categories'
 import { Category } from '@/lib/types/category'
@@ -93,24 +92,25 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
     }
 
     return (
-        <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={styles.field}>
-                <label className={styles.label}>
+        <form onSubmit={handleSubmit} className="w-full max-w-lg mx-auto p-4 bg-card rounded-lg border border-border shadow-sm space-y-4">
+            <div className="space-y-2">
+                <label className="block text-sm font-medium text-foreground">
                     金額
                     <input
-                        className={styles.input}
+                        className="mt-1 block w-full px-3 py-2 bg-input border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
                     />
                 </label>
-                {errors.amount && <p className={styles.error}>{errors.amount}</p>}
+                {errors.amount && <p className="text-sm text-danger">{errors.amount}</p>}
             </div>
 
-            <div className={styles.field}>
-                <label className={styles.label}>
+            <div className="space-y-2">
+                <label className="block text-sm font-medium text-foreground">
                     カテゴリ
                     <select
+                        className="mt-1 block w-full px-3 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                         value={categoryId}
                         onChange={(e) => setCategoryId(e.target.value)}
                     >
@@ -124,11 +124,11 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
                 </label>
             </div>
 
-            <div className={styles.field}>
-                <label className={styles.label}>
+            <div className="space-y-2">
+                <label className="block text-sm font-medium text-foreground">
                     メモ
                     <input
-                        className={styles.input}
+                        className="mt-1 block w-full px-3 py-2 bg-input border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                         type="text"
                         value={memo}
                         onChange={(e) => setMemo(e.target.value)}
@@ -136,26 +136,27 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
                 </label>
             </div>
 
-            <div className={styles.field}>
-                <label className={styles.label}>
+            <div className="space-y-2">
+                <label className="block text-sm font-medium text-foreground">
                     日付
                     <input
-                        className={styles.input}
+                        className="mt-1 block w-full px-3 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                         type="date"
                         value={spentAt}
                         onChange={(e) => setSpentAt(e.target.value)}
                     />
                 </label>
                 {errors.spent_at && (
-                    <p className={styles.error}>{errors.spent_at}</p>
+                    <p className="text-sm text-danger">{errors.spent_at}</p>
                 )}
             </div>
 
-            <div className={styles.field}>
-                <label className={styles.label}>ステータス</label>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className="space-y-2">
+                <label className="block text-sm font-medium text-foreground">ステータス</label>
+                <div className="flex gap-4">
+                    <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
                         <input
+                            className="w-4 h-4 text-primary focus:ring-2 focus:ring-ring"
                             type="radio"
                             name="status"
                             value="confirmed"
@@ -164,8 +165,9 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
                         />
                         確定
                     </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
                         <input
+                            className="w-4 h-4 text-primary focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
                             type="radio"
                             name="status"
                             value="planned"
@@ -176,25 +178,22 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
                         予定
                     </label>
                 </div>
-                {errors.status && <p className={styles.error}>{errors.status}</p>}
+                {errors.status && <p className="text-sm text-danger">{errors.status}</p>}
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button className={styles.button} type="submit" disabled={isSubmitting}>
+            <div className="flex gap-2">
+                <button 
+                    className="flex-1 px-4 py-2 text-sm font-medium rounded bg-primary hover:bg-primary-hover text-primary-foreground disabled:opacity-60 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-ring" 
+                    type="submit" 
+                    disabled={isSubmitting}
+                >
                     {isSubmitting ? '送信中...' : mode === 'edit' ? '更新' : '追加'}
                 </button>
                 {mode === 'edit' && onCancel && (
                     <button 
                         type="button" 
                         onClick={onCancel}
-                        style={{
-                            padding: '0.5rem 1rem',
-                            backgroundColor: '#6c757d',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                        }}
+                        className="px-4 py-2 text-sm font-medium rounded bg-secondary hover:bg-secondary-hover text-secondary-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                         キャンセル
                     </button>
