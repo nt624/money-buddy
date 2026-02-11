@@ -1,7 +1,7 @@
 import { auth } from "@/lib/firebase/config";
 import { signOut } from "firebase/auth";
 
-export const API_BASE_URL = "http://localhost:8080";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
 /**
  * 認証ヘッダーを含むヘッダーオブジェクトを作成します

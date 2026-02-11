@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"os"
+	"strings"
 
 	dbgen "money-buddy-backend/db/generated"
 	"money-buddy-backend/infra/repository"
@@ -20,12 +22,38 @@ func main() {
 		log.Fatalf("Failed to initialize Firebase: %v", err)
 	}
 
+	// 環境変数から設定を読み込み
+	allowedOrigins := getEnv("ALLOWED_ORIGINS", "http://localhost:3000")
+	port := getEnv("PORT", "8080")
+	env := getEnv("ENV", "development")
+
+	// 本番環境ではリリースモードに設定
+	if env == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	r := gin.Default()
 
+	// CORS設定（複数オリジン対応）
+	origins := strings.Split(allowedOrigins, ",")
 	r.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		origin := c.Request.Header.Get("Origin")
+
+		// 許可されたオリジンリストをチェック
+		allowed := false
+		for _, o := range origins {
+			if strings.TrimSpace(o) == origin {
+				allowed = true
+				break
+			}
+		}
+
+		if allowed {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			c.Writer.Header().Set("Access-Control-Max-Age", "86400") // 24時間キャッシュ
+		}
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
@@ -68,5 +96,16 @@ func main() {
 		handlers.NewDashboardHandler(api, dashboardService)
 	}
 
-	r.Run() // デフォルトで:8080で起動
+	log.Printf("Server starting on port %s (env: %s)", port, env)
+	if err := r.Run(":" + port); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
+}
+
+// getEnv は環境変数を取得し、存在しない場合はデフォルト値を返す
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
 }

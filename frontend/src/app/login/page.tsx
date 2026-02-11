@@ -11,17 +11,24 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { signIn, signUp, signInWithGoogle } = useAuth()
+  const { user, signIn, signUp, signInWithGoogle } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
 
   useEffect(() => {
+    // 既にログイン済みの場合、リダイレクト先またはホームへ
+    if (user) {
+      const redirect = searchParams.get('redirect') || '/'
+      router.push(redirect)
+      return
+    }
+
     // URLパラメータから理由を取得
     const reason = searchParams.get('reason')
     if (reason === 'session_expired') {
       setError('認証の有効期限が切れました。再度ログインしてください。')
     }
-  }, [searchParams])
+  }, [user, searchParams, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,7 +41,10 @@ export default function LoginPage() {
       } else {
         await signIn(email, password)
       }
-      router.push('/')
+      
+      // リダイレクト先を取得（デフォルトはホーム）
+      const redirect = searchParams.get('redirect') || '/'
+      router.push(redirect)
     } catch (err: any) {
       // Firebaseのエラーメッセージを日本語化
       const errorCode = err.code
@@ -62,7 +72,10 @@ export default function LoginPage() {
     
     try {
       await signInWithGoogle()
-      router.push('/')
+      
+      // リダイレクト先を取得（デフォルトはホーム）
+      const redirect = searchParams.get('redirect') || '/'
+      router.push(redirect)
     } catch (err: any) {
       console.error('Googleログインエラー:', err)
       const errorCode = err.code

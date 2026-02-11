@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strings"
 
@@ -36,6 +37,8 @@ func AuthMiddleware() gin.HandlerFunc {
 		// ID Token検証
 		token, err := auth.FirebaseAuth.VerifyIDToken(context.Background(), idToken)
 		if err != nil {
+			// エラーログから実際のトークンを除外（セキュリティ対策）
+			log.Printf("Failed to verify ID token: %v (token omitted for security)", err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
@@ -43,6 +46,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		// ユーザーIDをコンテキストに保存
 		if token.UID == "" {
+			log.Println("Token verification succeeded but UID is empty")
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user ID"})
 			c.Abort()
 			return
