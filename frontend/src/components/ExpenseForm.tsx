@@ -154,20 +154,35 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
             <div className="space-y-2">
                 <label className="block text-xs sm:text-sm font-medium text-foreground">ステータス</label>
                 <div className="flex gap-3 sm:gap-4">
-                    <label className="flex items-center gap-2 text-xs sm:text-sm text-foreground cursor-pointer">
+                    <label className={`
+                        flex items-center justify-center px-4 py-2.5 rounded-lg border-2 cursor-pointer
+                        transition-all duration-200 flex-1 sm:flex-initial
+                        ${status === 'confirmed' 
+                            ? 'border-primary bg-primary/20 text-primary font-semibold shadow-md' 
+                            : 'border-border bg-card hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm text-foreground'}
+                    `}>
                         <input
-                            className="w-4 h-4 text-primary focus:ring-2 focus:ring-ring"
+                            className="sr-only"
                             type="radio"
                             name="status"
                             value="confirmed"
                             checked={status === 'confirmed'}
                             onChange={(e) => setStatus(e.target.value as 'confirmed')}
                         />
-                        確定
+                        <span className="text-xs sm:text-sm">確定</span>
                     </label>
-                    <label className="flex items-center gap-2 text-xs sm:text-sm text-foreground cursor-pointer">
+                    <label className={`
+                        flex items-center justify-center px-4 py-2.5 rounded-lg border-2 cursor-pointer
+                        transition-all duration-200 flex-1 sm:flex-initial
+                        ${status === 'planned' 
+                            ? 'border-warning bg-warning/20 text-warning font-semibold shadow-md' 
+                            : 'border-border bg-card hover:border-warning/50 hover:bg-warning/5 hover:shadow-sm text-foreground'}
+                        ${mode === 'edit' && initialData?.status === 'confirmed' 
+                            ? 'opacity-50 cursor-not-allowed' 
+                            : ''}
+                    `}>
                         <input
-                            className="w-4 h-4 text-primary focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="sr-only"
                             type="radio"
                             name="status"
                             value="planned"
@@ -175,7 +190,7 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
                             onChange={(e) => setStatus(e.target.value as 'planned')}
                             disabled={mode === 'edit' && initialData?.status === 'confirmed'}
                         />
-                        予定
+                        <span className="text-xs sm:text-sm">予定</span>
                     </label>
                 </div>
                 {errors.status && <p className="text-xs sm:text-sm text-danger">{errors.status}</p>}

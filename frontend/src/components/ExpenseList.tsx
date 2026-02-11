@@ -7,6 +7,13 @@ type Props = {
   isSubmitting: boolean
 }
 
+function formatDate(dateString: string): string {
+  const date = new Date(dateString)
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  return `${month}月${day}日`
+}
+
 export function ExpenseList({ expenses, onEdit, onDelete, isSubmitting }: Props) {
   return (
     <ul className="list-none p-0 space-y-4">
@@ -27,7 +34,7 @@ export function ExpenseList({ expenses, onEdit, onDelete, isSubmitting }: Props)
               </span>
             </div>
             <div className="text-sm text-foreground space-x-2">
-              <span className="font-medium">{e.spent_at}</span>
+              <span className="font-medium">{formatDate(e.spent_at)}</span>
               <span className="text-muted-foreground">/</span>
               <span className="font-semibold">¥{e.amount.toLocaleString()}</span>
               <span className="text-muted-foreground">/</span>
