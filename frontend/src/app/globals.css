@@ -1,26 +1,162 @@
 @import "tailwindcss";
 
+/* ================================
+   カラーパレット & テーマ定義
+   ================================ */
+
 :root {
+  /* Base colors */
   --background: #ffffff;
   --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  
+  /* Primary colors (青系) */
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --primary-foreground: #ffffff;
+  
+  /* Secondary colors (グレー系) */
+  --secondary: #64748b;
+  --secondary-hover: #475569;
+  --secondary-foreground: #ffffff;
+  
+  /* Danger colors (赤系) */
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+  --danger-foreground: #ffffff;
+  
+  /* Success colors (緑系) */
+  --success: #10b981;
+  --success-hover: #059669;
+  --success-foreground: #ffffff;
+  
+  /* Warning colors (黄色系) */
+  --warning: #f59e0b;
+  --warning-hover: #d97706;
+  --warning-foreground: #ffffff;
+  
+  /* Neutral colors */
+  --border: #e5e7eb;
+  --input: #f9fafb;
+  --ring: #3b82f6;
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+  
+  /* Card & Surface */
+  --card: #ffffff;
+  --card-foreground: #171717;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
+    /* Base colors */
     --background: #0a0a0a;
     --foreground: #ededed;
+    
+    /* Primary colors (明るい青系) */
+    --primary: #60a5fa;
+    --primary-hover: #3b82f6;
+    --primary-foreground: #0a0a0a;
+    
+    /* Secondary colors */
+    --secondary: #94a3b8;
+    --secondary-hover: #cbd5e1;
+    --secondary-foreground: #0a0a0a;
+    
+    /* Danger colors */
+    --danger: #f87171;
+    --danger-hover: #ef4444;
+    --danger-foreground: #0a0a0a;
+    
+    /* Success colors */
+    --success: #34d399;
+    --success-hover: #10b981;
+    --success-foreground: #0a0a0a;
+    
+    /* Warning colors */
+    --warning: #fbbf24;
+    --warning-hover: #f59e0b;
+    --warning-foreground: #0a0a0a;
+    
+    /* Neutral colors */
+    --border: #374151;
+    --input: #1f2937;
+    --ring: #60a5fa;
+    --muted: #1f2937;
+    --muted-foreground: #9ca3af;
+    
+    /* Card & Surface */
+    --card: #171717;
+    --card-foreground: #ededed;
   }
 }
+
+/* ================================
+   Tailwind テーマトークン登録
+   ================================ */
+
+@theme inline {
+  /* Base */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  
+  /* Primary */
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  
+  /* Secondary */
+  --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-secondary-foreground: var(--secondary-foreground);
+  
+  /* Danger */
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-danger-foreground: var(--danger-foreground);
+  
+  /* Success */
+  --color-success: var(--success);
+  --color-success-hover: var(--success-hover);
+  --color-success-foreground: var(--success-foreground);
+  
+  /* Warning */
+  --color-warning: var(--warning);
+  --color-warning-hover: var(--warning-hover);
+  --color-warning-foreground: var(--warning-foreground);
+  
+  /* Neutral */
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  
+  /* Card */
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  
+  /* Fonts */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* ================================
+   Base Styles
+   ================================ */
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ================================
+   Utility Classes
+   ================================ */
+
+/* Focus ring for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
