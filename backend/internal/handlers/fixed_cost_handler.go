@@ -14,7 +14,7 @@ type FixedCostHandler struct {
 	service services.FixedCostService
 }
 
-func NewFixedCostHandler(r *gin.Engine, service services.FixedCostService) {
+func NewFixedCostHandler(r gin.IRouter, service services.FixedCostService) {
 	handler := &FixedCostHandler{service: service}
 
 	r.POST("/fixed-costs", handler.CreateFixedCost)

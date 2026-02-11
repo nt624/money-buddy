@@ -15,7 +15,7 @@ type ExpenseHandler struct {
 	service services.ExpenseService
 }
 
-func NewExpenseHandler(r *gin.Engine, service services.ExpenseService) {
+func NewExpenseHandler(r gin.IRouter, service services.ExpenseService) {
 	handler := &ExpenseHandler{service: service}
 
 	r.POST("/expenses", handler.CreateExpense)

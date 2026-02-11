@@ -25,7 +25,7 @@ type DashboardHandler struct {
 	service services.DashboardService
 }
 
-func NewDashboardHandler(r *gin.Engine, service services.DashboardService) {
+func NewDashboardHandler(r gin.IRouter, service services.DashboardService) {
 	h := &DashboardHandler{service: service}
 	r.GET("/dashboard", h.GetDashboard)
 }

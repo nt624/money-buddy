@@ -20,7 +20,7 @@ type initialSetupRequest struct {
 	FixedCosts []models.FixedCostInput `json:"fixedCosts"`
 }
 
-func NewInitialSetupHandler(r *gin.Engine, service services.InitialSetupService) {
+func NewInitialSetupHandler(r gin.IRouter, service services.InitialSetupService) {
 	h := &InitialSetupHandler{service: service}
 	r.POST("/setup", h.CompleteInitialSetup)
 }

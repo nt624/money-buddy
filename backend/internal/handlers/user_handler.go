@@ -13,7 +13,7 @@ type UserHandler struct {
 	service services.UserService
 }
 
-func NewUserHandler(r *gin.Engine, service services.UserService) {
+func NewUserHandler(r gin.IRouter, service services.UserService) {
 	h := &UserHandler{service: service}
 	r.GET("/user/me", h.GetCurrentUser)
 	r.PUT("/user/me", h.UpdateUserSettings)
