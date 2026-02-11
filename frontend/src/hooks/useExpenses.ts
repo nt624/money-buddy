@@ -18,7 +18,7 @@ export function useExpenses() {
                 const data = await getExpenses();
                 setExpenses(data.expenses);
             } catch (err) {
-                setError(err instanceof Error ? err.message : 'unknown error');
+                setError(err instanceof Error ? err.message : 'エラーが発生しました');
             } finally {
                 setIsLoading(false);
             }
@@ -37,7 +37,7 @@ export function useExpenses() {
             setExpenses((prevExpenses) => [...prevExpenses, expense]);
             return true;
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'unknown error');
+            setError(err instanceof Error ? err.message : 'エラーが発生しました');
             return false;
         } finally {
             setIsSubmitting(false);
@@ -56,7 +56,7 @@ export function useExpenses() {
             );
             return true;
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'unknown error');
+            setError(err instanceof Error ? err.message : 'エラーが発生しました');
             return false;
         } finally {
             setIsSubmitting(false);
@@ -73,7 +73,7 @@ export function useExpenses() {
             setExpenses((prevExpenses) => prevExpenses.filter((exp) => exp.id !== id));
             return true;
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'unknown error');
+            setError(err instanceof Error ? err.message : 'エラーが発生しました');
             return false;
         } finally {
             setIsSubmitting(false);

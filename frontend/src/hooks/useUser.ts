@@ -21,7 +21,7 @@ export function useUser() {
         setNeedsSetup(true);
         setUser(null);
       } else {
-        setError(err instanceof Error ? err.message : "unknown error");
+        setError(err instanceof Error ? err.message : "エラーが発生しました");
       }
     } finally {
       setIsLoading(false);

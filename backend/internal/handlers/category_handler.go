@@ -20,7 +20,7 @@ func NewCategoryHandler(r *gin.Engine, service services.CategoryService) {
 func (h *CategoryHandler) ListCategories(c *gin.Context) {
 	categories, err := h.service.ListCategories(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list categories"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "カテゴリの取得に失敗しました"})
 		return
 	}
 

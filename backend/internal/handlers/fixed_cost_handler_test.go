@@ -257,7 +257,7 @@ func TestUpdateFixedCost_NotFound(t *testing.T) {
 
 	svc := &fixedCostServiceMock{
 		UpdateFixedCostFunc: func(ctx context.Context, userID string, id int, name string, amount int) (models.FixedCost, error) {
-			return models.FixedCost{}, &services.NotFoundError{Message: "fixed cost not found"}
+			return models.FixedCost{}, &services.NotFoundError{Message: "固定費が見つかりません"}
 		},
 	}
 	NewFixedCostHandler(router, svc)
@@ -313,7 +313,7 @@ func TestDeleteFixedCost_NotFound(t *testing.T) {
 
 	svc := &fixedCostServiceMock{
 		DeleteFixedCostFunc: func(ctx context.Context, userID string, id int) error {
-			return &services.NotFoundError{Message: "fixed cost not found"}
+			return &services.NotFoundError{Message: "固定費が見つかりません"}
 		},
 	}
 	NewFixedCostHandler(router, svc)

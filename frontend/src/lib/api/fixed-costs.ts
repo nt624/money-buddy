@@ -22,14 +22,14 @@ export async function createFixedCost(
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Failed to create fixed cost: ${res.status} ${text}`);
+    console.error('固定費の作成に失敗しました', { status: res.status, body: text });
+    throw new Error('固定費の作成に失敗しました');
   }
 
   const data: CreateFixedCostResponse = await res.json();
   if (!data || !data.fixed_cost) {
-    throw new Error(
-      `Invalid createFixedCost response: ${JSON.stringify(data)}`
-    );
+    console.error('固定費のレスポンスが正しくありません', { data });
+    throw new Error('固定費のレスポンスが正しくありません');
   }
 
   return data.fixed_cost;
@@ -42,14 +42,14 @@ export async function getFixedCosts(): Promise<GetFixedCostsResponse> {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Failed to fetch fixed costs: ${res.status} ${text}`);
+    console.error('固定費の取得に失敗しました', { status: res.status, body: text });
+    throw new Error('固定費の取得に失敗しました');
   }
 
   const data = await res.json();
   if (!data || !Array.isArray(data.fixed_costs)) {
-    throw new Error(
-      `Invalid getFixedCosts response: ${JSON.stringify(data)}`
-    );
+    console.error('固定費のレスポンスが正しくありません', { data });
+    throw new Error('固定費のレスポンスが正しくありません');
   }
 
   return data;
@@ -69,14 +69,14 @@ export async function updateFixedCost(
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Failed to update fixed cost: ${res.status} ${text}`);
+    console.error('固定費の更新に失敗しました', { status: res.status, body: text });
+    throw new Error('固定費の更新に失敗しました');
   }
 
   const data: UpdateFixedCostResponse = await res.json();
   if (!data || !data.fixed_cost) {
-    throw new Error(
-      `Invalid updateFixedCost response: ${JSON.stringify(data)}`
-    );
+    console.error('固定費のレスポンスが正しくありません', { data });
+    throw new Error('固定費のレスポンスが正しくありません');
   }
 
   return data.fixed_cost;
@@ -89,6 +89,7 @@ export async function deleteFixedCost(id: number): Promise<void> {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Failed to delete fixed cost: ${res.status} ${text}`);
+    console.error('固定費の削除に失敗しました', { status: res.status, body: text });
+    throw new Error('固定費の削除に失敗しました');
   }
 }

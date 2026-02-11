@@ -89,7 +89,7 @@ func TestDashboardHandler_GetDashboard_UserNotFound(t *testing.T) {
 	var resp map[string]string
 	err := json.Unmarshal(w.Body.Bytes(), &resp)
 	require.NoError(t, err)
-	require.Equal(t, "user not found", resp["error"])
+	require.Equal(t, "ユーザーが見つかりません", resp["error"])
 }
 
 // TestDashboardHandler_GetDashboard_ServiceError はサービス層でエラーが発生した場合のテストです
@@ -113,7 +113,7 @@ func TestDashboardHandler_GetDashboard_ServiceError(t *testing.T) {
 	var resp map[string]string
 	err := json.Unmarshal(w.Body.Bytes(), &resp)
 	require.NoError(t, err)
-	require.Equal(t, "internal server error", resp["error"])
+	require.Equal(t, "サーバーエラーが発生しました", resp["error"])
 }
 
 // TestDashboardHandler_GetDashboard_NegativeRemaining は残額がマイナスの場合のテストです

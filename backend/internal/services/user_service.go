@@ -33,18 +33,18 @@ func (s *userService) GetUserByID(ctx context.Context, userID string) (*models.U
 func (s *userService) UpdateUserSettings(ctx context.Context, userID string, income int, savingGoal int) error {
 	// Validate income
 	if income <= 0 {
-		return &ValidationError{Message: "income must be greater than 0"}
+		return &ValidationError{Message: "収入は1円以上で入力してください"}
 	}
 	if income > BusinessMaxAmount {
-		return &ValidationError{Message: "income must be 10億 or less"}
+		return &ValidationError{Message: "収入は10億円以下で入力してください"}
 	}
 
 	// Validate saving goal
 	if savingGoal < 0 {
-		return &ValidationError{Message: "saving goal must be greater than or equal to 0"}
+		return &ValidationError{Message: "貯金目標は0円以上で入力してください"}
 	}
 	if savingGoal > BusinessMaxAmount {
-		return &ValidationError{Message: "saving goal must be 10億 or less"}
+		return &ValidationError{Message: "貯金目標は10億円以下で入力してください"}
 	}
 
 	// Update user settings

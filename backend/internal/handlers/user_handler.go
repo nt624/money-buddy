@@ -25,7 +25,7 @@ func (h *UserHandler) GetCurrentUser(c *gin.Context) {
 
 	user, err := h.service.GetUserByID(c.Request.Context(), userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "ユーザーが見つかりません"})
 		return
 	}
 
@@ -43,7 +43,7 @@ func (h *UserHandler) UpdateUserSettings(c *gin.Context) {
 
 	var req UpdateUserSettingsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "リクエストの形式が正しくありません"})
 		return
 	}
 
@@ -64,7 +64,7 @@ func (h *UserHandler) UpdateUserSettings(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Message})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user settings"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザー設定の更新に失敗しました"})
 		return
 	}
 

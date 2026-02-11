@@ -23,7 +23,7 @@ export function useDashboard(options: UseDashboardOptions = {}) {
       const data = await getDashboard();
       setDashboard(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "unknown error");
+      setError(err instanceof Error ? err.message : "エラーが発生しました");
     } finally {
       setIsLoading(false);
     }
@@ -51,7 +51,7 @@ export function useDashboard(options: UseDashboardOptions = {}) {
       await fetchDashboard(); // ダッシュボードを再取得
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update user settings");
+      setError(err instanceof Error ? err.message : "ユーザー設定の更新に失敗しました");
       return false;
     } finally {
       setIsSubmitting(false);

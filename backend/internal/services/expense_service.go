@@ -37,26 +37,26 @@ func NewExpenseService(repo repositories.ExpenseRepository, categoryRepo reposit
 func (s *expenseService) CreateExpense(userID string, input models.CreateExpenseInput) (models.Expense, error) {
 	// 金額チェック: 入力が存在するかをまず確認し、その後業務上の制約を確認する
 	if input.Amount == nil {
-		return models.Expense{}, &ValidationError{Message: "amount must be provided"}
+		return models.Expense{}, &ValidationError{Message: "金額を入力してください"}
 	}
 	if *input.Amount <= 0 {
-		return models.Expense{}, &ValidationError{Message: "amount must be greater than 0"}
+		return models.Expense{}, &ValidationError{Message: "金額は1円以上で入力してください"}
 	}
 	if *input.Amount > BusinessMaxAmount {
-		return models.Expense{}, &ValidationError{Message: "amount exceeds maximum allowed"}
+		return models.Expense{}, &ValidationError{Message: "金額は10億円以下で入力してください"}
 	}
 
 	// カテゴリID チェック
 	if input.CategoryID == nil {
-		return models.Expense{}, &ValidationError{Message: "category_id must be provided"}
+		return models.Expense{}, &ValidationError{Message: "カテゴリを選択してください"}
 	}
 	if *input.CategoryID <= 0 {
-		return models.Expense{}, &ValidationError{Message: "category_id must be greater than 0"}
+		return models.Expense{}, &ValidationError{Message: "有効なカテゴリを選択してください"}
 	}
 
 	// SpentAt の非空チェック
 	if input.SpentAt == "" {
-		return models.Expense{}, &ValidationError{Message: "spent_at must be provided"}
+		return models.Expense{}, &ValidationError{Message: "日付を入力してください"}
 	}
 
 	// 日付フォーマットの検証（RFC3339 をまず試し、失敗したら日付のみフォーマットを試す）
@@ -66,18 +66,18 @@ func (s *expenseService) CreateExpense(userID string, input models.CreateExpense
 	if err != nil {
 		spentAt, err = time.Parse("2006-01-02", input.SpentAt)
 		if err != nil {
-			return models.Expense{}, &ValidationError{Message: "spent_at is invalid"}
+			return models.Expense{}, &ValidationError{Message: "日付の形式が正しくありません"}
 		}
 		// 日付のみの場合は UTC の 00:00 として扱う
 		spentAt = time.Date(spentAt.Year(), spentAt.Month(), spentAt.Day(), 0, 0, 0, 0, time.UTC)
 	}
 	if spentAt.IsZero() {
-		return models.Expense{}, &ValidationError{Message: "spent_at must be a non-zero time"}
+		return models.Expense{}, &ValidationError{Message: "有効な日付を入力してください"}
 	}
 
 	// Memo 長チェック
 	if len(input.Memo) > MemoMaxLen {
-		return models.Expense{}, &ValidationError{Message: "memo exceeds maximum length"}
+		return models.Expense{}, &ValidationError{Message: "メモは5000文字以内で入力してください"}
 	}
 
 	// Status の検証（任意入力、指定されている場合のみチェック）
@@ -86,7 +86,7 @@ func (s *expenseService) CreateExpense(userID string, input models.CreateExpense
 			// 正規化: DB は小文字で扱う前提
 			input.Status = normalized
 		} else {
-			return models.Expense{}, &ValidationError{Message: "status must be 'planned' or 'confirmed'"}
+			return models.Expense{}, &ValidationError{Message: "ステータスは「予定」または「確定」を選択してください"}
 		}
 	}
 
@@ -97,14 +97,14 @@ func (s *expenseService) CreateExpense(userID string, input models.CreateExpense
 		return models.Expense{}, &InternalError{Message: "internal error"}
 	}
 	if !exists {
-		return models.Expense{}, &ValidationError{Message: "category_id is invalid"}
+		return models.Expense{}, &ValidationError{Message: "カテゴリが存在しません"}
 	}
 
 	exp, err := s.repo.CreateExpense(userID, input)
 	if err != nil {
 		// sql.ErrNoRows -> NotFoundError
 		if errors.Is(err, sql.ErrNoRows) {
-			return models.Expense{}, &NotFoundError{Message: "expense not found"}
+			return models.Expense{}, &NotFoundError{Message: "支出が見つかりません"}
 		}
 
 		// 外部キー制約（category_id）の検出。
@@ -112,7 +112,7 @@ func (s *expenseService) CreateExpense(userID string, input models.CreateExpense
 		// 文言を確認して判定する（安全策）。
 		lerr := strings.ToLower(err.Error())
 		if strings.Contains(lerr, "foreign key") && (strings.Contains(lerr, "category") || strings.Contains(lerr, "category_id")) {
-			return models.Expense{}, &ValidationError{Message: "category_id is invalid"}
+			return models.Expense{}, &ValidationError{Message: "カテゴリが存在しません"}
 		}
 
 		// その他は内部エラーとしてラップして返す
@@ -130,12 +130,12 @@ func (s *expenseService) DeleteExpense(userID string, id int) error {
 	expense, err := s.repo.GetExpenseByID(userID, int32(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return &NotFoundError{Message: "expense not found"}
+			return &NotFoundError{Message: "支出が見つかりません"}
 		}
 		return &InternalError{Message: "internal error"}
 	}
 	if expense == (models.Expense{}) {
-		return &NotFoundError{Message: "expense not found"}
+		return &NotFoundError{Message: "支出が見つかりません"}
 	}
 
 	return s.repo.DeleteExpense(userID, int32(id))
@@ -144,26 +144,26 @@ func (s *expenseService) DeleteExpense(userID string, id int) error {
 func (s *expenseService) UpdateExpense(userID string, input models.UpdateExpenseInput) (models.Expense, error) {
 	// 金額チェック
 	if input.Amount == nil {
-		return models.Expense{}, &ValidationError{Message: "amount must be provided"}
+		return models.Expense{}, &ValidationError{Message: "金額を入力してください"}
 	}
 	if *input.Amount <= 0 {
-		return models.Expense{}, &ValidationError{Message: "amount must be greater than 0"}
+		return models.Expense{}, &ValidationError{Message: "金額は1円以上で入力してください"}
 	}
 	if *input.Amount > BusinessMaxAmount {
-		return models.Expense{}, &ValidationError{Message: "amount exceeds maximum allowed"}
+		return models.Expense{}, &ValidationError{Message: "金額は10億円以下で入力してください"}
 	}
 
 	// カテゴリID チェック
 	if input.CategoryID == nil {
-		return models.Expense{}, &ValidationError{Message: "category_id must be provided"}
+		return models.Expense{}, &ValidationError{Message: "カテゴリを選択してください"}
 	}
 	if *input.CategoryID <= 0 {
-		return models.Expense{}, &ValidationError{Message: "category_id must be greater than 0"}
+		return models.Expense{}, &ValidationError{Message: "有効なカテゴリを選択してください"}
 	}
 
 	// SpentAt の非空チェック
 	if input.SpentAt == "" {
-		return models.Expense{}, &ValidationError{Message: "spent_at must be provided"}
+		return models.Expense{}, &ValidationError{Message: "日付を入力してください"}
 	}
 
 	// 日付フォーマットの検証
@@ -173,17 +173,17 @@ func (s *expenseService) UpdateExpense(userID string, input models.UpdateExpense
 	if err != nil {
 		spentAt, err = time.Parse("2006-01-02", input.SpentAt)
 		if err != nil {
-			return models.Expense{}, &ValidationError{Message: "spent_at is invalid"}
+			return models.Expense{}, &ValidationError{Message: "日付の形式が正しくありません"}
 		}
 		spentAt = time.Date(spentAt.Year(), spentAt.Month(), spentAt.Day(), 0, 0, 0, 0, time.UTC)
 	}
 	if spentAt.IsZero() {
-		return models.Expense{}, &ValidationError{Message: "spent_at must be a non-zero time"}
+		return models.Expense{}, &ValidationError{Message: "有効な日付を入力してください"}
 	}
 
 	// Memo 長チェック
 	if len(input.Memo) > MemoMaxLen {
-		return models.Expense{}, &ValidationError{Message: "memo exceeds maximum length"}
+		return models.Expense{}, &ValidationError{Message: "メモは5000文字以内で入力してください"}
 	}
 
 	// 現在の状態を取得し、ステータス遷移のバリデーションを行う
@@ -202,7 +202,7 @@ func (s *expenseService) UpdateExpense(userID string, input models.UpdateExpense
 		return models.Expense{}, &InternalError{Message: "internal error"}
 	}
 	if !exists {
-		return models.Expense{}, &ValidationError{Message: "category_id is invalid"}
+		return models.Expense{}, &ValidationError{Message: "カテゴリが存在しません"}
 	}
 
 	// 変更後ステータスの決定（未指定なら現状維持）
@@ -213,7 +213,7 @@ func (s *expenseService) UpdateExpense(userID string, input models.UpdateExpense
 		if normalized, ok := models.NormalizeStatus(desiredStatus); ok {
 			desiredStatus = normalized
 		} else {
-			return models.Expense{}, &ValidationError{Message: "status must be 'planned' or 'confirmed'"}
+			return models.Expense{}, &ValidationError{Message: "ステータスは「予定」または「確定」を選択してください"}
 		}
 	}
 

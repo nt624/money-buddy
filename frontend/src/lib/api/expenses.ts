@@ -15,12 +15,16 @@ export async function createExpense(
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(`Failed to create expense: ${res.status} ${text}`)
+    console.error('支出の作成に失敗しました', { status: res.status, body: text })
+    throw new Error('支出の作成に失敗しました')
   }
 
   const data = await res.json()
   if (!data || !data.expense) {
-    throw new Error(`Invalid createExpense response: ${JSON.stringify(data)}`)
+    // 開発者向けログ: 詳細なレスポンス内容を出力
+    console.error('[Dev] 支出のレスポンスが正しくありません', { data })
+    // ユーザー向けエラー: 固定文言のみ
+    throw new Error('支出のレスポンスが正しくありません')
   }
 
   return data.expense
@@ -33,12 +37,15 @@ export async function getExpenses(): Promise<GetExpensesResponse> {
   });
 
   if (!res.ok) {
-    throw new Error("Failed to fetch expenses");
+    throw new Error("支出の取得に失敗しました");
   }
 
   const data = await res.json();
   if (!data || !Array.isArray(data.expenses)) {
-    throw new Error(`Invalid getExpenses response: ${JSON.stringify(data)}`)
+    // 開発者向けログ: 詳細なレスポンス内容を出力
+    console.error('[Dev] 支出のレスポンスが正しくありません', { data })
+    // ユーザー向けエラー: 固定文言のみ
+    throw new Error('支出のレスポンスが正しくありません')
   }
 
   return data;
@@ -58,12 +65,16 @@ export async function updateExpense(
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(`Failed to update expense: ${res.status} ${text}`)
+    console.error('支出の更新に失敗しました', { status: res.status, body: text })
+    throw new Error('支出の更新に失敗しました')
   }
 
   const data = await res.json()
   if (!data || !data.expense) {
-    throw new Error(`Invalid updateExpense response: ${JSON.stringify(data)}`)
+    // 開発者向けログ: 詳細なレスポンス内容を出力
+    console.error('[Dev] 支出のレスポンスが正しくありません', { data })
+    // ユーザー向けエラー: 固定文言のみ
+    throw new Error('支出のレスポンスが正しくありません')
   }
 
   return data.expense
@@ -76,6 +87,7 @@ export async function deleteExpense(id: number): Promise<void> {
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(`Failed to delete expense: ${res.status} ${text}`)
+    console.error('支出の削除に失敗しました', { status: res.status, body: text })
+    throw new Error('支出の削除に失敗しました')
   }
 }

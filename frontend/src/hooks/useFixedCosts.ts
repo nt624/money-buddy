@@ -23,7 +23,7 @@ export function useFixedCosts() {
         const data = await getFixedCosts();
         setFixedCosts(data.fixed_costs);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "unknown error");
+        setError(err instanceof Error ? err.message : "エラーが発生しました");
       } finally {
         setIsLoading(false);
       }
@@ -41,7 +41,7 @@ export function useFixedCosts() {
       const data = await getFixedCosts();
       setFixedCosts(data.fixed_costs);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "unknown error");
+      setError(err instanceof Error ? err.message : "エラーが発生しました");
     } finally {
       setIsLoading(false);
     }
@@ -59,7 +59,7 @@ export function useFixedCosts() {
       setFixedCosts((prevFixedCosts) => [...prevFixedCosts, newFixedCost]);
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "unknown error");
+      setError(err instanceof Error ? err.message : "エラーが発生しました");
       return false;
     } finally {
       setIsSubmitting(false);
@@ -81,7 +81,7 @@ export function useFixedCosts() {
       );
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "unknown error");
+      setError(err instanceof Error ? err.message : "エラーが発生しました");
       return false;
     } finally {
       setIsSubmitting(false);
@@ -100,7 +100,7 @@ export function useFixedCosts() {
       );
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "unknown error");
+      setError(err instanceof Error ? err.message : "エラーが発生しました");
       return false;
     } finally {
       setIsSubmitting(false);

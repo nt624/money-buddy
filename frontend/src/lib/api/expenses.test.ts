@@ -5,6 +5,12 @@ import { CreateExpenseInput, Expense } from "../types/expense";
 beforeEach(() => {
   jest.resetAllMocks();
   (global as any).fetch = jest.fn();
+  // Mock console.error to avoid cluttering test output
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
 });
 
 describe("createExpense", () => {
@@ -59,6 +65,6 @@ describe("createExpense", () => {
       text: async () => "internal error",
     });
 
-    await expect(createExpense(input)).rejects.toThrow(/Failed to create expense:/);
+    await expect(createExpense(input)).rejects.toThrow('支出の作成に失敗しました');
   });
 });

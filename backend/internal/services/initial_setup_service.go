@@ -30,10 +30,10 @@ func NewInitialSetupService(userRepo repositories.UserRepository, fixedCostRepo 
 
 func (s *initialSetupService) CompleteInitialSetup(ctx context.Context, userID string, income, savingGoal int, fixedCosts []models.FixedCostInput) error {
 	if income <= 0 {
-		return &ValidationError{Message: "income must be greater than 0"}
+		return &ValidationError{Message: "収入は1円以上で入力してください"}
 	}
 	if savingGoal < 0 {
-		return &ValidationError{Message: "saving_goal must be greater than or equal to 0"}
+		return &ValidationError{Message: "貯金目標は0円以上で入力してください"}
 	}
 
 	// 固定費の正規化とバリデーション
@@ -43,13 +43,13 @@ func (s *initialSetupService) CompleteInitialSetup(ctx context.Context, userID s
 		trimmedName := strings.TrimSpace(fc.Name)
 
 		if fc.Amount <= 0 {
-			return &ValidationError{Message: "fixed_cost.amount must be greater than 0"}
+			return &ValidationError{Message: "固定費の金額は1円以上で入力してください"}
 		}
 		if trimmedName == "" {
-			return &ValidationError{Message: "fixed_cost.name must be provided"}
+			return &ValidationError{Message: "固定費の名前を入力してください"}
 		}
 		if len(trimmedName) > FixedCostNameMaxLen {
-			return &ValidationError{Message: "fixed_cost.name is too long"}
+			return &ValidationError{Message: "固定費の名前は100文字以内で入力してください"}
 		}
 
 		// 正規化された値を使用

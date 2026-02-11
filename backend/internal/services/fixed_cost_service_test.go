@@ -214,7 +214,7 @@ func TestUpdateFixedCost(t *testing.T) {
 		assert.Error(t, err)
 		var ve *ValidationError
 		assert.ErrorAs(t, err, &ve)
-		assert.Contains(t, err.Error(), "name is required")
+		assert.Contains(t, err.Error(), "名前を入力してください")
 	})
 
 	t.Run("名前が空白のみの場合はエラー", func(t *testing.T) {
@@ -238,7 +238,7 @@ func TestUpdateFixedCost(t *testing.T) {
 		assert.Error(t, err)
 		var ve *ValidationError
 		assert.ErrorAs(t, err, &ve)
-		assert.Contains(t, err.Error(), "name is too long")
+		assert.Contains(t, err.Error(), "名前は100文字以内で入力してください")
 	})
 
 	t.Run("金額が0以下の場合はエラー", func(t *testing.T) {
@@ -250,7 +250,7 @@ func TestUpdateFixedCost(t *testing.T) {
 		assert.Error(t, err)
 		var ve *ValidationError
 		assert.ErrorAs(t, err, &ve)
-		assert.Contains(t, err.Error(), "amount must be greater than 0")
+		assert.Contains(t, err.Error(), "金額は1円以上で入力してください")
 	})
 
 	t.Run("金額が負の値の場合はエラー", func(t *testing.T) {
@@ -273,7 +273,7 @@ func TestUpdateFixedCost(t *testing.T) {
 		assert.Error(t, err)
 		var ve *ValidationError
 		assert.ErrorAs(t, err, &ve)
-		assert.Contains(t, err.Error(), "amount exceeds maximum allowed")
+		assert.Contains(t, err.Error(), "金額は10億円以下で入力してください")
 	})
 
 	t.Run("更新後に固定費が見つからない場合はエラー", func(t *testing.T) {

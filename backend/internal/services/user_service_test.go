@@ -133,7 +133,7 @@ func TestUpdateUserSettings_InvalidIncome(t *testing.T) {
 
 			require.Error(t, err)
 			assert.False(t, called, "repository should not be called for invalid input")
-			assert.Contains(t, err.Error(), "income must be greater than 0")
+			assert.Contains(t, err.Error(), "収入は1円以上で入力してください")
 		})
 	}
 }
@@ -152,7 +152,7 @@ func TestUpdateUserSettings_InvalidSavingGoal(t *testing.T) {
 
 	require.Error(t, err)
 	assert.False(t, called, "repository should not be called for invalid input")
-	assert.Contains(t, err.Error(), "saving goal must be greater than or equal to 0")
+	assert.Contains(t, err.Error(), "貯金目標は0円以上で入力してください")
 }
 
 func TestUpdateUserSettings_IncomeExceedsLimit(t *testing.T) {
@@ -169,7 +169,7 @@ func TestUpdateUserSettings_IncomeExceedsLimit(t *testing.T) {
 
 	require.Error(t, err)
 	assert.False(t, called, "repository should not be called for invalid input")
-	assert.Contains(t, err.Error(), "income must be 10億 or less")
+	assert.Contains(t, err.Error(), "収入は10億円以下で入力してください")
 }
 
 func TestUpdateUserSettings_SavingGoalExceedsLimit(t *testing.T) {
@@ -186,7 +186,7 @@ func TestUpdateUserSettings_SavingGoalExceedsLimit(t *testing.T) {
 
 	require.Error(t, err)
 	assert.False(t, called, "repository should not be called for invalid input")
-	assert.Contains(t, err.Error(), "saving goal must be 10億 or less")
+	assert.Contains(t, err.Error(), "貯金目標は10億円以下で入力してください")
 }
 
 func TestUpdateUserSettings_RepositoryError(t *testing.T) {
