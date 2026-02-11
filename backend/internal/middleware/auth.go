@@ -42,15 +42,24 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		// ユーザーIDをコンテキストに保存
+		if token.UID == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user ID"})
+			c.Abort()
+			return
+		}
 		c.Set(string(UserIDKey), token.UID)
 		c.Next()
 	}
 }
 
 // コンテキストからユーザーIDを取得するヘルパー関数
+// ミドルウェアを通過している場合は必ずユーザーIDが存在する
 func GetUserID(c *gin.Context) string {
 	userID, exists := c.Get(string(UserIDKey))
 	if !exists {
+		// このケースは通常発生しないが、念のためログ出力
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User ID not found in context"})
+		c.Abort()
 		return ""
 	}
 	return userID.(string)

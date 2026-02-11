@@ -1,5 +1,5 @@
 import { Dashboard } from "@/lib/types/dashboard";
-import { API_BASE_URL, getAuthHeaders } from "./client";
+import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
 
 export async function getDashboard(): Promise<Dashboard> {
   const headers = await getAuthHeaders();
@@ -9,12 +9,7 @@ export async function getDashboard(): Promise<Dashboard> {
   });
 
   if (!res.ok) {
-    const text = await res.text();
-    console.error("ダッシュボード取得に失敗しました", {
-      status: res.status,
-      body: text,
-    });
-    throw new Error("ダッシュボードの取得に失敗しました。時間をおいて再度お試しください。");
+    await handleApiError(res, 'ダッシュボードの取得');
   }
 
   const data = await res.json();

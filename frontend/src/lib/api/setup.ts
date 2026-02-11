@@ -1,5 +1,5 @@
 import { InitialSetupRequest, InitialSetupResponse } from "@/lib/types/setup";
-import { API_BASE_URL, getAuthHeaders } from "./client";
+import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
 
 export async function submitInitialSetup(
   input: InitialSetupRequest
@@ -12,12 +12,7 @@ export async function submitInitialSetup(
   });
 
   if (!res.ok) {
-    const text = await res.text();
-    console.error("submitInitialSetup failed", {
-      status: res.status,
-      body: text,
-    });
-    throw new Error("初期設定の送信に失敗しました。時間をおいて再度お試しください。");
+    await handleApiError(res, '初期設定の送信');
   }
 
   const data = await res.json();

@@ -1,5 +1,5 @@
 import { CreateExpenseInput, UpdateExpenseInput, Expense, GetExpensesResponse } from "@/lib/types/expense";
-import { API_BASE_URL, getAuthHeaders } from "./client";
+import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
 
 export async function createExpense(
   input: CreateExpenseInput
@@ -12,9 +12,7 @@ export async function createExpense(
   })
 
   if (!res.ok) {
-    const text = await res.text()
-    console.error('支出の作成に失敗しました', { status: res.status, body: text })
-    throw new Error('支出の作成に失敗しました')
+    await handleApiError(res, '支出の作成');
   }
 
   const data = await res.json()
@@ -37,7 +35,7 @@ export async function getExpenses(): Promise<GetExpensesResponse> {
   });
 
   if (!res.ok) {
-    throw new Error("支出の取得に失敗しました");
+    await handleApiError(res, '支出の取得');
   }
 
   const data = await res.json();
@@ -63,9 +61,7 @@ export async function updateExpense(
   })
 
   if (!res.ok) {
-    const text = await res.text()
-    console.error('支出の更新に失敗しました', { status: res.status, body: text })
-    throw new Error('支出の更新に失敗しました')
+    await handleApiError(res, '支出の更新');
   }
 
   const data = await res.json()
@@ -87,8 +83,6 @@ export async function deleteExpense(id: number): Promise<void> {
   })
 
   if (!res.ok) {
-    const text = await res.text()
-    console.error('支出の削除に失敗しました', { status: res.status, body: text })
-    throw new Error('支出の削除に失敗しました')
+    await handleApiError(res, '支出の削除');
   }
 }

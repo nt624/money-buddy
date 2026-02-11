@@ -1,4 +1,5 @@
 import { auth } from "@/lib/firebase/config";
+import { signOut } from "firebase/auth";
 
 export const API_BASE_URL = "http://localhost:8080";
 
@@ -25,4 +26,42 @@ export async function getAuthHeaders(): Promise<Record<string, string>> {
   }
 
   return headers;
+}
+
+/**
+ * APIレスポンスのエラーハンドリング
+ * 401エラーの場合は自動的にログアウトします
+ */
+export async function handleApiError(response: Response, operation: string): Promise<never> {
+  // 401 Unauthorized - トークンが無効または期限切れ
+  if (response.status === 401) {
+    console.warn("認証エラーが発生しました。ログアウトします。");
+    
+    // 自動ログアウト
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("ログアウトに失敗しました:", error);
+    }
+    
+    // ログインページにリダイレクト
+    if (typeof window !== "undefined") {
+      window.location.href = "/login?reason=session_expired";
+    }
+    
+    throw new Error("認証の有効期限が切れました。再度ログインしてください。");
+  }
+
+  // その他のエラー
+  let errorMessage = `${operation}に失敗しました`;
+  try {
+    const errorData = await response.json();
+    if (errorData.error) {
+      errorMessage = errorData.error;
+    }
+  } catch {
+    // JSONパースエラーは無視
+  }
+
+  throw new Error(errorMessage);
 }

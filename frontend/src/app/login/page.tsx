@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { Container } from '@/components/Layout/Container'
 
@@ -13,6 +13,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const { signIn, signUp, signInWithGoogle } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    // URLパラメータから理由を取得
+    const reason = searchParams.get('reason')
+    if (reason === 'session_expired') {
+      setError('認証の有効期限が切れました。再度ログインしてください。')
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

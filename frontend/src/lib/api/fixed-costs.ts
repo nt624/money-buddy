@@ -6,7 +6,7 @@ import {
   GetFixedCostsResponse,
   UpdateFixedCostResponse,
 } from "@/lib/types/fixed-cost";
-import { API_BASE_URL, getAuthHeaders } from "./client";
+import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
 
 export async function createFixedCost(
   input: CreateFixedCostInput
@@ -19,9 +19,7 @@ export async function createFixedCost(
   });
 
   if (!res.ok) {
-    const text = await res.text();
-    console.error('固定費の作成に失敗しました', { status: res.status, body: text });
-    throw new Error('固定費の作成に失敗しました');
+    await handleApiError(res, '固定費の作成');
   }
 
   const data: CreateFixedCostResponse = await res.json();
@@ -41,9 +39,7 @@ export async function getFixedCosts(): Promise<GetFixedCostsResponse> {
   });
 
   if (!res.ok) {
-    const text = await res.text();
-    console.error('固定費の取得に失敗しました', { status: res.status, body: text });
-    throw new Error('固定費の取得に失敗しました');
+    await handleApiError(res, '固定費の取得');
   }
 
   const data = await res.json();
@@ -67,9 +63,7 @@ export async function updateFixedCost(
   });
 
   if (!res.ok) {
-    const text = await res.text();
-    console.error('固定費の更新に失敗しました', { status: res.status, body: text });
-    throw new Error('固定費の更新に失敗しました');
+    await handleApiError(res, '固定費の更新');
   }
 
   const data: UpdateFixedCostResponse = await res.json();
@@ -89,8 +83,6 @@ export async function deleteFixedCost(id: number): Promise<void> {
   });
 
   if (!res.ok) {
-    const text = await res.text();
-    console.error('固定費の削除に失敗しました', { status: res.status, body: text });
-    throw new Error('固定費の削除に失敗しました');
+    await handleApiError(res, '固定費の削除');
   }
 }

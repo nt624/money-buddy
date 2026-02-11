@@ -1,5 +1,5 @@
 import { Category } from "@/lib/types/category";
-import { API_BASE_URL, getAuthHeaders } from "./client";
+import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
 
 export async function getCategories(): Promise<Category[]> {
   const headers = await getAuthHeaders();
@@ -9,9 +9,7 @@ export async function getCategories(): Promise<Category[]> {
   })
 
   if (!res.ok) {
-    const text = await res.text()
-    console.error('[Dev] カテゴリの取得に失敗しました', { status: res.status, body: text })
-    throw new Error("カテゴリの取得に失敗しました")
+    await handleApiError(res, "カテゴリの取得");
   }
 
   const data = await res.json()
