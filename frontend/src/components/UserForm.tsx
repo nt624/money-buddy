@@ -39,22 +39,15 @@ export function UserForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
+    <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div style={{ 
-          padding: '1rem', 
-          marginBottom: '1rem', 
-          backgroundColor: '#fee2e2', 
-          border: '1px solid #ef4444',
-          borderRadius: '0.375rem',
-          color: '#991b1b'
-        }}>
+        <div className="p-3 bg-danger/10 border border-danger rounded-lg text-danger text-sm">
           {error}
         </div>
       )}
 
-      <div style={{ marginBottom: '1rem' }}>
-        <label htmlFor="income" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>
+      <div className="space-y-2">
+        <label htmlFor="income" className="block text-sm font-medium text-foreground">
           月収（手取り）
         </label>
         <input
@@ -66,18 +59,12 @@ export function UserForm({
           min="1"
           max={BUSINESS_MAX_AMOUNT}
           required
-          style={{
-            width: '100%',
-            padding: '0.5rem',
-            border: '1px solid #d1d5db',
-            borderRadius: '0.375rem',
-            fontSize: '1rem'
-          }}
+          className="w-full px-3 py-2 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </div>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <label htmlFor="savingGoal" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>
+      <div className="space-y-2">
+        <label htmlFor="savingGoal" className="block text-sm font-medium text-foreground">
           貯金目標額（月）
         </label>
         <input
@@ -89,29 +76,15 @@ export function UserForm({
           min="0"
           max={BUSINESS_MAX_AMOUNT}
           required
-          style={{
-            width: '100%',
-            padding: '0.5rem',
-            border: '1px solid #d1d5db',
-            borderRadius: '0.375rem',
-            fontSize: '1rem'
-          }}
+          className="w-full px-3 py-2 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </div>
 
-      <div style={{ display: 'flex', gap: '1rem' }}>
+      <div className="flex gap-2 pt-2">
         <button
           type="submit"
           disabled={isSubmitting}
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: isSubmitting ? '#9ca3af' : '#3b82f6',
-            color: 'white',
-            border: 'none',
-            borderRadius: '0.375rem',
-            cursor: isSubmitting ? 'not-allowed' : 'pointer',
-            fontWeight: 500
-          }}
+          className="px-4 py-2 text-sm font-medium rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isSubmitting ? '保存中...' : '保存'}
         </button>
@@ -119,14 +92,7 @@ export function UserForm({
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: 'transparent',
-            color: '#6b7280',
-            border: '1px solid #d1d5db',
-            borderRadius: '0.375rem',
-            cursor: isSubmitting ? 'not-allowed' : 'pointer'
-          }}
+          className="px-4 py-2 text-sm font-medium rounded-lg bg-secondary hover:bg-secondary-hover text-secondary-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           キャンセル
         </button>
