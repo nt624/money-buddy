@@ -33,7 +33,11 @@ func (h *InitialSetupHandler) CompleteInitialSetup(c *gin.Context) {
 		return
 	}
 
-	userID := middleware.GetUserID(c)
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
+		return
+	}
 
 	err := h.service.CompleteInitialSetup(c.Request.Context(), userID, req.Income, req.SavingGoal, req.FixedCosts)
 	if err != nil {

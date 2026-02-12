@@ -33,7 +33,11 @@ func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 		return
 	}
 
-	userID := middleware.GetUserID(c)
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
+		return
+	}
 	expense, err := h.service.CreateExpense(userID, input)
 	if err != nil {
 		var ve *services.ValidationError
@@ -49,7 +53,11 @@ func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 }
 
 func (h *ExpenseHandler) ListExpenses(c *gin.Context) {
-	userID := middleware.GetUserID(c)
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
+		return
+	}
 	expenses, err := h.service.ListExpenses(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "支出の取得に失敗しました"})
@@ -66,7 +74,11 @@ func (h *ExpenseHandler) DeleteExpense(c *gin.Context) {
 		return
 	}
 
-	userID := middleware.GetUserID(c)
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
+		return
+	}
 	err = h.service.DeleteExpense(userID, int(id))
 	if err != nil {
 		var ve *services.ValidationError
@@ -114,7 +126,11 @@ func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 		Status:     body.Status,
 	}
 
-	userID := middleware.GetUserID(c)
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
+		return
+	}
 	exp, err := h.service.UpdateExpense(userID, input)
 	if err != nil {
 		// Validation errors -> 400

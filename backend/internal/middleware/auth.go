@@ -58,13 +58,11 @@ func AuthMiddleware() gin.HandlerFunc {
 
 // コンテキストからユーザーIDを取得するヘルパー関数
 // ミドルウェアを通過している場合は必ずユーザーIDが存在する
-func GetUserID(c *gin.Context) string {
+// 第2戻り値でユーザーIDが存在するかを返す
+func GetUserID(c *gin.Context) (string, bool) {
 	userID, exists := c.Get(string(UserIDKey))
 	if !exists {
-		// このケースは通常発生しないが、念のためログ出力
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "User ID not found in context"})
-		c.Abort()
-		return ""
+		return "", false
 	}
-	return userID.(string)
+	return userID.(string), true
 }

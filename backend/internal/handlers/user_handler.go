@@ -21,7 +21,11 @@ func NewUserHandler(r gin.IRouter, service services.UserService) {
 }
 
 func (h *UserHandler) GetCurrentUser(c *gin.Context) {
-	userID := middleware.GetUserID(c)
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
+		return
+	}
 
 	user, err := h.service.GetUserByID(c.Request.Context(), userID)
 	if err != nil {
@@ -38,7 +42,11 @@ type UpdateUserSettingsRequest struct {
 }
 
 func (h *UserHandler) UpdateUserSettings(c *gin.Context) {
-	userID := middleware.GetUserID(c)
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
+		return
+	}
 
 	var req UpdateUserSettingsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

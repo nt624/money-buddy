@@ -32,7 +32,11 @@ func NewDashboardHandler(r gin.IRouter, service services.DashboardService) {
 }
 
 func (h *DashboardHandler) GetDashboard(c *gin.Context) {
-	userID := middleware.GetUserID(c)
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
+		return
+	}
 
 	dashboard, err := h.service.GetDashboard(c.Request.Context(), userID)
 	if err != nil {
