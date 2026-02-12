@@ -26,7 +26,7 @@ func TestAuthMiddleware_NoAuthorizationHeader(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
-	assert.Contains(t, w.Body.String(), "Authorization header required")
+	assert.Contains(t, w.Body.String(), "認証ヘッダーが必要です")
 }
 
 func TestAuthMiddleware_InvalidAuthorizationFormat_NoBearer(t *testing.T) {
@@ -42,7 +42,7 @@ func TestAuthMiddleware_InvalidAuthorizationFormat_NoBearer(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
-	assert.Contains(t, w.Body.String(), "Invalid authorization format")
+	assert.Contains(t, w.Body.String(), "認証形式が正しくありません")
 }
 
 func TestAuthMiddleware_InvalidAuthorizationFormat_OnlyBearer(t *testing.T) {
@@ -58,7 +58,7 @@ func TestAuthMiddleware_InvalidAuthorizationFormat_OnlyBearer(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
-	assert.Contains(t, w.Body.String(), "Invalid authorization format")
+	assert.Contains(t, w.Body.String(), "認証形式が正しくありません")
 }
 
 func TestAuthMiddleware_InvalidToken(t *testing.T) {
