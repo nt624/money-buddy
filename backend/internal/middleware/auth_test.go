@@ -61,6 +61,22 @@ func TestAuthMiddleware_InvalidAuthorizationFormat_OnlyBearer(t *testing.T) {
 	assert.Contains(t, w.Body.String(), "認証形式が正しくありません")
 }
 
+func TestAuthMiddleware_InvalidAuthorizationFormat_BearerWithSpacesOnly(t *testing.T) {
+	router := setupTestRouter()
+	router.Use(AuthMiddleware())
+	router.GET("/test", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "success"})
+	})
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/test", nil)
+	req.Header.Set("Authorization", "Bearer   ")
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	assert.Contains(t, w.Body.String(), "認証形式が正しくありません")
+}
+
 func TestAuthMiddleware_InvalidToken(t *testing.T) {
 	// 注意: このテストは実際のFirebase Authが初期化されている必要があります
 	// Firebase Authが未初期化の場合、トークン検証でpanicが発生します

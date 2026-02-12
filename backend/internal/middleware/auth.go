@@ -24,15 +24,21 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// "Bearer <token>" から token 部分を取得
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
+		// "Bearer " で始まるかチェック
+		if !strings.HasPrefix(authHeader, "Bearer ") {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "認証形式が正しくありません"})
 			c.Abort()
 			return
 		}
 
-		idToken := parts[1]
+		// "Bearer " を除去してトークンを取得
+		idToken := strings.TrimPrefix(authHeader, "Bearer ")
+		idToken = strings.TrimSpace(idToken)
+		if idToken == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "認証形式が正しくありません"})
+			c.Abort()
+			return
+		}
 
 		// ID Token検証
 		token, err := auth.FirebaseAuth.VerifyIDToken(context.Background(), idToken)
