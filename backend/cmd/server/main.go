@@ -53,6 +53,7 @@ func main() {
 			c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 			c.Writer.Header().Set("Access-Control-Max-Age", "86400") // 24時間キャッシュ
+			c.Writer.Header().Set("Vary", "Origin")                  // 共有キャッシュ対策
 		}
 
 		if c.Request.Method == "OPTIONS" {
