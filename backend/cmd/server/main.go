@@ -85,6 +85,11 @@ func main() {
 	fixedCostService := services.NewFixedCostService(fixedCostRepo)
 	dashboardService := services.NewDashboardService(dashboardRepo)
 
+	// 認証不要なエンドポイント
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
+
 	// 認証が必要なエンドポイント（ミドルウェア適用）
 	api := r.Group("/")
 	api.Use(middleware.AuthMiddleware())
