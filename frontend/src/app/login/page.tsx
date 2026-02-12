@@ -15,10 +15,32 @@ export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
+  /**
+   * リダイレクト先を安全に取得する
+   * オープンリダイレクト脆弱性対策: アプリ内パス（/で始まる）のみ許可
+   */
+  const getSafeRedirect = (): string => {
+    const redirect = searchParams.get('redirect')
+    
+    // redirectが指定されていない、または空の場合
+    if (!redirect) {
+      return '/'
+    }
+    
+    // /で始まる相対パスのみ許可
+    if (redirect.startsWith('/') && !redirect.startsWith('//')) {
+      return redirect
+    }
+    
+    // 不正な形式の場合はホームにフォールバック
+    console.warn(`Invalid redirect parameter detected: ${redirect}`)
+    return '/'
+  }
+
   useEffect(() => {
     // 既にログイン済みの場合、リダイレクト先またはホームへ
     if (user) {
-      const redirect = searchParams.get('redirect') || '/'
+      const redirect = getSafeRedirect()
       router.push(redirect)
       return
     }
@@ -42,8 +64,8 @@ export default function LoginPage() {
         await signIn(email, password)
       }
       
-      // リダイレクト先を取得（デフォルトはホーム）
-      const redirect = searchParams.get('redirect') || '/'
+      // リダイレクト先を取得（安全なパスのみ）
+      const redirect = getSafeRedirect()
       router.push(redirect)
     } catch (err: any) {
       // Firebaseのエラーメッセージを日本語化
@@ -73,8 +95,8 @@ export default function LoginPage() {
     try {
       await signInWithGoogle()
       
-      // リダイレクト先を取得（デフォルトはホーム）
-      const redirect = searchParams.get('redirect') || '/'
+      // リダイレクト先を取得（安全なパスのみ）
+      const redirect = getSafeRedirect()
       router.push(redirect)
     } catch (err: any) {
       console.error('Googleログインエラー:', err)
