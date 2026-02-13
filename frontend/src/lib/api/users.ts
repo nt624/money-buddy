@@ -28,7 +28,7 @@ export async function getMe(): Promise<User> {
 }
 
 export async function updateUser(input: UpdateUserInput): Promise<void> {
-  const headers = await getAuthHeaders();
+  const headers = await getAuthHeaders(true);
   const res = await fetch(`${API_BASE_URL}/user/me`, {
     method: "PUT",
     headers,

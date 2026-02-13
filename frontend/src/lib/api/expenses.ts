@@ -4,7 +4,7 @@ import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
 export async function createExpense(
   input: CreateExpenseInput
 ): Promise<Expense> {
-  const headers = await getAuthHeaders();
+  const headers = await getAuthHeaders(true);
   const res = await fetch(`${API_BASE_URL}/expenses`, {
     method: 'POST',
     headers,
@@ -53,7 +53,7 @@ export async function updateExpense(
   id: number,
   input: UpdateExpenseInput
 ): Promise<Expense> {
-  const headers = await getAuthHeaders();
+  const headers = await getAuthHeaders(true);
   const res = await fetch(`${API_BASE_URL}/expenses/${id}`, {
     method: 'PUT',
     headers,

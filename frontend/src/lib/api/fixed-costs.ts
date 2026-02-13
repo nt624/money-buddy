@@ -11,7 +11,7 @@ import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
 export async function createFixedCost(
   input: CreateFixedCostInput
 ): Promise<FixedCost> {
-  const headers = await getAuthHeaders();
+  const headers = await getAuthHeaders(true);
   const res = await fetch(`${API_BASE_URL}/fixed-costs`, {
     method: "POST",
     headers,
@@ -55,7 +55,7 @@ export async function updateFixedCost(
   id: number,
   input: UpdateFixedCostInput
 ): Promise<FixedCost> {
-  const headers = await getAuthHeaders();
+  const headers = await getAuthHeaders(true);
   const res = await fetch(`${API_BASE_URL}/fixed-costs/${id}`, {
     method: "PUT",
     headers,

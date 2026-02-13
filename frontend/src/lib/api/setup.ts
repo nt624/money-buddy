@@ -4,7 +4,7 @@ import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
 export async function submitInitialSetup(
   input: InitialSetupRequest
 ): Promise<InitialSetupResponse> {
-  const headers = await getAuthHeaders();
+  const headers = await getAuthHeaders(true);
   const res = await fetch(`${API_BASE_URL}/setup`, {
     method: "POST",
     headers,

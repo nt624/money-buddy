@@ -6,11 +6,15 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://loca
 /**
  * 認証ヘッダーを含むヘッダーオブジェクトを作成します
  * ユーザーがログインしている場合は、Firebase ID Tokenを含めます
+ * @param hasBody リクエストボディがある場合true（Content-Typeヘッダーを付与）
  */
-export async function getAuthHeaders(): Promise<Record<string, string>> {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
+export async function getAuthHeaders(hasBody: boolean = false): Promise<Record<string, string>> {
+  const headers: Record<string, string> = {};
+
+  // リクエストボディがある場合のみContent-Typeを付与
+  if (hasBody) {
+    headers["Content-Type"] = "application/json";
+  }
 
   // 現在のユーザーがログインしている場合、ID Tokenを取得
   const user = auth.currentUser;
