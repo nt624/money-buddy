@@ -61,7 +61,25 @@
 - デフォルトカテゴリの提供（食費、交通費、娯楽費など）
 - カテゴリ一覧の取得
 
-#### 5. UI/UX機能
+#### 5. 認証・セキュリティ機能
+- **Firebase Authentication**
+  - メール/パスワード認証
+  - Googleログイン（OAuth）
+  - JWT ID Tokenベースの認証
+- **セキュリティ対策**
+  - 認証ミドルウェアによるAPIの保護
+  - 401エラー時の自動ログアウト
+  - ユーザーID検証
+  - ログマスキング（トークン情報を非表示）
+  - オープンリダイレクト対策
+  - CORS設定（動的オリジン検証）
+- **UX機能**
+  - 認証ガード（ロード中の表示）
+  - 保護されたルート
+  - ログイン後のリダイレクト
+  - セッション期限切れの通知
+
+#### 6. UI/UX機能
 - **ダークモード**
   - ライトモード/ダークモードの切り替え
   - システム設定への対応
@@ -73,14 +91,14 @@
 
 ### 今後実装予定（MVP後）📋
 
-- カテゴリ別支出サマリー
+- カテゴリ別支出サマリー・詳細分析
 - 月別の比較グラフ・トレンド分析
 - 無駄遣いアラート・通知機能
 - 収支レポート（PDF生成など）
 - カスタムカテゴリの作成・編集
 - 固定費の編集・削除機能
 - 今日までの利用ペースとの比較機能
-- 認証機能（Firebase Auth）の実装
+- プロフィール管理機能
 - モバイルアプリ（Expo / React Native）開発
 
 ---
@@ -198,13 +216,19 @@ _スマートフォンでも快適に操作可能_
 - **クエリビルダー**: sqlc
 - **テストフレームワーク**: testify
 - **API仕様**: OpenAPI 3.0
+- **認証**: Firebase Admin SDK（JWT検証）
 
 ### データベース
 - PostgreSQL
 - 想定環境: Supabase / Railway / Render / Neon など
 
+### 認証
+- **Firebase Authentication**
+  - フロントエンド: Firebase SDK 9.x
+  - バックエンド: Firebase Admin SDK v4
+  - 認証方式: メール/パスワード、Google OAuth
+
 ### 将来的な拡張
-- **認証**: Firebase Auth
 - **モバイル**: Expo (React Native)
 - **インフラ**: AWS (ECS / RDS / S3)
 
@@ -296,11 +320,33 @@ psql -d money_buddy -f db/schema/fixed_costs.sql
 psql -d money_buddy -f db/schema/expenses.sql
 ```
 
-3. 環境変数を設定します（必要に応じて `.env` ファイルを作成）：
+3. 環境変数を設定します（`backend/.env` ファイルを作成）：
 
 ```bash
-export DATABASE_URL="postgres://ユーザー名:パスワード@localhost:5432/money_buddy?sslmode=disable"
+# データベース接続
+DATABASE_DSN=host=localhost port=5432 user=postgres password=yourpassword dbname=money_buddy sslmode=disable
+
+# Firebase認証（どちらか一方を設定）
+# 方法1: 認証情報ファイルのパス（開発環境推奨）
+FIREBASE_CREDENTIALS_PATH=./firebase-admin-key.json
+
+# 方法2: JSON文字列（本番環境推奨）
+# FIREBASE_CREDENTIALS_JSON={"type":"service_account",...}
+
+# CORS設定（カンマ区切りで複数指定可能）
+ALLOWED_ORIGINS=http://localhost:3000
+
+# サーバーポート
+PORT=8080
+
+# 環境（development or production）
+ENV=development
 ```
+
+4. Firebase Admin SDKの認証情報を取得：
+   - [Firebase Console](https://console.firebase.google.com/) でプロジェクトを作成
+   - プロジェクト設定 → サービスアカウント → 新しい秘密鍵の生成
+   - ダウンロードしたJSONファイルを `backend/firebase-admin-key.json` として保存
 
 ### バックエンドの起動
 
@@ -316,6 +362,23 @@ go run cmd/server/main.go
 
 ### フロントエンドの起動
 
+1. 環境変数を設定します（`frontend/.env.local` ファイルを作成）：
+
+```bash
+# APIベースURL
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+
+# Firebase設定（Firebase Consoleから取得）
+NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
+NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abcdef
+```
+
+2. 依存関係のインストールとサーバー起動：
+
 ```bash
 cd frontend
 
@@ -326,7 +389,8 @@ npm install
 npm run dev
 ```
 
-ブラウザで `http://localhost:3000` にアクセスします。
+3. ブラウザで `http://localhost:3000` にアクセス
+4. 初回アクセス時はログイン/サインアップ画面が表示されます
 
 ---
 
@@ -337,6 +401,14 @@ API仕様は OpenAPI 3.0 形式で定義されています。詳細は [backend/
 ### ベースURL
 ```
 http://localhost:8080
+```
+
+### 認証
+
+全てのAPIエンドポイントは認証が必要です。リクエストヘッダーに以下を含める必要があります：
+
+```
+Authorization: Bearer <Firebase ID Token>
 ```
 
 ### エンドポイント一覧
@@ -658,9 +730,11 @@ npm run build
 
 ## プロジェクトの状態
 
-本プロジェクトは**MVP（Minimum Viable Product）がほぼ完成**した段階です。
+本プロジェクトは**MVP（Minimum Viable Product）が完成**した段階です。
 
 ### ✅ 完成している機能
+- **認証システム**（Firebase Auth: メール/パスワード、Google OAuth）
+- **セキュリティ対策**（JWT検証、自動ログアウト、ログマスキング、CORS設定）
 - 初期設定フロー（収入・貯金・固定費の設定）
 - ダッシュボード（残額表示、月次サマリー、色分け表示）
 - 支出の登録・更新・削除
@@ -671,10 +745,10 @@ npm run build
 - リアルタイム更新
 
 ### 🚧 開発中・今後の拡張
-- 認証機能（Firebase Auth）
 - カテゴリ別支出の詳細分析
-- 月別トレンド分析
+- 月別トレンド分析・グラフ機能
 - モバイルアプリ版（React Native）
+- プロフィール管理機能
 
 ### 動作確認済み環境
 - **ブラウザ**: Chrome, Safari, Firefox（最新版）
@@ -695,13 +769,22 @@ npm run build
 - ステータス切替のシンプルなUI
 - モバイルでも快適な操作性
 
-### 3. 技術的な堅牢性
+### 3. セキュリティ・プライバシー
+- Firebase Authenticationによる安全な認証
+- JWT検証によるAPIの保護
+- 自動ログアウトによるセッション管理
+- ログマスキングによる情報漏洩防止
+- CORS設定による不正アクセス防止
+- オープンリダイレクト対策
+
+### 4. 技術的な堅牢性
 - TypeScript + sqlcによる完全な型安全性
 - PostgreSQLによる信頼性の高いデータ管理
 - OpenAPI仕様書によるAPI設計の透明性
 - テストコード完備（Go: testify, フロントエンド: Jest）
+- 本番環境を想定した設定管理
 
-### 4. 拡張性
+### 5. 拡張性
 - クリーンアーキテクチャ（レイヤー分離）
 - 依存性注入によるテスタビリティ
 - 認証機能の追加を想定した設計
