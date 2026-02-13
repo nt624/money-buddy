@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"money-buddy-backend/internal/middleware"
 	"money-buddy-backend/internal/services"
 )
 
@@ -14,7 +15,7 @@ type FixedCostHandler struct {
 	service services.FixedCostService
 }
 
-func NewFixedCostHandler(r *gin.Engine, service services.FixedCostService) {
+func NewFixedCostHandler(r gin.IRouter, service services.FixedCostService) {
 	handler := &FixedCostHandler{service: service}
 
 	r.POST("/fixed-costs", handler.CreateFixedCost)
@@ -31,8 +32,11 @@ type CreateFixedCostRequest struct {
 
 // CreateFixedCost は固定費を作成します
 func (h *FixedCostHandler) CreateFixedCost(c *gin.Context) {
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
+		return
+	}
 
 	// リクエストボディ取得
 	var req CreateFixedCostRequest
@@ -58,8 +62,11 @@ func (h *FixedCostHandler) CreateFixedCost(c *gin.Context) {
 
 // ListFixedCosts は固定費一覧を取得します
 func (h *FixedCostHandler) ListFixedCosts(c *gin.Context) {
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
+		return
+	}
 
 	fixedCosts, err := h.service.ListFixedCosts(c.Request.Context(), userID)
 	if err != nil {
@@ -78,8 +85,11 @@ type UpdateFixedCostRequest struct {
 
 // UpdateFixedCost は固定費を更新します
 func (h *FixedCostHandler) UpdateFixedCost(c *gin.Context) {
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
+		return
+	}
 
 	// IDパラメータ取得
 	idStr := c.Param("id")
@@ -118,8 +128,11 @@ func (h *FixedCostHandler) UpdateFixedCost(c *gin.Context) {
 
 // DeleteFixedCost は固定費を削除します
 func (h *FixedCostHandler) DeleteFixedCost(c *gin.Context) {
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
+		return
+	}
 
 	// IDパラメータ取得
 	idStr := c.Param("id")

@@ -12,7 +12,7 @@ type CategoryHandler struct {
 	service services.CategoryService
 }
 
-func NewCategoryHandler(r *gin.Engine, service services.CategoryService) {
+func NewCategoryHandler(r gin.IRouter, service services.CategoryService) {
 	h := &CategoryHandler{service: service}
 	r.GET("/categories", h.ListCategories)
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"money-buddy-backend/internal/middleware"
 	"money-buddy-backend/internal/models"
 	"money-buddy-backend/internal/services"
 )
@@ -20,7 +21,7 @@ type initialSetupRequest struct {
 	FixedCosts []models.FixedCostInput `json:"fixedCosts"`
 }
 
-func NewInitialSetupHandler(r *gin.Engine, service services.InitialSetupService) {
+func NewInitialSetupHandler(r gin.IRouter, service services.InitialSetupService) {
 	h := &InitialSetupHandler{service: service}
 	r.POST("/setup", h.CompleteInitialSetup)
 }
@@ -32,8 +33,11 @@ func (h *InitialSetupHandler) CompleteInitialSetup(c *gin.Context) {
 		return
 	}
 
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
+		return
+	}
 
 	err := h.service.CompleteInitialSetup(c.Request.Context(), userID, req.Income, req.SavingGoal, req.FixedCosts)
 	if err != nil {

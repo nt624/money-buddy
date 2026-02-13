@@ -1,12 +1,24 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useTheme } from '@/hooks/useTheme'
+import { useAuth } from '@/contexts/AuthContext'
 
 export function Header() {
   const pathname = usePathname()
+  const router = useRouter()
   const { theme, toggleTheme, mounted } = useTheme()
+  const { user, signOut, loading } = useAuth()
+
+  const handleLogout = async () => {
+    try {
+      await signOut()
+      router.push('/login')
+    } catch (error) {
+      console.error('ログアウトエラー:', error)
+    }
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -18,22 +30,41 @@ export function Header() {
 
         {/* Navigation */}
         <nav className="flex flex-1 items-center justify-end space-x-4 sm:space-x-6">
-          <Link
-            href="/"
-            className={`text-sm font-medium transition-colors hover:text-primary ${
-              pathname === '/' ? 'text-foreground' : 'text-muted-foreground'
-            }`}
-          >
-            ホーム
-          </Link>
-          <Link
-            href="/settings"
-            className={`text-sm font-medium transition-colors hover:text-primary ${
-              pathname === '/settings' ? 'text-foreground' : 'text-muted-foreground'
-            }`}
-          >
-            設定
-          </Link>
+          {!loading && user && (
+            <>
+              <Link
+                href="/"
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  pathname === '/' ? 'text-foreground' : 'text-muted-foreground'
+                }`}
+              >
+                ホーム
+              </Link>
+              <Link
+                href="/settings"
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  pathname === '/settings' ? 'text-foreground' : 'text-muted-foreground'
+                }`}
+              >
+                設定
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              >
+                ログアウト
+              </button>
+            </>
+          )}
+          
+          {!loading && !user && (
+            <Link
+              href="/login"
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              ログイン
+            </Link>
+          )}
 
           {/* Dark Mode Toggle Button */}
           <button

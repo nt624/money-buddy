@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"money-buddy-backend/internal/middleware"
 	"money-buddy-backend/internal/services"
 )
 
@@ -13,15 +14,18 @@ type UserHandler struct {
 	service services.UserService
 }
 
-func NewUserHandler(r *gin.Engine, service services.UserService) {
+func NewUserHandler(r gin.IRouter, service services.UserService) {
 	h := &UserHandler{service: service}
 	r.GET("/user/me", h.GetCurrentUser)
 	r.PUT("/user/me", h.UpdateUserSettings)
 }
 
 func (h *UserHandler) GetCurrentUser(c *gin.Context) {
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
+		return
+	}
 
 	user, err := h.service.GetUserByID(c.Request.Context(), userID)
 	if err != nil {
@@ -38,8 +42,11 @@ type UpdateUserSettingsRequest struct {
 }
 
 func (h *UserHandler) UpdateUserSettings(c *gin.Context) {
-	// TODO: Extract userID from authentication context when auth is implemented
-	userID := DummyUserID
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
+		return
+	}
 
 	var req UpdateUserSettingsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

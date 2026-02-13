@@ -1,22 +1,18 @@
 import { CreateExpenseInput, UpdateExpenseInput, Expense, GetExpensesResponse } from "@/lib/types/expense";
-
-const API_BASE_URL = "http://localhost:8080";
+import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
 
 export async function createExpense(
   input: CreateExpenseInput
 ): Promise<Expense> {
+  const headers = await getAuthHeaders(true);
   const res = await fetch(`${API_BASE_URL}/expenses`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify(input),
   })
 
   if (!res.ok) {
-    const text = await res.text()
-    console.error('支出の作成に失敗しました', { status: res.status, body: text })
-    throw new Error('支出の作成に失敗しました')
+    await handleApiError(res, '支出の作成');
   }
 
   const data = await res.json()
@@ -32,12 +28,14 @@ export async function createExpense(
 
 
 export async function getExpenses(): Promise<GetExpensesResponse> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/expenses`, {
     method: "GET",
+    headers,
   });
 
   if (!res.ok) {
-    throw new Error("支出の取得に失敗しました");
+    await handleApiError(res, '支出の取得');
   }
 
   const data = await res.json();
@@ -55,18 +53,15 @@ export async function updateExpense(
   id: number,
   input: UpdateExpenseInput
 ): Promise<Expense> {
+  const headers = await getAuthHeaders(true);
   const res = await fetch(`${API_BASE_URL}/expenses/${id}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify(input),
   })
 
   if (!res.ok) {
-    const text = await res.text()
-    console.error('支出の更新に失敗しました', { status: res.status, body: text })
-    throw new Error('支出の更新に失敗しました')
+    await handleApiError(res, '支出の更新');
   }
 
   const data = await res.json()
@@ -81,13 +76,13 @@ export async function updateExpense(
 }
 
 export async function deleteExpense(id: number): Promise<void> {
+  const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/expenses/${id}`, {
     method: 'DELETE',
+    headers,
   })
 
   if (!res.ok) {
-    const text = await res.text()
-    console.error('支出の削除に失敗しました', { status: res.status, body: text })
-    throw new Error('支出の削除に失敗しました')
+    await handleApiError(res, '支出の削除');
   }
 }
