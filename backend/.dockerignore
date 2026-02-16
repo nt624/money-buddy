@@ -1,0 +1,25 @@
+# Git
+.git
+.gitignore
+
+# ビルド成果物
+main
+*.test
+*.out
+
+# ログファイル
+*.log
+
+# 環境変数ファイル
+.env
+.env.local
+
+# Firebase秘密鍵（環境変数で渡すため）
+firebase-admin-key.json
+
+# ドキュメント
+*.md
+README.md
+
+# その他
+.DS_Store
