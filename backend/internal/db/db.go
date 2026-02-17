@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func NewDB() (*sql.DB, error) {
@@ -15,7 +15,7 @@ func NewDB() (*sql.DB, error) {
 		dsn = "host=localhost port=5432 user=appuser password=password dbname=expense_db sslmode=disable"
 	}
 
-	db, err := sql.Open("postgres", dsn)
+	db, err := sql.Open("pgx", dsn)
 	if err != nil {
 		return nil, err
 	}
