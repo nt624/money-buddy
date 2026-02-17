@@ -1,53 +1,231 @@
-# money-buddy-backend
+# Money Buddy - Backend API
 
-このリポジトリは Money Buddy のバックエンドです。Go と `sqlc` を使って Postgres とやり取りする小さな API を提供します。
+> Go + Gin + PostgreSQL + Firebase Auth による REST API
 
-**重要:** このプロジェクトは sqlc によって生成されたコード（`/db/generated`）をリポジトリに含めています。理由と運用は下記を参照してください。
+このディレクトリは Money Buddy のバックエンド API です。
 
----
+## 🚀 本番環境
 
-## 方針: sqlc 生成物をリポジトリに含める理由
-- CI やローカルで `sqlc` をインストールしていない環境でもビルド可能にするため。
-- 生成コードをコミットしておくとレビューやデバッグが容易になるため。
+- **デプロイ先**: Railway
+- **URL**: https://money-buddy-production.up.railway.app
+- **Health Check**: https://money-buddy-production.up.railway.app/health
 
-運用上の注意:
-- `sqlc` のバージョンを固定してください（`sqlc.yaml` にバージョン情報を残すか、README に記載）。
-- 生成 SQL や DB スキーマを変更したときは必ず `sqlc generate` を実行して `db/generated` を更新し、差分をコミットしてください。
-- CI では生成物が最新かをチェックするステップを追加することを推奨します（例: `sqlc generate` の後 `git diff --exit-code`）。
+## 技術スタック
 
----
+- **言語**: Go 1.25
+- **フレームワーク**: Gin
+- **データベース**: PostgreSQL (Neon Serverless)
+- **データベースドライバー**: pgx/v5
+- **クエリビルダー**: sqlc（型安全なSQL生成）
+- **認証**: Firebase Admin SDK（JWT検証）
+- **API仕様**: OpenAPI 3.0
+- **テスト**: testify
+- **コンテナ**: Docker（Alpine Linux）
 
-## 開発環境セットアップ（ローカル）
+## 📁 プロジェクト構成
 
-前提:
-- Go (推奨: 1.20+)
-- Postgres（ローカルまたはリモート）
-
-1. このリポジトリをクローン
-
-```bash
-git clone <repo-url>
-cd money-buddy-backend
+```
+backend/
+├── cmd/server/           # エントリーポイント
+├── db/
+│   ├── schema/          # DDL（テーブル定義）
+│   ├── query/           # SQLクエリ（sqlc用）
+│   └── generated/       # sqlc自動生成コード
+├── internal/
+│   ├── auth/           # Firebase認証初期化
+│   ├── db/             # DB接続・トランザクション
+│   ├── handlers/       # HTTPハンドラ層
+│   ├── middleware/     # 認証ミドルウェア
+│   ├── models/         # ドメインモデル
+│   ├── repositories/   # リポジトリインターフェース
+│   └── services/       # ビジネスロジック層
+├── infra/
+│   ├── repository/     # リポジトリ実装（sqlc）
+│   └── transaction/    # トランザクション管理
+├── openapi/
+│   └── openapi.yaml    # OpenAPI 3.0仕様
+├── Dockerfile          # 本番環境用コンテナ
+├── .dockerignore
+├── .env.example        # 環境変数テンプレート
+└── ENV_SETUP.md        # セットアップガイド
 ```
 
-2. データベース接続設定
-- デフォルトの DSN は `internal/db/db.go` に書かれています。必要に応じて編集してください。
+## 🛠️ ローカル開発環境のセットアップ
 
-3. 既に生成済みの sqlc コードはリポジトリに含めてあるため、通常は追加の生成は不要です。
-	 ただし、SQL を変更した場合は以下を実行して生成物を更新してください。
+### 前提条件
+
+- Go 1.25以上
+- PostgreSQL 14以上
+- sqlc（SQL変更時のみ必要）
+
+### 1. 依存関係のインストール
 
 ```bash
-# 必要なら sqlc をインストール
-go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.30.0
+go mod download
+```
 
+### 2. データベースのセットアップ
+
+```bash
+# データベース作成
+createdb money_buddy
+
+# スキーマ適用
+psql -d money_buddy -f db/schema/users.sql
+psql -d money_buddy -f db/schema/categories.sql
+psql -d money_buddy -f db/schema/fixed_costs.sql
+psql -d money_buddy -f db/schema/expenses.sql
+```
+
+### 3. 環境変数の設定
+
+`.env` ファイルを作成：
+
+```bash
+# データベース（Pooled Connection推奨）
+DATABASE_DSN=host=localhost port=5432 user=postgres password=yourpassword dbname=money_buddy sslmode=disable
+
+# Firebase認証（開発環境）
+FIREBASE_CREDENTIALS_PATH=./firebase-admin-key.json
+
+# CORS設定
+ALLOWED_ORIGINS=http://localhost:3000
+
+# サーバー設定
+PORT=8080
+ENV=development
+```
+
+### 4. Firebase Admin SDKの設定
+
+1. [Firebase Console](https://console.firebase.google.com/) でサービスアカウント鍵を生成
+2. `firebase-admin-key.json` として保存
+
+### 5. サーバー起動
+
+```bash
+go run cmd/server/main.go
+```
+
+サーバーが起動したら http://localhost:8080/health でヘルスチェック可能です。
+
+## 🧪 テストの実行
+
+```bash
+# 全テスト実行
+go test ./...
+
+# カバレッジ付き
+go test -cover ./...
+
+# 特定のパッケージ
+go test ./internal/services/...
+```
+
+## 🔧 sqlcによるコード生成
+
+**重要**: 生成済みコードは `db/generated/` にコミット済みです。SQL変更時のみ再生成が必要です。
+
+```bash
+# sqlcのインストール（初回のみ）
+go install github.com/sqlcdev/sqlc/cmd/sqlc@v1.30.0
+
+# コード生成
 cd db
 sqlc generate
 ```
 
-4. ビルド・起動
+生成後は必ず差分を確認してコミットしてください。
+
+## 🐳 Dockerビルド
 
 ```bash
-go build ./...
+# ビルド
+docker build -t money-buddy-backend .
+
+# ローカル実行
+docker run -p 8080:8080 \
+  -e DATABASE_DSN="host=host.docker.internal port=5432 user=postgres password=yourpassword dbname=money_buddy sslmode=disable" \
+  -e FIREBASE_CREDENTIALS_JSON='{"type":"service_account",...}' \
+  -e ALLOWED_ORIGINS="http://localhost:3000" \
+  money-buddy-backend
+```
+
+## 📚 API仕様
+
+詳細は [openapi/openapi.yaml](openapi/openapi.yaml) を参照してください。
+
+### 主要エンドポイント
+
+| メソッド | パス | 説明 |
+|---------|------|------|
+| GET | `/health` | ヘルスチェック（認証不要） |
+| POST | `/setup` | 初期設定 |
+| GET | `/user/me` | ユーザー情報取得 |
+| PUT | `/user/me` | ユーザー情報更新 |
+| GET | `/dashboard` | ダッシュボードデータ |
+| GET/POST/PUT/DELETE | `/expenses` | 支出管理 |
+| GET | `/categories` | カテゴリ一覧 |
+| GET/POST/PUT/DELETE | `/fixed-costs` | 固定費管理 |
+
+**認証**: 全エンドポイント（`/health`以外）は`Authorization: Bearer <Firebase ID Token>`が必要です。
+
+## 🔒 セキュリティ
+
+- Firebase Admin SDKによるJWT検証
+- ユーザーIDはトークンから取得（改ざん不可）
+- CORS設定による不正アクセス防止
+- ログマスキング（トークン情報非表示）
+- 非rootユーザーでのコンテナ実行
+
+## 📦 デプロイ
+
+### Railway（本番環境）
+
+1. GitHubリポジトリを連携
+2. 環境変数を設定（`.env.example`参照）
+3. 自動デプロイが実行される
+
+必要な環境変数：
+- `DATABASE_DSN`（Neon Pooled Connection）
+- `FIREBASE_CREDENTIALS_JSON`
+- `ALLOWED_ORIGINS`（Vercelの本番URL）
+- `ENV=production`
+- `PORT=8080`
+
+詳細は [ENV_SETUP.md](ENV_SETUP.md) を参照してください。
+
+## 🐛 トラブルシューティング
+
+### データベース接続エラー
+
+- Neon Pooled Connection (`-pooler`)を使用しているか確認
+- `DATABASE_DSN`のフォーマットが正しいか確認
+- コネクションプール設定を確認（`internal/db/db.go`）
+
+### Firebase認証エラー
+
+- `FIREBASE_CREDENTIALS_PATH`または`FIREBASE_CREDENTIALS_JSON`が正しく設定されているか確認
+- Firebase Consoleでサービスアカウント鍵を再生成
+
+### CORS エラー
+
+- `ALLOWED_ORIGINS`にフロントエンドのURLが含まれているか確認
+- `https://`を含めているか確認
+
+## 📖 関連ドキュメント
+
+- [ルートREADME](../README.md) - プロジェクト全体の概要
+- [ENV_SETUP.md](ENV_SETUP.md) - 環境変数の詳細設定
+- [openapi.yaml](openapi/openapi.yaml) - API仕様書
+
+## 🤝 コントリビューション
+
+このプロジェクトは個人開発中です。
+
+## 📝 ライセンス
+
+未定
 go run cmd/server/main.go
 ```
 
@@ -241,5 +419,3 @@ curl -X DELETE http://localhost:8080/expenses/123
 - 生成物を更新する際は、他の開発者に通知するか PR に生成手順を含めてください。
 
 ---
-
-必要ならこの README に CI 用のフルワークフローや Docker 起動手順も追記します。どの程度まで書きたいか教えてください。
