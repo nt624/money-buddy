@@ -7,14 +7,13 @@ import (
 	db "money-buddy-backend/db/generated"
 	"money-buddy-backend/infra/transaction"
 	"money-buddy-backend/internal/models"
-	"money-buddy-backend/internal/repositories"
 )
 
 type fixedCostRepositorySQLC struct {
 	q *db.Queries
 }
 
-func NewFixedCostRepositorySQLC(q *db.Queries) repositories.FixedCostRepository {
+func NewFixedCostRepositorySQLC(q *db.Queries) *fixedCostRepositorySQLC {
 	return &fixedCostRepositorySQLC{q: q}
 }
 

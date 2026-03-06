@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"money-buddy-backend/internal/models"
-	"money-buddy-backend/internal/repositories"
 )
 
 type UserService interface {
@@ -13,10 +12,10 @@ type UserService interface {
 }
 
 type userService struct {
-	userRepo repositories.UserRepository
+	userRepo UserRepository
 }
 
-func NewUserService(userRepo repositories.UserRepository) UserService {
+func NewUserService(userRepo UserRepository) UserService {
 	return &userService{
 		userRepo: userRepo,
 	}

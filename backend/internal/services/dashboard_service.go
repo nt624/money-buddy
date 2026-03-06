@@ -2,8 +2,6 @@ package services
 
 import (
 	"context"
-
-	"money-buddy-backend/internal/repositories"
 )
 
 // Dashboard はダッシュボード表示用のデータ構造です。
@@ -23,11 +21,11 @@ type DashboardService interface {
 }
 
 type dashboardService struct {
-	repo repositories.DashboardRepository
+	repo DashboardRepository
 }
 
 // NewDashboardService は DashboardService の新しいインスタンスを作成します。
-func NewDashboardService(repo repositories.DashboardRepository) DashboardService {
+func NewDashboardService(repo DashboardRepository) DashboardService {
 	return &dashboardService{repo: repo}
 }
 

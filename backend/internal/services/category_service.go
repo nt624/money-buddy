@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"money-buddy-backend/internal/models"
-	"money-buddy-backend/internal/repositories"
 )
 
 type CategoryService interface {
@@ -12,10 +11,10 @@ type CategoryService interface {
 }
 
 type categoryService struct {
-	repo repositories.CategoryRepository
+	repo CategoryRepository
 }
 
-func NewCategoryService(repo repositories.CategoryRepository) CategoryService {
+func NewCategoryService(repo CategoryRepository) CategoryService {
 	return &categoryService{repo: repo}
 }
 

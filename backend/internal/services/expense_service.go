@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"money-buddy-backend/internal/models"
-	"money-buddy-backend/internal/repositories"
 )
 
 const (
@@ -26,11 +25,11 @@ type ExpenseService interface {
 }
 
 type expenseService struct {
-	repo         repositories.ExpenseRepository
-	categoryRepo repositories.CategoryRepository
+	repo         ExpenseRepository
+	categoryRepo CategoryRepository
 }
 
-func NewExpenseService(repo repositories.ExpenseRepository, categoryRepo repositories.CategoryRepository) ExpenseService {
+func NewExpenseService(repo ExpenseRepository, categoryRepo CategoryRepository) ExpenseService {
 	return &expenseService{repo: repo, categoryRepo: categoryRepo}
 }
 

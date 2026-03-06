@@ -1,8 +1,7 @@
-package repositories
+package services
 
 import "money-buddy-backend/internal/models"
 
-// ExpenseRepository は経費リポジトリの振る舞いを表します。
 type ExpenseRepository interface {
 	CreateExpense(userID string, input models.CreateExpenseInput) (models.Expense, error)
 	FindAll(userID string) ([]models.Expense, error)

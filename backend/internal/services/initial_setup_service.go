@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"money-buddy-backend/internal/models"
-	"money-buddy-backend/internal/repositories"
 )
 
 type InitialSetupService interface {
@@ -15,12 +14,12 @@ type InitialSetupService interface {
 }
 
 type initialSetupService struct {
-	userRepo      repositories.UserRepository
-	fixedCostRepo repositories.FixedCostRepository
+	userRepo      UserRepository
+	fixedCostRepo FixedCostRepository
 	txManager     TxManager
 }
 
-func NewInitialSetupService(userRepo repositories.UserRepository, fixedCostRepo repositories.FixedCostRepository, txManager TxManager) InitialSetupService {
+func NewInitialSetupService(userRepo UserRepository, fixedCostRepo FixedCostRepository, txManager TxManager) InitialSetupService {
 	return &initialSetupService{
 		userRepo:      userRepo,
 		fixedCostRepo: fixedCostRepo,

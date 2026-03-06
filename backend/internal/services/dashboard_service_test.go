@@ -9,23 +9,22 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"money-buddy-backend/internal/repositories"
 )
 
 // mockDashboardRepo は DashboardRepository のモック実装です
 type mockDashboardRepo struct {
-	getMonthlySummaryFunc         func(ctx context.Context, userID string) (*repositories.MonthlySummary, error)
-	getMonthlyExpensesSummaryFunc func(ctx context.Context, userID string) (*repositories.MonthlyExpensesSummary, error)
+	getMonthlySummaryFunc         func(ctx context.Context, userID string) (*MonthlySummary, error)
+	getMonthlyExpensesSummaryFunc func(ctx context.Context, userID string) (*MonthlyExpensesSummary, error)
 }
 
-func (m *mockDashboardRepo) GetMonthlySummary(ctx context.Context, userID string) (*repositories.MonthlySummary, error) {
+func (m *mockDashboardRepo) GetMonthlySummary(ctx context.Context, userID string) (*MonthlySummary, error) {
 	if m.getMonthlySummaryFunc != nil {
 		return m.getMonthlySummaryFunc(ctx, userID)
 	}
 	return nil, errors.New("not implemented")
 }
 
-func (m *mockDashboardRepo) GetMonthlyExpensesSummary(ctx context.Context, userID string) (*repositories.MonthlyExpensesSummary, error) {
+func (m *mockDashboardRepo) GetMonthlyExpensesSummary(ctx context.Context, userID string) (*MonthlyExpensesSummary, error) {
 	if m.getMonthlyExpensesSummaryFunc != nil {
 		return m.getMonthlyExpensesSummaryFunc(ctx, userID)
 	}
@@ -35,17 +34,17 @@ func (m *mockDashboardRepo) GetMonthlyExpensesSummary(ctx context.Context, userI
 // TestGetDashboard_Success は正常系のテストです
 func TestGetDashboard_Success(t *testing.T) {
 	repo := &mockDashboardRepo{
-		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*repositories.MonthlySummary, error) {
+		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*MonthlySummary, error) {
 			assert.Equal(t, "test-user", userID)
-			return &repositories.MonthlySummary{
+			return &MonthlySummary{
 				Income:     300000,
 				SavingGoal: 50000,
 				FixedCosts: 100000,
 			}, nil
 		},
-		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string) (*repositories.MonthlyExpensesSummary, error) {
+		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string) (*MonthlyExpensesSummary, error) {
 			assert.Equal(t, "test-user", userID)
-			return &repositories.MonthlyExpensesSummary{
+			return &MonthlyExpensesSummary{
 				ConfirmedExpenses: 80000,
 				PlannedExpenses:   20000,
 			}, nil
@@ -75,15 +74,15 @@ func TestGetDashboard_Success(t *testing.T) {
 // TestGetDashboard_ZeroExpenses は支出がゼロの場合のテストです
 func TestGetDashboard_ZeroExpenses(t *testing.T) {
 	repo := &mockDashboardRepo{
-		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*repositories.MonthlySummary, error) {
-			return &repositories.MonthlySummary{
+		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*MonthlySummary, error) {
+			return &MonthlySummary{
 				Income:     300000,
 				SavingGoal: 50000,
 				FixedCosts: 100000,
 			}, nil
 		},
-		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string) (*repositories.MonthlyExpensesSummary, error) {
-			return &repositories.MonthlyExpensesSummary{
+		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string) (*MonthlyExpensesSummary, error) {
+			return &MonthlyExpensesSummary{
 				ConfirmedExpenses: 0,
 				PlannedExpenses:   0,
 			}, nil
@@ -105,15 +104,15 @@ func TestGetDashboard_ZeroExpenses(t *testing.T) {
 // TestGetDashboard_ZeroFixedCosts は固定費がゼロの場合のテストです
 func TestGetDashboard_ZeroFixedCosts(t *testing.T) {
 	repo := &mockDashboardRepo{
-		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*repositories.MonthlySummary, error) {
-			return &repositories.MonthlySummary{
+		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*MonthlySummary, error) {
+			return &MonthlySummary{
 				Income:     300000,
 				SavingGoal: 50000,
 				FixedCosts: 0,
 			}, nil
 		},
-		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string) (*repositories.MonthlyExpensesSummary, error) {
-			return &repositories.MonthlyExpensesSummary{
+		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string) (*MonthlyExpensesSummary, error) {
+			return &MonthlyExpensesSummary{
 				ConfirmedExpenses: 100000,
 				PlannedExpenses:   50000,
 			}, nil
@@ -135,7 +134,7 @@ func TestGetDashboard_ZeroFixedCosts(t *testing.T) {
 // TestGetDashboard_UserNotFound はユーザーが存在しない場合のテストです
 func TestGetDashboard_UserNotFound(t *testing.T) {
 	repo := &mockDashboardRepo{
-		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*repositories.MonthlySummary, error) {
+		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*MonthlySummary, error) {
 			return nil, sql.ErrNoRows
 		},
 	}
@@ -151,14 +150,14 @@ func TestGetDashboard_UserNotFound(t *testing.T) {
 // TestGetDashboard_ExpensesSummaryError は支出サマリー取得時のエラーをテストします
 func TestGetDashboard_ExpensesSummaryError(t *testing.T) {
 	repo := &mockDashboardRepo{
-		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*repositories.MonthlySummary, error) {
-			return &repositories.MonthlySummary{
+		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*MonthlySummary, error) {
+			return &MonthlySummary{
 				Income:     300000,
 				SavingGoal: 50000,
 				FixedCosts: 100000,
 			}, nil
 		},
-		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string) (*repositories.MonthlyExpensesSummary, error) {
+		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string) (*MonthlyExpensesSummary, error) {
 			return nil, errors.New("database connection error")
 		},
 	}
@@ -174,15 +173,15 @@ func TestGetDashboard_ExpensesSummaryError(t *testing.T) {
 // TestGetDashboard_NegativeRemaining は残額がマイナスになる場合のテストです
 func TestGetDashboard_NegativeRemaining(t *testing.T) {
 	repo := &mockDashboardRepo{
-		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*repositories.MonthlySummary, error) {
-			return &repositories.MonthlySummary{
+		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*MonthlySummary, error) {
+			return &MonthlySummary{
 				Income:     300000,
 				SavingGoal: 50000,
 				FixedCosts: 100000,
 			}, nil
 		},
-		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string) (*repositories.MonthlyExpensesSummary, error) {
-			return &repositories.MonthlyExpensesSummary{
+		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string) (*MonthlyExpensesSummary, error) {
+			return &MonthlyExpensesSummary{
 				ConfirmedExpenses: 120000,
 				PlannedExpenses:   80000,
 			}, nil

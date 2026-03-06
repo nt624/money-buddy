@@ -7,7 +7,6 @@ import (
 
 	db "money-buddy-backend/db/generated"
 	"money-buddy-backend/internal/models"
-	"money-buddy-backend/internal/repositories"
 )
 
 // sqlc-backed repository
@@ -15,7 +14,7 @@ type expenseRepositorySQLC struct {
 	q *db.Queries
 }
 
-func NewExpenseRepositorySQLC(q *db.Queries) repositories.ExpenseRepository {
+func NewExpenseRepositorySQLC(q *db.Queries) *expenseRepositorySQLC {
 	return &expenseRepositorySQLC{q: q}
 }
 

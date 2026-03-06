@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"money-buddy-backend/internal/models"
-	"money-buddy-backend/internal/repositories"
 )
 
 const (
@@ -21,10 +20,10 @@ type FixedCostService interface {
 }
 
 type fixedCostService struct {
-	repo repositories.FixedCostRepository
+	repo FixedCostRepository
 }
 
-func NewFixedCostService(repo repositories.FixedCostRepository) FixedCostService {
+func NewFixedCostService(repo FixedCostRepository) FixedCostService {
 	return &fixedCostService{repo: repo}
 }
 

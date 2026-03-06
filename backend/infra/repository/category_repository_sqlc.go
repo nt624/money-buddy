@@ -5,14 +5,13 @@ import (
 
 	db "money-buddy-backend/db/generated"
 	"money-buddy-backend/internal/models"
-	"money-buddy-backend/internal/repositories"
 )
 
 type categoryRepositorySQLC struct {
 	q *db.Queries
 }
 
-func NewCategoryRepositorySQLC(q *db.Queries) repositories.CategoryRepository {
+func NewCategoryRepositorySQLC(q *db.Queries) *categoryRepositorySQLC {
 	return &categoryRepositorySQLC{q: q}
 }
 

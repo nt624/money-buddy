@@ -7,14 +7,13 @@ import (
 	db "money-buddy-backend/db/generated"
 	"money-buddy-backend/infra/transaction"
 	"money-buddy-backend/internal/models"
-	"money-buddy-backend/internal/repositories"
 )
 
 type userRepositorySQLC struct {
 	q *db.Queries
 }
 
-func NewUserRepositorySQLC(q *db.Queries) repositories.UserRepository {
+func NewUserRepositorySQLC(q *db.Queries) *userRepositorySQLC {
 	return &userRepositorySQLC{q: q}
 }
 
