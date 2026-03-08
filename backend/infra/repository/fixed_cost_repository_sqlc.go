@@ -6,15 +6,15 @@ import (
 
 	db "money-buddy-backend/db/generated"
 	"money-buddy-backend/infra/transaction"
-	"money-buddy-backend/internal/models"
-	"money-buddy-backend/internal/repositories"
+	"money-buddy-backend/internal/domain"
+	"money-buddy-backend/internal/usecase"
 )
 
 type fixedCostRepositorySQLC struct {
 	q *db.Queries
 }
 
-func NewFixedCostRepositorySQLC(q *db.Queries) repositories.FixedCostRepository {
+func NewFixedCostRepositorySQLC(q *db.Queries) *fixedCostRepositorySQLC {
 	return &fixedCostRepositorySQLC{q: q}
 }
 
@@ -25,7 +25,7 @@ func (r *fixedCostRepositorySQLC) queries(ctx context.Context) *db.Queries {
 	return r.q
 }
 
-func (r *fixedCostRepositorySQLC) CreateFixedCost(ctx context.Context, userID string, name string, amount int) (models.FixedCost, error) {
+func (r *fixedCostRepositorySQLC) CreateFixedCost(ctx context.Context, userID string, name string, amount int) (domain.FixedCost, error) {
 	params := db.CreateFixedCostParams{
 		UserID: userID,
 		Name:   name,
@@ -33,19 +33,19 @@ func (r *fixedCostRepositorySQLC) CreateFixedCost(ctx context.Context, userID st
 	}
 	row, err := r.queries(ctx).CreateFixedCost(ctx, params)
 	if err != nil {
-		return models.FixedCost{}, err
+		return domain.FixedCost{}, err
 	}
 
 	return dbFixedCostToModel(row), nil
 }
 
-func (r *fixedCostRepositorySQLC) ListFixedCostsByUser(ctx context.Context, userID string) ([]models.FixedCost, error) {
+func (r *fixedCostRepositorySQLC) ListFixedCostsByUser(ctx context.Context, userID string) ([]domain.FixedCost, error) {
 	items, err := r.queries(ctx).ListFixedCostsByUser(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	out := make([]models.FixedCost, 0, len(items))
+	out := make([]domain.FixedCost, 0, len(items))
 	for _, it := range items {
 		out = append(out, dbFixedCostToModel(it))
 	}
@@ -57,7 +57,7 @@ func (r *fixedCostRepositorySQLC) DeleteFixedCostsByUser(ctx context.Context, us
 	return r.queries(ctx).DeleteFixedCostsByUser(ctx, userID)
 }
 
-func (r *fixedCostRepositorySQLC) BulkCreateFixedCosts(ctx context.Context, userID string, fixedCosts []models.FixedCostInput) error {
+func (r *fixedCostRepositorySQLC) BulkCreateFixedCosts(ctx context.Context, userID string, fixedCosts []usecase.FixedCostItem) error {
 	if len(fixedCosts) == 0 {
 		return nil
 	}
@@ -96,7 +96,7 @@ func (r *fixedCostRepositorySQLC) DeleteFixedCost(ctx context.Context, id int32,
 	})
 }
 
-func dbFixedCostToModel(fc db.FixedCost) models.FixedCost {
+func dbFixedCostToModel(fc db.FixedCost) domain.FixedCost {
 	createdAt := ""
 	if fc.CreatedAt.Valid {
 		createdAt = fc.CreatedAt.Time.Format(time.RFC3339)
@@ -106,7 +106,7 @@ func dbFixedCostToModel(fc db.FixedCost) models.FixedCost {
 		updatedAt = fc.UpdatedAt.Time.Format(time.RFC3339)
 	}
 
-	return models.FixedCost{
+	return domain.FixedCost{
 		ID:        int(fc.ID),
 		UserID:    fc.UserID,
 		Name:      fc.Name,

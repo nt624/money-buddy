@@ -4,25 +4,24 @@ import (
 	"context"
 
 	db "money-buddy-backend/db/generated"
-	"money-buddy-backend/internal/models"
-	"money-buddy-backend/internal/repositories"
+	"money-buddy-backend/internal/domain"
 )
 
 type categoryRepositorySQLC struct {
 	q *db.Queries
 }
 
-func NewCategoryRepositorySQLC(q *db.Queries) repositories.CategoryRepository {
+func NewCategoryRepositorySQLC(q *db.Queries) *categoryRepositorySQLC {
 	return &categoryRepositorySQLC{q: q}
 }
 
-func (r *categoryRepositorySQLC) ListCategories(ctx context.Context) ([]models.Category, error) {
+func (r *categoryRepositorySQLC) ListCategories(ctx context.Context) ([]domain.Category, error) {
 	items, err := r.q.ListCategories(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var out []models.Category
+	var out []domain.Category
 	for _, it := range items {
 		out = append(out, dbCategoryToModel(it))
 	}
@@ -30,8 +29,8 @@ func (r *categoryRepositorySQLC) ListCategories(ctx context.Context) ([]models.C
 	return out, nil
 }
 
-func dbCategoryToModel(c db.ListCategoriesRow) models.Category {
-	return models.Category{
+func dbCategoryToModel(c db.ListCategoriesRow) domain.Category {
+	return domain.Category{
 		ID:   int(c.ID),
 		Name: c.Name,
 	}

@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"money-buddy-backend/internal/services"
+	"money-buddy-backend/internal/usecase"
 )
 
 type txKey struct{}
@@ -38,11 +38,11 @@ type sqlTxManager struct {
 	db *sql.DB
 }
 
-func NewTxManager(db *sql.DB) services.TxManager {
+func NewTxManager(db *sql.DB) usecase.TxManager {
 	return &sqlTxManager{db: db}
 }
 
-func (m *sqlTxManager) Begin(ctx context.Context) (services.Tx, error) {
+func (m *sqlTxManager) Begin(ctx context.Context) (usecase.Tx, error) {
 	tx, err := m.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"net/http"
@@ -8,8 +9,20 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"money-buddy-backend/internal/middleware"
-	"money-buddy-backend/internal/services"
+	"money-buddy-backend/internal/usecase"
 )
+
+type getDashboardUseCase interface {
+	Execute(ctx context.Context, userID string) (*usecase.Dashboard, error)
+}
+
+type GetDashboardHandler struct {
+	uc getDashboardUseCase
+}
+
+func NewGetDashboardHandler(uc getDashboardUseCase) *GetDashboardHandler {
+	return &GetDashboardHandler{uc: uc}
+}
 
 // DashboardResponse はダッシュボードAPIのレスポンス構造です。
 type DashboardResponse struct {
@@ -22,35 +35,23 @@ type DashboardResponse struct {
 	Remaining         int64 `json:"remaining"`
 }
 
-type DashboardHandler struct {
-	service services.DashboardService
-}
-
-func NewDashboardHandler(r gin.IRouter, service services.DashboardService) {
-	h := &DashboardHandler{service: service}
-	r.GET("/dashboard", h.GetDashboard)
-}
-
-func (h *DashboardHandler) GetDashboard(c *gin.Context) {
+func (h *GetDashboardHandler) Handle(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
 		return
 	}
 
-	dashboard, err := h.service.GetDashboard(c.Request.Context(), userID)
+	dashboard, err := h.uc.Execute(c.Request.Context(), userID)
 	if err != nil {
-		// ユーザーが存在しない場合
 		if errors.Is(err, sql.ErrNoRows) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "ユーザーが見つかりません"})
 			return
 		}
-		// その他のエラー
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "サーバーエラーが発生しました"})
 		return
 	}
 
-	// レスポンスを構築
 	response := DashboardResponse{
 		Income:            dashboard.Income,
 		SavingGoal:        dashboard.SavingGoal,

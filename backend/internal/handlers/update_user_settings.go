@@ -1,60 +1,46 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
 	"money-buddy-backend/internal/middleware"
-	"money-buddy-backend/internal/services"
+	"money-buddy-backend/internal/usecase"
 )
 
-type UserHandler struct {
-	service services.UserService
+type updateUserSettingsUseCase interface {
+	Execute(ctx context.Context, userID string, income int, savingGoal int) error
 }
 
-func NewUserHandler(r gin.IRouter, service services.UserService) {
-	h := &UserHandler{service: service}
-	r.GET("/user/me", h.GetCurrentUser)
-	r.PUT("/user/me", h.UpdateUserSettings)
+type UpdateUserSettingsHandler struct {
+	uc updateUserSettingsUseCase
 }
 
-func (h *UserHandler) GetCurrentUser(c *gin.Context) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
-		return
-	}
-
-	user, err := h.service.GetUserByID(c.Request.Context(), userID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "ユーザーが見つかりません"})
-		return
-	}
-
-	c.JSON(http.StatusOK, user)
+func NewUpdateUserSettingsHandler(uc updateUserSettingsUseCase) *UpdateUserSettingsHandler {
+	return &UpdateUserSettingsHandler{uc: uc}
 }
 
-type UpdateUserSettingsRequest struct {
+type updateUserSettingsRequest struct {
 	Income     *int `json:"income"`
 	SavingGoal *int `json:"saving_goal"`
 }
 
-func (h *UserHandler) UpdateUserSettings(c *gin.Context) {
+func (h *UpdateUserSettingsHandler) Handle(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
 		return
 	}
 
-	var req UpdateUserSettingsRequest
+	var req updateUserSettingsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "リクエストの形式が正しくありません"})
 		return
 	}
 
-	// 必須フィールドのチェック
 	if req.Income == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "income is required"})
 		return
@@ -64,9 +50,9 @@ func (h *UserHandler) UpdateUserSettings(c *gin.Context) {
 		return
 	}
 
-	err := h.service.UpdateUserSettings(c.Request.Context(), userID, *req.Income, *req.SavingGoal)
+	err := h.uc.Execute(c.Request.Context(), userID, *req.Income, *req.SavingGoal)
 	if err != nil {
-		var validationErr *services.ValidationError
+		var validationErr *usecase.ValidationError
 		if errors.As(err, &validationErr) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Message})
 			return
