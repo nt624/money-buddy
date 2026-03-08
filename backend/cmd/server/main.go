@@ -7,7 +7,7 @@ import (
 
 	dbgen "money-buddy-backend/db/generated"
 	"money-buddy-backend/infra/repository"
-	"money-buddy-backend/internal/auth"
+	"money-buddy-backend/infra/auth"
 	"money-buddy-backend/internal/db"
 	"money-buddy-backend/internal/handlers"
 	"money-buddy-backend/internal/middleware"
