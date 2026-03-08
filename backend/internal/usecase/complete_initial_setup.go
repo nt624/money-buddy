@@ -56,8 +56,14 @@ func (uc *CompleteInitialSetupUseCase) Execute(ctx context.Context, userID strin
 	if income <= 0 {
 		return &ValidationError{Message: "収入は1円以上で入力してください"}
 	}
+	if income > BusinessMaxAmount {
+		return &ValidationError{Message: "収入は10億円以下で入力してください"}
+	}
 	if savingGoal < 0 {
 		return &ValidationError{Message: "貯金目標は0円以上で入力してください"}
+	}
+	if savingGoal > BusinessMaxAmount {
+		return &ValidationError{Message: "貯金目標は10億円以下で入力してください"}
 	}
 
 	// 固定費の正規化とバリデーション

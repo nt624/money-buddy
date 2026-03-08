@@ -27,8 +27,10 @@ func NormalizeStatus(s string) (string, bool) {
 		return "", false
 	}
 	lower := strings.ToLower(s)
-	if IsValidStatus(lower) {
+	switch lower {
+	case string(StatusPlanned), string(StatusConfirmed):
 		return lower, true
+	default:
+		return "", false
 	}
-	return "", false
 }
