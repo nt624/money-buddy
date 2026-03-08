@@ -32,14 +32,13 @@ backend/
 │   ├── query/           # SQLクエリ（sqlc用）
 │   └── generated/       # sqlc自動生成コード
 ├── internal/
-│   ├── auth/           # Firebase認証初期化
-│   ├── db/             # DB接続・トランザクション
-│   ├── handlers/       # HTTPハンドラ層
+│   ├── domain/         # ドメインエンティティ（エンティティのみ、入力DTOは含まない）
+│   ├── usecase/        # ユースケース層（1ユースケース1ファイル）
+│   ├── handlers/       # HTTPハンドラ層（1エンドポイント1ファイル）
 │   ├── middleware/     # 認証ミドルウェア
-│   ├── models/         # ドメインモデル
-│   ├── repositories/   # リポジトリインターフェース
-│   └── services/       # ビジネスロジック層
+│   └── db/             # DB接続
 ├── infra/
+│   ├── auth/           # Firebase認証初期化（インフラ依存のためinfra層）
 │   ├── repository/     # リポジトリ実装（sqlc）
 │   └── transaction/    # トランザクション管理
 ├── openapi/
@@ -49,6 +48,55 @@ backend/
 ├── .env.example        # 環境変数テンプレート
 └── ENV_SETUP.md        # セットアップガイド
 ```
+
+## 🏗️ アーキテクチャ設計
+
+### 基本方針：Goイディオムとクリーンアーキテクチャ
+
+本プロジェクトは **Goイディオム**（コンシューマー側インターフェース）と **クリーンアーキテクチャ** の原則に従って設計しています。
+
+### コンシューマー側インターフェース
+
+クリーンアーキテクチャの原則に従い、インターフェースはプロデューサー側（`infra/repository`）ではなく、**コンシューマー側**（`internal/usecase`、`internal/handlers`）で定義しています。
+各ユースケースは自身が必要とする最小限のメソッドのみを持つインターフェースを定義します（インターフェース分離原則）。
+
+```go
+// internal/usecase/create_expense.go
+// このusecaseが必要とする最小インターフェースをusecase側で定義
+type createExpenseRepository interface {
+    CreateExpense(userID string, input CreateExpenseInput) (domain.Expense, error)
+}
+```
+
+### 1ユースケース1ファイル（ISP達成）
+
+`internal/usecase/` 配下の各ファイルは1つのユースケースのみを担当します。
+各ファイルには入力DTO・最小リポジトリインターフェース・`Execute` メソッドを定義しています。
+
+```go
+type CreateExpenseUseCase struct { ... }
+func (uc *CreateExpenseUseCase) Execute(userID string, input CreateExpenseInput) (domain.Expense, error)
+```
+
+### ハンドラー層にもISPを適用
+
+`internal/handlers/` の各ファイルも、必要とするユースケースの最小インターフェースを自身で定義します。
+
+```go
+// internal/handlers/create_expense.go
+type createExpenseUseCase interface {
+    Execute(userID string, input usecase.CreateExpenseInput) (domain.Expense, error)
+}
+```
+
+### Goのイディオム：具体型を返すコンストラクタ
+
+`infra/repository/` のコンストラクタはインターフェース型ではなく **具体型**（`*xxxRepositorySQLC`）を返します。
+これにより、依存関係の逆転をコンシューマー側のインターフェース定義で実現しつつ、Goの慣習に従ったコードになっています。
+
+### インフラ依存のコードはinfra層へ
+
+Firebase認証の初期化など、インフラ依存のコードは `internal/` ではなく `infra/` 配下に配置しています。
 
 ## 🛠️ ローカル開発環境のセットアップ
 
@@ -119,7 +167,7 @@ go test ./...
 go test -cover ./...
 
 # 特定のパッケージ
-go test ./internal/services/...
+go test ./internal/usecase/...
 ```
 
 ## 🔧 sqlcによるコード生成
@@ -403,11 +451,12 @@ curl -X DELETE http://localhost:8080/expenses/123
 ---
 
 ## コード構成（重要なファイル）
-- `cmd/server/main.go` - サーバー起点。sqlc の `Queries` を生成してリポジトリに渡します。
+- `cmd/server/main.go` - サーバー起点。全ユースケースを初期化し `handlers.Register` に渡します。
 - `internal/db/db.go` - DB 接続（DSN 設定）
-- `internal/handlers` - Gin ハンドラ
-- `internal/services` - ビジネスロジック
-- `internal/repositories` - リポジトリ層。インターフェースと実装（メモリ、sqlc）に分割しています。
+- `internal/domain/` - ドメインエンティティ（エンティティのみ、入力DTOは含まない）
+- `internal/usecase/` - ユースケース層（1ユースケース1ファイル）。各ファイルが入力DTOと最小インターフェースを定義します。
+- `internal/handlers/` - Gin ハンドラ（1エンドポイント1ファイル）。全ルーティングは `register.go` に集約。
+- `infra/repository/` - リポジトリ実装（sqlc）。コンストラクタは具体型を返します。
 - `db/` - SQL & `sqlc` 設定
 	- `db/generated/` - sqlc による生成物（このリポジトリに含める）
 
