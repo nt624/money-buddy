@@ -13,11 +13,9 @@ import (
 const (
 	// BusinessMaxAmount は業務上の上限（個人向け家計簿の想定）
 	BusinessMaxAmount = 1000000000
-	// MemoMaxLen はメモの最大長
-	MemoMaxLen = 5000
+	MemoMaxLen        = 5000
 )
 
-// CreateExpenseInput は支出作成の入力DTOです。
 type CreateExpenseInput struct {
 	Amount     *int
 	CategoryID *int
@@ -35,20 +33,16 @@ type categoryExistsChecker interface {
 	CategoryExists(ctx context.Context, id int32) (bool, error)
 }
 
-// CreateExpenseUseCase は支出作成ユースケースです。
 type CreateExpenseUseCase struct {
 	repo     createExpenseRepository
 	category categoryExistsChecker
 }
 
-// NewCreateExpenseUseCase は CreateExpenseUseCase の新しいインスタンスを生成します。
 func NewCreateExpenseUseCase(repo createExpenseRepository, category categoryExistsChecker) *CreateExpenseUseCase {
 	return &CreateExpenseUseCase{repo: repo, category: category}
 }
 
-// Execute は支出作成ユースケースを実行します。
 func (uc *CreateExpenseUseCase) Execute(userID string, input CreateExpenseInput) (domain.Expense, error) {
-	// 金額チェック
 	if input.Amount == nil {
 		return domain.Expense{}, &ValidationError{Message: "金額を入力してください"}
 	}
@@ -59,7 +53,6 @@ func (uc *CreateExpenseUseCase) Execute(userID string, input CreateExpenseInput)
 		return domain.Expense{}, &ValidationError{Message: "金額は10億円以下で入力してください"}
 	}
 
-	// カテゴリID チェック
 	if input.CategoryID == nil {
 		return domain.Expense{}, &ValidationError{Message: "カテゴリを選択してください"}
 	}
@@ -67,7 +60,6 @@ func (uc *CreateExpenseUseCase) Execute(userID string, input CreateExpenseInput)
 		return domain.Expense{}, &ValidationError{Message: "有効なカテゴリを選択してください"}
 	}
 
-	// SpentAt の非空チェック
 	if input.SpentAt == "" {
 		return domain.Expense{}, &ValidationError{Message: "日付を入力してください"}
 	}
@@ -87,12 +79,11 @@ func (uc *CreateExpenseUseCase) Execute(userID string, input CreateExpenseInput)
 		return domain.Expense{}, &ValidationError{Message: "有効な日付を入力してください"}
 	}
 
-	// Memo 長チェック
 	if len(input.Memo) > MemoMaxLen {
 		return domain.Expense{}, &ValidationError{Message: "メモは5000文字以内で入力してください"}
 	}
 
-	// Status の検証（任意入力、指定されている場合のみチェック）
+	// Status は任意入力。指定された場合のみ正規化・検証する
 	if input.Status != "" {
 		if normalized, ok := domain.NormalizeStatus(input.Status); ok {
 			input.Status = normalized
@@ -101,7 +92,6 @@ func (uc *CreateExpenseUseCase) Execute(userID string, input CreateExpenseInput)
 		}
 	}
 
-	// カテゴリ存在チェック
 	exists, err := uc.category.CategoryExists(context.Background(), int32(*input.CategoryID))
 	if err != nil {
 		return domain.Expense{}, &InternalError{Message: "internal error"}
