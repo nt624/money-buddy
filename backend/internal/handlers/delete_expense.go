@@ -29,6 +29,10 @@ func (h *DeleteExpenseHandler) Handle(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "支出IDが正しくありません"})
 		return
 	}
+	if id <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "支出IDが正しくありません"})
+		return
+	}
 
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
