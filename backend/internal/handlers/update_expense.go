@@ -30,6 +30,10 @@ func (h *UpdateExpenseHandler) Handle(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "支出IDが正しくありません"})
 		return
 	}
+	if id <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "支出IDが正しくありません"})
+		return
+	}
 
 	type updateBody struct {
 		Amount     *int   `json:"amount"`
