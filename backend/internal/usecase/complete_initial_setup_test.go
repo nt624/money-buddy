@@ -145,6 +145,15 @@ func TestCompleteInitialSetup(t *testing.T) {
 			wantValidate: true,
 		},
 		{
+			name:         "固定費 amount が上限超過でエラー",
+			income:       100,
+			savingGoal:   0,
+			fixedCosts:   []FixedCostItem{{Name: "rent", Amount: BusinessMaxAmount + 1}},
+			setupMocks:   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, calls *[]string) {},
+			wantErr:      true,
+			wantValidate: true,
+		},
+		{
 			name:         "固定費 name が空文字列でエラー",
 			income:       100,
 			savingGoal:   0,

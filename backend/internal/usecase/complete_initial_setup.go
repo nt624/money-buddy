@@ -74,6 +74,9 @@ func (uc *CompleteInitialSetupUseCase) Execute(ctx context.Context, userID strin
 		if fc.Amount <= 0 {
 			return &ValidationError{Message: "固定費の金額は1円以上で入力してください"}
 		}
+		if fc.Amount > BusinessMaxAmount {
+			return &ValidationError{Message: "固定費の金額は10億円以下で入力してください"}
+		}
 		if trimmedName == "" {
 			return &ValidationError{Message: "固定費の名前を入力してください"}
 		}
