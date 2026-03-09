@@ -43,6 +43,10 @@ func (h *UpdateFixedCostHandler) Handle(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "IDが正しくありません"})
 		return
 	}
+	if id <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDが正しくありません"})
+		return
+	}
 
 	var req updateFixedCostRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
