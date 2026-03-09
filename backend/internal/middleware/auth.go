@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"money-buddy-backend/internal/auth"
+	"money-buddy-backend/infra/auth"
 
 	"github.com/gin-gonic/gin"
 )

@@ -1,0 +1,57 @@
+package handlers
+
+import (
+	"context"
+	"errors"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+
+	"money-buddy-backend/internal/domain"
+	"money-buddy-backend/internal/middleware"
+	"money-buddy-backend/internal/usecase"
+)
+
+type createFixedCostUseCase interface {
+	Execute(ctx context.Context, userID string, name string, amount int) (domain.FixedCost, error)
+}
+
+type CreateFixedCostHandler struct {
+	uc createFixedCostUseCase
+}
+
+func NewCreateFixedCostHandler(uc createFixedCostUseCase) *CreateFixedCostHandler {
+	return &CreateFixedCostHandler{uc: uc}
+}
+
+type createFixedCostRequest struct {
+	Name   string `json:"name"`
+	Amount int    `json:"amount"`
+}
+
+func (h *CreateFixedCostHandler) Handle(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの取得に失敗しました"})
+		return
+	}
+
+	var req createFixedCostRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	fixedCost, err := h.uc.Execute(c.Request.Context(), userID, req.Name, req.Amount)
+	if err != nil {
+		var ve *usecase.ValidationError
+		if errors.As(err, &ve) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": ve.Message})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "固定費の作成に失敗しました"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"fixed_cost": fixedCost})
+}

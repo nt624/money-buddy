@@ -6,12 +6,13 @@ import (
 	"strings"
 
 	dbgen "money-buddy-backend/db/generated"
+	"money-buddy-backend/infra/auth"
 	"money-buddy-backend/infra/repository"
-	"money-buddy-backend/internal/auth"
+	"money-buddy-backend/infra/transaction"
 	"money-buddy-backend/internal/db"
 	"money-buddy-backend/internal/handlers"
 	"money-buddy-backend/internal/middleware"
-	"money-buddy-backend/internal/services"
+	"money-buddy-backend/internal/usecase"
 
 	"github.com/gin-gonic/gin"
 )
@@ -70,20 +71,27 @@ func main() {
 	}
 
 	queries := dbgen.New(dbConn)
-	repo := repository.NewExpenseRepositorySQLC(queries)
+	expenseRepo := repository.NewExpenseRepositorySQLC(queries)
 	categoryRepo := repository.NewCategoryRepositorySQLC(queries)
 	userRepo := repository.NewUserRepositorySQLC(queries)
 	fixedCostRepo := repository.NewFixedCostRepositorySQLC(queries)
-	txManager := db.NewSQLTxManager(dbConn)
 	dashboardRepo := repository.NewDashboardRepositorySQLC(queries)
+	txManager := transaction.NewTxManager(dbConn)
 
-	// サービス初期化
-	service := services.NewExpenseService(repo, categoryRepo)
-	categoryService := services.NewCategoryService(categoryRepo)
-	initialSetupService := services.NewInitialSetupService(userRepo, fixedCostRepo, txManager)
-	userService := services.NewUserService(userRepo)
-	fixedCostService := services.NewFixedCostService(fixedCostRepo)
-	dashboardService := services.NewDashboardService(dashboardRepo)
+	// ユースケース初期化
+	createExpenseUC := usecase.NewCreateExpenseUseCase(expenseRepo, categoryRepo)
+	listExpensesUC := usecase.NewListExpensesUseCase(expenseRepo)
+	deleteExpenseUC := usecase.NewDeleteExpenseUseCase(expenseRepo)
+	updateExpenseUC := usecase.NewUpdateExpenseUseCase(expenseRepo, categoryRepo)
+	listCategoriesUC := usecase.NewListCategoriesUseCase(categoryRepo)
+	initialSetupUC := usecase.NewCompleteInitialSetupUseCase(userRepo, fixedCostRepo, txManager)
+	getUserUC := usecase.NewGetUserUseCase(userRepo)
+	updateUserUC := usecase.NewUpdateUserSettingsUseCase(userRepo)
+	createFixedCostUC := usecase.NewCreateFixedCostUseCase(fixedCostRepo)
+	listFixedCostsUC := usecase.NewListFixedCostsUseCase(fixedCostRepo)
+	updateFixedCostUC := usecase.NewUpdateFixedCostUseCase(fixedCostRepo)
+	deleteFixedCostUC := usecase.NewDeleteFixedCostUseCase(fixedCostRepo)
+	getDashboardUC := usecase.NewGetDashboardUseCase(dashboardRepo)
 
 	// 認証不要なエンドポイント
 	r.GET("/health", func(c *gin.Context) {
@@ -93,14 +101,12 @@ func main() {
 	// 認証が必要なエンドポイント（ミドルウェア適用）
 	api := r.Group("/")
 	api.Use(middleware.AuthMiddleware())
-	{
-		handlers.NewExpenseHandler(api, service)
-		handlers.NewCategoryHandler(api, categoryService)
-		handlers.NewInitialSetupHandler(api, initialSetupService)
-		handlers.NewUserHandler(api, userService)
-		handlers.NewFixedCostHandler(api, fixedCostService)
-		handlers.NewDashboardHandler(api, dashboardService)
-	}
+	handlers.Register(api,
+		createExpenseUC, listExpensesUC, deleteExpenseUC, updateExpenseUC,
+		listCategoriesUC, initialSetupUC, getUserUC, updateUserUC,
+		createFixedCostUC, listFixedCostsUC, updateFixedCostUC, deleteFixedCostUC,
+		getDashboardUC,
+	)
 
 	log.Printf("Server starting on port %s (env: %s)", port, env)
 	if err := r.Run(":" + port); err != nil {

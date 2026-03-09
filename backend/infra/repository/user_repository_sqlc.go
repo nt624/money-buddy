@@ -6,15 +6,14 @@ import (
 
 	db "money-buddy-backend/db/generated"
 	"money-buddy-backend/infra/transaction"
-	"money-buddy-backend/internal/models"
-	"money-buddy-backend/internal/repositories"
+	"money-buddy-backend/internal/domain"
 )
 
 type userRepositorySQLC struct {
 	q *db.Queries
 }
 
-func NewUserRepositorySQLC(q *db.Queries) repositories.UserRepository {
+func NewUserRepositorySQLC(q *db.Queries) *userRepositorySQLC {
 	return &userRepositorySQLC{q: q}
 }
 
@@ -34,10 +33,10 @@ func (r *userRepositorySQLC) CreateUser(ctx context.Context, id string, income i
 	return r.queries(ctx).CreateUser(ctx, params)
 }
 
-func (r *userRepositorySQLC) GetUserByID(ctx context.Context, id string) (models.User, error) {
+func (r *userRepositorySQLC) GetUserByID(ctx context.Context, id string) (domain.User, error) {
 	row, err := r.queries(ctx).GetUserByID(ctx, id)
 	if err != nil {
-		return models.User{}, err
+		return domain.User{}, err
 	}
 
 	return dbUserToModel(row), nil
@@ -52,7 +51,7 @@ func (r *userRepositorySQLC) UpdateUserSettings(ctx context.Context, id string, 
 	return r.queries(ctx).UpdateUserSettings(ctx, params)
 }
 
-func dbUserToModel(u db.User) models.User {
+func dbUserToModel(u db.User) domain.User {
 	createdAt := ""
 	if u.CreatedAt.Valid {
 		createdAt = u.CreatedAt.Time.Format(time.RFC3339)
@@ -62,7 +61,7 @@ func dbUserToModel(u db.User) models.User {
 		updatedAt = u.UpdatedAt.Time.Format(time.RFC3339)
 	}
 
-	return models.User{
+	return domain.User{
 		ID:         u.ID,
 		Income:     int(u.Income),
 		SavingGoal: int(u.SavingGoal),
