@@ -26,7 +26,6 @@ type CreateExpenseInput struct {
 
 type createExpenseRepository interface {
 	CreateExpense(userID string, input CreateExpenseInput) (domain.Expense, error)
-	GetExpenseByID(userID string, id int32) (domain.Expense, error)
 }
 
 type categoryExistsChecker interface {
