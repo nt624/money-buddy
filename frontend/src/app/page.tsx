@@ -160,9 +160,9 @@ export default function Home() {
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => navigateMonth('prev')}>‹</Button>
+              <Button variant="ghost" size="sm" aria-label="前月へ" onClick={() => navigateMonth('prev')}>‹</Button>
               <span className="text-base font-semibold text-foreground min-w-[120px] text-center">{monthLabel}</span>
-              <Button variant="ghost" size="sm" onClick={() => navigateMonth('next')}>›</Button>
+              <Button variant="ghost" size="sm" aria-label="翌月へ" onClick={() => navigateMonth('next')}>›</Button>
             </div>
             <div className="flex gap-1">
               <Button
