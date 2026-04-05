@@ -2,7 +2,15 @@ import { useEffect, useState } from "react";
 import { createExpense, getExpenses, updateExpense, deleteExpense } from "@/lib/api/expenses";
 import { CreateExpenseInput, UpdateExpenseInput, Expense } from "@/lib/types/expense";
 
+type SelectedMonth = { year: number; month: number };
+
+function currentMonth(): SelectedMonth {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() + 1 };
+}
+
 export function useExpenses() {
+    const [selectedMonth, setSelectedMonth] = useState<SelectedMonth>(currentMonth);
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -15,7 +23,7 @@ export function useExpenses() {
             setError(null);
 
             try {
-                const data = await getExpenses();
+                const data = await getExpenses(selectedMonth);
                 setExpenses(data.expenses);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'エラーが発生しました');
@@ -25,7 +33,16 @@ export function useExpenses() {
         }
 
         fetchExpenses();
-    }, []);
+    }, [selectedMonth.year, selectedMonth.month]);
+
+    const navigateMonth = (direction: 'prev' | 'next') => {
+        setSelectedMonth(({ year, month }) => {
+            if (direction === 'prev') {
+                return month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
+            }
+            return month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
+        });
+    };
 
     // POST
     const handleCreateExpense = async (input: CreateExpenseInput): Promise<boolean> => {
@@ -82,6 +99,8 @@ export function useExpenses() {
 
     return {
         expenses,
+        selectedMonth,
+        navigateMonth,
         isLoading,
         isSubmitting,
         error,

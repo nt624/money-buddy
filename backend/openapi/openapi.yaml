@@ -51,7 +51,22 @@ paths:
       tags:
         - "expenses"
       summary: "List expenses"
-      parameters: []
+      parameters:
+        - name: year
+          in: query
+          required: false
+          description: "絞り込む年（例: 2026）。monthと共に指定。省略時は当年。"
+          schema:
+            type: integer
+            minimum: 1
+        - name: month
+          in: query
+          required: false
+          description: "絞り込む月（1〜12）。yearと共に指定。省略時は当月。"
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
       responses:
         "200":
           description: "List of expenses"

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	db "money-buddy-backend/db/generated"
+	"money-buddy-backend/infra/transaction"
 	"money-buddy-backend/internal/domain"
 	"money-buddy-backend/internal/usecase"
 )
@@ -17,6 +18,13 @@ type expenseRepositorySQLC struct {
 
 func NewExpenseRepositorySQLC(q *db.Queries) *expenseRepositorySQLC {
 	return &expenseRepositorySQLC{q: q}
+}
+
+func (r *expenseRepositorySQLC) queries(ctx context.Context) *db.Queries {
+	if tx, ok := transaction.TxFromContext(ctx); ok {
+		return r.q.WithTx(tx)
+	}
+	return r.q
 }
 
 func (r *expenseRepositorySQLC) CreateExpense(userID string, input usecase.CreateExpenseInput) (domain.Expense, error) {
@@ -69,6 +77,38 @@ func (r *expenseRepositorySQLC) FindAll(userID string) ([]domain.Expense, error)
 	}
 
 	return out, nil
+}
+
+func (r *expenseRepositorySQLC) FindByMonth(ctx context.Context, userID string, year, month int) ([]domain.Expense, error) {
+	items, err := r.queries(ctx).ListExpensesByMonth(ctx, db.ListExpensesByMonthParams{
+		UserID: userID,
+		Year:   int32(year),
+		Month:  int32(month),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var out []domain.Expense
+	for _, it := range items {
+		out = append(out, dbListExpensesByMonthRowToModel(it))
+	}
+	return out, nil
+}
+
+func dbListExpensesByMonthRowToModel(e db.ListExpensesByMonthRow) domain.Expense {
+	memo := ""
+	if e.Memo.Valid {
+		memo = e.Memo.String
+	}
+	return domain.Expense{
+		ID:       int(e.ID),
+		Amount:   int(e.Amount),
+		Memo:     memo,
+		SpentAt:  e.SpentAt.Format(time.RFC3339),
+		Status:   e.Status,
+		Category: domain.Category{ID: int(e.CategoryID), Name: e.CategoryName},
+	}
 }
 
 func dbExpenseToModel(e db.GetExpenseWithCategoryByIDRow) domain.Expense {

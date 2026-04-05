@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"money-buddy-backend/internal/domain"
@@ -141,12 +142,12 @@ func TestCreateExpenseHandler_InternalError(t *testing.T) {
 // --- List Expenses ---
 
 type mockListExpensesUC struct {
-	fn func(userID string) ([]domain.Expense, error)
+	fn func(userID string, filter usecase.MonthFilter) ([]domain.Expense, error)
 }
 
-func (m *mockListExpensesUC) Execute(userID string) ([]domain.Expense, error) {
+func (m *mockListExpensesUC) Execute(ctx context.Context, userID string, filter usecase.MonthFilter) ([]domain.Expense, error) {
 	if m.fn != nil {
-		return m.fn(userID)
+		return m.fn(userID, filter)
 	}
 	return nil, nil
 }
@@ -155,7 +156,7 @@ func TestListExpensesHandler_Success(t *testing.T) {
 	router := newRouterWithUserID("test-user")
 
 	uc := &mockListExpensesUC{
-		fn: func(userID string) ([]domain.Expense, error) {
+		fn: func(userID string, filter usecase.MonthFilter) ([]domain.Expense, error) {
 			return []domain.Expense{{ID: 1, Amount: 500}, {ID: 2, Amount: 1000}}, nil
 		},
 	}
@@ -170,6 +171,77 @@ func TestListExpensesHandler_Success(t *testing.T) {
 	var resp map[string][]domain.Expense
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	require.Len(t, resp["expenses"], 2)
+}
+
+func TestListExpensesHandler_WithMonthFilter(t *testing.T) {
+	router := newRouterWithUserID("test-user")
+
+	var gotFilter usecase.MonthFilter
+	uc := &mockListExpensesUC{
+		fn: func(userID string, filter usecase.MonthFilter) ([]domain.Expense, error) {
+			gotFilter = filter
+			return []domain.Expense{{ID: 1, Amount: 500}}, nil
+		},
+	}
+	router.GET("/expenses", NewListExpensesHandler(uc).Handle)
+
+	req := httptest.NewRequest(http.MethodGet, "/expenses?year=2025&month=3", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, 2025, gotFilter.Year)
+	assert.Equal(t, 3, gotFilter.Month)
+}
+
+func TestListExpensesHandler_InvalidYear(t *testing.T) {
+	router := newRouterWithUserID("test-user")
+	router.GET("/expenses", NewListExpensesHandler(&mockListExpensesUC{}).Handle)
+
+	cases := []struct{ query string }{
+		{"/expenses?year=abc&month=4"},
+		{"/expenses?year=0&month=4"},
+		{"/expenses?year=-1&month=4"},
+	}
+	for _, tc := range cases {
+		req := httptest.NewRequest(http.MethodGet, tc.query, nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusBadRequest, w.Code, "query: %s", tc.query)
+	}
+}
+
+func TestListExpensesHandler_InvalidMonth(t *testing.T) {
+	router := newRouterWithUserID("test-user")
+	router.GET("/expenses", NewListExpensesHandler(&mockListExpensesUC{}).Handle)
+
+	cases := []struct{ query string }{
+		{"/expenses?year=2025&month=0"},
+		{"/expenses?year=2025&month=13"},
+		{"/expenses?year=2025&month=abc"},
+	}
+	for _, tc := range cases {
+		req := httptest.NewRequest(http.MethodGet, tc.query, nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusBadRequest, w.Code, "query: %s", tc.query)
+	}
+}
+
+func TestListExpensesHandler_PartialFilter(t *testing.T) {
+	router := newRouterWithUserID("test-user")
+	router.GET("/expenses", NewListExpensesHandler(&mockListExpensesUC{}).Handle)
+
+	cases := []struct{ query string }{
+		{"/expenses?year=2025"},
+		{"/expenses?month=4"},
+	}
+	for _, tc := range cases {
+		req := httptest.NewRequest(http.MethodGet, tc.query, nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusBadRequest, w.Code, "query: %s", tc.query)
+	}
 }
 
 // --- Delete Expense ---

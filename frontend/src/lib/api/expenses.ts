@@ -27,9 +27,14 @@ export async function createExpense(
 }
 
 
-export async function getExpenses(): Promise<GetExpensesResponse> {
+export async function getExpenses(params?: { year: number; month: number }): Promise<GetExpensesResponse> {
   const headers = await getAuthHeaders();
-  const res = await fetch(`${API_BASE_URL}/expenses`, {
+  const url = new URL(`${API_BASE_URL}/expenses`);
+  if (params) {
+    url.searchParams.set('year', String(params.year));
+    url.searchParams.set('month', String(params.month));
+  }
+  const res = await fetch(url.toString(), {
     method: "GET",
     headers,
   });

@@ -6,6 +6,8 @@ import { useUser } from '@/hooks/useUser'
 import { useDashboard } from '@/hooks/useDashboard'
 import { ExpenseForm } from '@/components/ExpenseForm'
 import { ExpenseList } from '@/components/ExpenseList'
+import { ExpenseCalendar } from '@/components/ExpenseCalendar'
+import { Button } from '@/components/ui/Button'
 import { InitialSetupForm } from '@/components/InitialSetupForm'
 import { Dashboard } from '@/components/Dashboard'
 import { Container } from '@/components/Layout/Container'
@@ -15,11 +17,15 @@ import { Expense, UpdateExpenseInput } from '@/lib/types/expense'
 
 export default function Home() {
   const { user, needsSetup, isLoading: userLoading, error: userError, refetchUser } = useUser()
-  const { expenses, createExpense, updateExpense, deleteExpense, isSubmitting, isLoading, error } = useExpenses()
+  const { expenses, selectedMonth, navigateMonth, createExpense, updateExpense, deleteExpense, isSubmitting, isLoading, error } = useExpenses()
   const { dashboard, isLoading: dashboardLoading, error: dashboardError, refetch: refetchDashboard } = useDashboard({ enabled: !needsSetup })
   const [setupSubmitting, setSetupSubmitting] = useState(false)
   const [setupError, setSetupError] = useState<string | null>(null)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
+
+  const MONTH_NAMES = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+  const monthLabel = `${selectedMonth.year}年${MONTH_NAMES[selectedMonth.month - 1]}`
 
   const handleSetupSubmit = async (input: InitialSetupRequest) => {
     setSetupSubmitting(true)
@@ -152,8 +158,34 @@ export default function Home() {
         {error && <p className="text-danger">{error}</p>}
 
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-foreground">支出一覧</h3>
-          <ExpenseList expenses={expenses} onEdit={handleEdit} onDelete={handleDelete} isSubmitting={isSubmitting} />
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" aria-label="前月へ" onClick={() => navigateMonth('prev')}>‹</Button>
+              <span className="text-base font-semibold text-foreground min-w-[120px] text-center">{monthLabel}</span>
+              <Button variant="ghost" size="sm" aria-label="翌月へ" onClick={() => navigateMonth('next')}>›</Button>
+            </div>
+            <div className="flex gap-1">
+              <Button
+                variant={viewMode === 'list' ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+              >
+                リスト
+              </Button>
+              <Button
+                variant={viewMode === 'calendar' ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => setViewMode('calendar')}
+              >
+                カレンダー
+              </Button>
+            </div>
+          </div>
+          {viewMode === 'list' ? (
+            <ExpenseList expenses={expenses} onEdit={handleEdit} onDelete={handleDelete} isSubmitting={isSubmitting} />
+          ) : (
+            <ExpenseCalendar expenses={expenses} year={selectedMonth.year} month={selectedMonth.month} />
+          )}
         </div>
       </section>
     </Container>
