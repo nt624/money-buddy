@@ -6,8 +6,10 @@ import (
 	"errors"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"money-buddy-backend/internal/domain"
 )
@@ -478,4 +480,71 @@ func TestUpdateExpense_NotFound(t *testing.T) {
 	_, err := uc.Execute("test-user", input)
 	assert.ErrorIs(t, err, ErrInvalidStatusTransition)
 	assert.False(t, repo.called)
+}
+
+// --- mocks for list expenses ---
+
+type mockListExpenseRepo struct {
+	fn func(userID string, year, month int) ([]domain.Expense, error)
+}
+
+func (m *mockListExpenseRepo) FindByMonth(userID string, year, month int) ([]domain.Expense, error) {
+	if m.fn != nil {
+		return m.fn(userID, year, month)
+	}
+	return nil, nil
+}
+
+func TestListExpenseUseCase_DefaultsToCurrentMonth(t *testing.T) {
+	t.Parallel()
+
+	var gotYear, gotMonth int
+	repo := &mockListExpenseRepo{
+		fn: func(userID string, year, month int) ([]domain.Expense, error) {
+			gotYear = year
+			gotMonth = month
+			return nil, nil
+		},
+	}
+	uc := NewListExpensesUseCase(repo)
+
+	now := time.Now()
+	_, err := uc.Execute("user1", MonthFilter{})
+	require.NoError(t, err)
+	assert.Equal(t, now.Year(), gotYear)
+	assert.Equal(t, int(now.Month()), gotMonth)
+}
+
+func TestListExpenseUseCase_WithMonthFilter(t *testing.T) {
+	t.Parallel()
+
+	var gotYear, gotMonth int
+	repo := &mockListExpenseRepo{
+		fn: func(userID string, year, month int) ([]domain.Expense, error) {
+			gotYear = year
+			gotMonth = month
+			return []domain.Expense{{ID: 1}}, nil
+		},
+	}
+	uc := NewListExpensesUseCase(repo)
+
+	result, err := uc.Execute("user1", MonthFilter{Year: 2024, Month: 11})
+	require.NoError(t, err)
+	assert.Equal(t, 2024, gotYear)
+	assert.Equal(t, 11, gotMonth)
+	assert.Len(t, result, 1)
+}
+
+func TestListExpenseUseCase_RepoError(t *testing.T) {
+	t.Parallel()
+
+	repo := &mockListExpenseRepo{
+		fn: func(userID string, year, month int) ([]domain.Expense, error) {
+			return nil, errors.New("db error")
+		},
+	}
+	uc := NewListExpensesUseCase(repo)
+
+	_, err := uc.Execute("user1", MonthFilter{Year: 2024, Month: 1})
+	assert.Error(t, err)
 }
