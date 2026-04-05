@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"money-buddy-backend/internal/domain"
+	"pace-wallet-backend/internal/domain"
 )
 
 type MonthFilter struct {

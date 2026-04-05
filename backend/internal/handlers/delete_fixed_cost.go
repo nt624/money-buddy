@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"money-buddy-backend/internal/middleware"
-	"money-buddy-backend/internal/usecase"
+	"pace-wallet-backend/internal/middleware"
+	"pace-wallet-backend/internal/usecase"
 )
 
 type deleteFixedCostUseCase interface {

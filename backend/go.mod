@@ -1,4 +1,4 @@
-module money-buddy-backend
+module pace-wallet-backend
 
 go 1.25.5
 

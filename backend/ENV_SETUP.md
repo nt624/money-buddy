@@ -1,4 +1,4 @@
-# Money Buddy - バックエンド
+# Pace Wallet - バックエンド
 
 ## 環境変数の設定
 

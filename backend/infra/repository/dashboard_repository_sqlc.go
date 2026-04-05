@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	db "money-buddy-backend/db/generated"
-	"money-buddy-backend/internal/usecase"
+	db "pace-wallet-backend/db/generated"
+	"pace-wallet-backend/internal/usecase"
 )
 
 type dashboardRepositorySQLC struct {

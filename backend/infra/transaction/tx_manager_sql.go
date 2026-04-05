@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"money-buddy-backend/internal/usecase"
+	"pace-wallet-backend/internal/usecase"
 )
 
 type txKey struct{}

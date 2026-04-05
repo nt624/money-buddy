@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"time"
 
-	db "money-buddy-backend/db/generated"
-	"money-buddy-backend/infra/transaction"
-	"money-buddy-backend/internal/domain"
-	"money-buddy-backend/internal/usecase"
+	db "pace-wallet-backend/db/generated"
+	"pace-wallet-backend/infra/transaction"
+	"pace-wallet-backend/internal/domain"
+	"pace-wallet-backend/internal/usecase"
 )
 
 // sqlc-backed repository

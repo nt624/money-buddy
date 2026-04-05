@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"money-buddy-backend/internal/domain"
-	"money-buddy-backend/internal/middleware"
+	"pace-wallet-backend/internal/domain"
+	"pace-wallet-backend/internal/middleware"
 )
 
 type listFixedCostsUseCase interface {

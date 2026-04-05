@@ -1,8 +1,8 @@
-# Money Buddy - Backend API
+# Pace Wallet - Backend API
 
 > Go + Gin + PostgreSQL + Firebase Auth による REST API
 
-このディレクトリは Money Buddy のバックエンド API です。
+このディレクトリは Pace Wallet のバックエンド API です。
 
 ## 🚀 本番環境
 
@@ -189,14 +189,14 @@ sqlc generate
 
 ```bash
 # ビルド
-docker build -t money-buddy-backend .
+docker build -t pace-wallet-backend .
 
 # ローカル実行
 docker run -p 8080:8080 \
   -e DATABASE_DSN="host=host.docker.internal port=5432 user=postgres password=yourpassword dbname=money_buddy sslmode=disable" \
   -e FIREBASE_CREDENTIALS_JSON='{"type":"service_account",...}' \
   -e ALLOWED_ORIGINS="http://localhost:3000" \
-  money-buddy-backend
+  pace-wallet-backend
 ```
 
 ## 📚 API仕様

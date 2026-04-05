@@ -5,14 +5,14 @@ import (
 	"os"
 	"strings"
 
-	dbgen "money-buddy-backend/db/generated"
-	"money-buddy-backend/infra/auth"
-	"money-buddy-backend/infra/repository"
-	"money-buddy-backend/infra/transaction"
-	"money-buddy-backend/internal/db"
-	"money-buddy-backend/internal/handlers"
-	"money-buddy-backend/internal/middleware"
-	"money-buddy-backend/internal/usecase"
+	dbgen "pace-wallet-backend/db/generated"
+	"pace-wallet-backend/infra/auth"
+	"pace-wallet-backend/infra/repository"
+	"pace-wallet-backend/infra/transaction"
+	"pace-wallet-backend/internal/db"
+	"pace-wallet-backend/internal/handlers"
+	"pace-wallet-backend/internal/middleware"
+	"pace-wallet-backend/internal/usecase"
 
 	"github.com/gin-gonic/gin"
 )

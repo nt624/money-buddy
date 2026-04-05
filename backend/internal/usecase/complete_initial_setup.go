@@ -6,7 +6,7 @@ import (
 	"errors"
 	"strings"
 
-	"money-buddy-backend/internal/domain"
+	"pace-wallet-backend/internal/domain"
 )
 
 const (

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"money-buddy-backend/internal/domain"
+	"pace-wallet-backend/internal/domain"
 )
 
 // UpdateExpenseInput は支出更新の入力DTOです。

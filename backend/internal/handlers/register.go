@@ -3,7 +3,7 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 
-	"money-buddy-backend/internal/usecase"
+	"pace-wallet-backend/internal/usecase"
 )
 
 // Register はすべてのAPIルートを登録します。

@@ -11,8 +11,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"money-buddy-backend/internal/domain"
-	"money-buddy-backend/internal/usecase"
+	"pace-wallet-backend/internal/domain"
+	"pace-wallet-backend/internal/usecase"
 )
 
 // --- Create Fixed Cost ---

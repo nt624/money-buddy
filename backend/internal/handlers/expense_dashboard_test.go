@@ -14,9 +14,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"money-buddy-backend/internal/domain"
-	"money-buddy-backend/internal/middleware"
-	"money-buddy-backend/internal/usecase"
+	"pace-wallet-backend/internal/domain"
+	"pace-wallet-backend/internal/middleware"
+	"pace-wallet-backend/internal/usecase"
 )
 
 // setUserID は gin コンテキストにユーザーIDを設定するヘルパーです。
