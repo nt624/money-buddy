@@ -488,7 +488,7 @@ type mockListExpenseRepo struct {
 	fn func(userID string, year, month int) ([]domain.Expense, error)
 }
 
-func (m *mockListExpenseRepo) FindByMonth(userID string, year, month int) ([]domain.Expense, error) {
+func (m *mockListExpenseRepo) FindByMonth(ctx context.Context, userID string, year, month int) ([]domain.Expense, error) {
 	if m.fn != nil {
 		return m.fn(userID, year, month)
 	}
@@ -510,7 +510,7 @@ func TestListExpenseUseCase_DefaultsToCurrentMonth(t *testing.T) {
 	fixed := time.Date(2024, 6, 15, 0, 0, 0, 0, time.UTC)
 	uc.nowFn = func() time.Time { return fixed }
 
-	_, err := uc.Execute("user1", MonthFilter{})
+	_, err := uc.Execute(context.Background(), "user1", MonthFilter{})
 	require.NoError(t, err)
 	assert.Equal(t, 2024, gotYear)
 	assert.Equal(t, 6, gotMonth)
@@ -529,7 +529,7 @@ func TestListExpenseUseCase_WithMonthFilter(t *testing.T) {
 	}
 	uc := NewListExpensesUseCase(repo)
 
-	result, err := uc.Execute("user1", MonthFilter{Year: 2024, Month: 11})
+	result, err := uc.Execute(context.Background(), "user1", MonthFilter{Year: 2024, Month: 11})
 	require.NoError(t, err)
 	assert.Equal(t, 2024, gotYear)
 	assert.Equal(t, 11, gotMonth)
@@ -550,7 +550,7 @@ func TestListExpenseUseCase_PartialZeroDoesNotOverride(t *testing.T) {
 	uc := NewListExpensesUseCase(repo)
 
 	// year が指定されているが month=0 の場合、year を上書きしない
-	_, err := uc.Execute("user1", MonthFilter{Year: 2024, Month: 0})
+	_, err := uc.Execute(context.Background(), "user1", MonthFilter{Year: 2024, Month: 0})
 	require.NoError(t, err)
 	assert.Equal(t, 2024, gotYear)
 	assert.Equal(t, 0, gotMonth)
@@ -566,6 +566,6 @@ func TestListExpenseUseCase_RepoError(t *testing.T) {
 	}
 	uc := NewListExpensesUseCase(repo)
 
-	_, err := uc.Execute("user1", MonthFilter{Year: 2024, Month: 1})
+	_, err := uc.Execute(context.Background(), "user1", MonthFilter{Year: 2024, Month: 1})
 	assert.Error(t, err)
 }

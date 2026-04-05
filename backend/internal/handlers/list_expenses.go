@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
@@ -12,7 +13,7 @@ import (
 )
 
 type listExpensesUseCase interface {
-	Execute(userID string, filter usecase.MonthFilter) ([]domain.Expense, error)
+	Execute(ctx context.Context, userID string, filter usecase.MonthFilter) ([]domain.Expense, error)
 }
 
 type ListExpensesHandler struct {
@@ -55,7 +56,7 @@ func (h *ListExpensesHandler) Handle(c *gin.Context) {
 		return
 	}
 
-	expenses, err := h.uc.Execute(userID, filter)
+	expenses, err := h.uc.Execute(c.Request.Context(), userID, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "支出の取得に失敗しました"})
 		return

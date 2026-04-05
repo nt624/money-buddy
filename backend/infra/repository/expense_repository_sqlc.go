@@ -6,6 +6,7 @@ import (
 	"time"
 
 	db "money-buddy-backend/db/generated"
+	"money-buddy-backend/infra/transaction"
 	"money-buddy-backend/internal/domain"
 	"money-buddy-backend/internal/usecase"
 )
@@ -17,6 +18,13 @@ type expenseRepositorySQLC struct {
 
 func NewExpenseRepositorySQLC(q *db.Queries) *expenseRepositorySQLC {
 	return &expenseRepositorySQLC{q: q}
+}
+
+func (r *expenseRepositorySQLC) queries(ctx context.Context) *db.Queries {
+	if tx, ok := transaction.TxFromContext(ctx); ok {
+		return r.q.WithTx(tx)
+	}
+	return r.q
 }
 
 func (r *expenseRepositorySQLC) CreateExpense(userID string, input usecase.CreateExpenseInput) (domain.Expense, error) {
@@ -71,8 +79,8 @@ func (r *expenseRepositorySQLC) FindAll(userID string) ([]domain.Expense, error)
 	return out, nil
 }
 
-func (r *expenseRepositorySQLC) FindByMonth(userID string, year, month int) ([]domain.Expense, error) {
-	items, err := r.q.ListExpensesByMonth(context.Background(), db.ListExpensesByMonthParams{
+func (r *expenseRepositorySQLC) FindByMonth(ctx context.Context, userID string, year, month int) ([]domain.Expense, error) {
+	items, err := r.queries(ctx).ListExpensesByMonth(ctx, db.ListExpensesByMonthParams{
 		UserID: userID,
 		Year:   int32(year),
 		Month:  int32(month),

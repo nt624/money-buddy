@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"time"
 
 	"money-buddy-backend/internal/domain"
@@ -12,7 +13,7 @@ type MonthFilter struct {
 }
 
 type listExpenseRepository interface {
-	FindByMonth(userID string, year, month int) ([]domain.Expense, error)
+	FindByMonth(ctx context.Context, userID string, year, month int) ([]domain.Expense, error)
 }
 
 // ListExpensesUseCase は支出一覧取得ユースケースです。
@@ -27,12 +28,12 @@ func NewListExpensesUseCase(repo listExpenseRepository) *ListExpensesUseCase {
 }
 
 // Execute は支出一覧取得ユースケースを実行します。year/month が両方 0 の場合は当月を使用します。
-func (uc *ListExpensesUseCase) Execute(userID string, filter MonthFilter) ([]domain.Expense, error) {
+func (uc *ListExpensesUseCase) Execute(ctx context.Context, userID string, filter MonthFilter) ([]domain.Expense, error) {
 	year, month := filter.Year, filter.Month
 	if year == 0 && month == 0 {
 		now := uc.nowFn()
 		year = now.Year()
 		month = int(now.Month())
 	}
-	return uc.repo.FindByMonth(userID, year, month)
+	return uc.repo.FindByMonth(ctx, userID, year, month)
 }

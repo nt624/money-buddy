@@ -145,7 +145,7 @@ type mockListExpensesUC struct {
 	fn func(userID string, filter usecase.MonthFilter) ([]domain.Expense, error)
 }
 
-func (m *mockListExpensesUC) Execute(userID string, filter usecase.MonthFilter) ([]domain.Expense, error) {
+func (m *mockListExpensesUC) Execute(ctx context.Context, userID string, filter usecase.MonthFilter) ([]domain.Expense, error) {
 	if m.fn != nil {
 		return m.fn(userID, filter)
 	}
