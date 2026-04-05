@@ -17,19 +17,20 @@ type listExpenseRepository interface {
 
 // ListExpensesUseCase は支出一覧取得ユースケースです。
 type ListExpensesUseCase struct {
-	repo listExpenseRepository
+	repo  listExpenseRepository
+	nowFn func() time.Time
 }
 
 // NewListExpensesUseCase は ListExpensesUseCase の新しいインスタンスを生成します。
 func NewListExpensesUseCase(repo listExpenseRepository) *ListExpensesUseCase {
-	return &ListExpensesUseCase{repo: repo}
+	return &ListExpensesUseCase{repo: repo, nowFn: time.Now}
 }
 
-// Execute は支出一覧取得ユースケースを実行します。year/month が 0 の場合は当月を使用します。
+// Execute は支出一覧取得ユースケースを実行します。year/month が両方 0 の場合は当月を使用します。
 func (uc *ListExpensesUseCase) Execute(userID string, filter MonthFilter) ([]domain.Expense, error) {
 	year, month := filter.Year, filter.Month
 	if year == 0 && month == 0 {
-		now := time.Now()
+		now := uc.nowFn()
 		year = now.Year()
 		month = int(now.Month())
 	}

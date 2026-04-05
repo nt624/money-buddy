@@ -507,12 +507,13 @@ func TestListExpenseUseCase_DefaultsToCurrentMonth(t *testing.T) {
 		},
 	}
 	uc := NewListExpensesUseCase(repo)
+	fixed := time.Date(2024, 6, 15, 0, 0, 0, 0, time.UTC)
+	uc.nowFn = func() time.Time { return fixed }
 
-	now := time.Now()
 	_, err := uc.Execute("user1", MonthFilter{})
 	require.NoError(t, err)
-	assert.Equal(t, now.Year(), gotYear)
-	assert.Equal(t, int(now.Month()), gotMonth)
+	assert.Equal(t, 2024, gotYear)
+	assert.Equal(t, 6, gotMonth)
 }
 
 func TestListExpenseUseCase_WithMonthFilter(t *testing.T) {
