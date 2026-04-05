@@ -28,7 +28,7 @@ func NewListExpensesUseCase(repo listExpenseRepository) *ListExpensesUseCase {
 // Execute は支出一覧取得ユースケースを実行します。year/month が 0 の場合は当月を使用します。
 func (uc *ListExpensesUseCase) Execute(userID string, filter MonthFilter) ([]domain.Expense, error) {
 	year, month := filter.Year, filter.Month
-	if year == 0 || month == 0 {
+	if year == 0 && month == 0 {
 		now := time.Now()
 		year = now.Year()
 		month = int(now.Month())

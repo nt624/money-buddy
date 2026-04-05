@@ -535,6 +535,26 @@ func TestListExpenseUseCase_WithMonthFilter(t *testing.T) {
 	assert.Len(t, result, 1)
 }
 
+func TestListExpenseUseCase_PartialZeroDoesNotOverride(t *testing.T) {
+	t.Parallel()
+
+	var gotYear, gotMonth int
+	repo := &mockListExpenseRepo{
+		fn: func(userID string, year, month int) ([]domain.Expense, error) {
+			gotYear = year
+			gotMonth = month
+			return nil, nil
+		},
+	}
+	uc := NewListExpensesUseCase(repo)
+
+	// year が指定されているが month=0 の場合、year を上書きしない
+	_, err := uc.Execute("user1", MonthFilter{Year: 2024, Month: 0})
+	require.NoError(t, err)
+	assert.Equal(t, 2024, gotYear)
+	assert.Equal(t, 0, gotMonth)
+}
+
 func TestListExpenseUseCase_RepoError(t *testing.T) {
 	t.Parallel()
 
