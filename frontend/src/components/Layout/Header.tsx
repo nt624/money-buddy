@@ -25,7 +25,7 @@ export function Header() {
       <div className="container mx-auto flex h-14 max-w-screen-2xl items-center px-4 sm:px-6">
         {/* Logo / App Name */}
         <Link href="/" className="flex items-center space-x-2">
-          <span className="text-xl font-bold text-foreground">Money Buddy</span>
+          <span className="text-xl font-bold text-foreground">Pace Wallet</span>
         </Link>
 
         {/* Navigation */}

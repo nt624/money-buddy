@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Money Buddy - お金が貯まる家計管理アプリ",
+  title: "Pace Wallet - お金が貯まる家計管理アプリ",
   description: "今の自分のお金の状況が一目でわかる、貯まる生活を習慣化する家計管理アプリ",
 };
 

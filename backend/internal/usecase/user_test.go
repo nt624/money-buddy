@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"money-buddy-backend/internal/domain"
+	"pace-wallet-backend/internal/domain"
 )
 
 type mockGetUserRepo struct {

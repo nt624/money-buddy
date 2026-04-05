@@ -1,6 +1,6 @@
 package repository
 
-import "money-buddy-backend/internal/domain"
+import "pace-wallet-backend/internal/domain"
 
 // defaultStatus はリポジトリ層の防御的なフォールバックを担います。
 // サービス層が `status` を明示的に設定しない（空文字のまま渡す）ケースに備え、

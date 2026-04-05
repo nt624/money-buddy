@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"money-buddy-backend/internal/domain"
+	"pace-wallet-backend/internal/domain"
 )
 
 type listCategoriesUseCase interface {

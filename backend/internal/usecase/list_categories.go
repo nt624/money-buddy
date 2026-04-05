@@ -3,7 +3,7 @@ package usecase
 import (
 	"context"
 
-	"money-buddy-backend/internal/domain"
+	"pace-wallet-backend/internal/domain"
 )
 
 type listCategoriesRepository interface {

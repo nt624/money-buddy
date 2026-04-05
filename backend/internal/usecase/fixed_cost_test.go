@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"money-buddy-backend/internal/domain"
+	"pace-wallet-backend/internal/domain"
 )
 
 // mockFixedCostRepo はテスト用のモックリポジトリです

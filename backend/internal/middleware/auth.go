@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"money-buddy-backend/infra/auth"
+	"pace-wallet-backend/infra/auth"
 
 	"github.com/gin-gonic/gin"
 )

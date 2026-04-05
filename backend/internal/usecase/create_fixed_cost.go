@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"money-buddy-backend/internal/domain"
+	"pace-wallet-backend/internal/domain"
 )
 
 type createFixedCostRepository interface {

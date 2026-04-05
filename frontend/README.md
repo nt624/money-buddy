@@ -1,8 +1,8 @@
-# Money Buddy - Frontend
+# Pace Wallet - Frontend
 
 > Next.js 16 + React 19 + TypeScript による家計管理アプリ
 
-このディレクトリは Money Buddy のフロントエンドです。
+このディレクトリは Pace Wallet のフロントエンドです。
 
 ## 🚀 本番環境
 
@@ -260,8 +260,8 @@ npm run build
 1. **リポジトリをクローン**
 
 ```bash
-git clone https://github.com/nt624/money-buddy-frontend.git
-cd money-buddy-frontend
+git clone https://github.com/nt624/pace-wallet-app.git
+cd pace-wallet-app/frontend
 ```
 
 2. **依存関係をインストール**
@@ -316,7 +316,7 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
 ## ディレクトリ構成
 
 ```
-money-buddy-frontend/
+pace-wallet-frontend/
 ├── src/
 │   ├── app/                    # Next.js App Router のページ
 │   │   ├── page.tsx           # トップページ（支出入力画面）

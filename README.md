@@ -1,4 +1,4 @@
-# Money Buddy
+# Pace Wallet
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://money-buddy-app.vercel.app)
 [![Backend](https://img.shields.io/badge/Backend-Railway-0B0D0E?style=for-the-badge&logo=railway)](https://money-buddy-production.up.railway.app/health)
@@ -8,7 +8,7 @@
 
 ## プロジェクト概要
 
-**Money Buddy** は、「お金が貯まらない人が"貯まる生活"を続けられるように伴走する家計管理アプリ」です。
+**Pace Wallet** は、「お金が貯まらない人が"貯まる生活"を続けられるように伴走する家計管理アプリ」です。
 
 ### コンセプト
 

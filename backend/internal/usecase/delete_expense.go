@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"money-buddy-backend/internal/domain"
+	"pace-wallet-backend/internal/domain"
 )
 
 type deleteExpenseRepository interface {
