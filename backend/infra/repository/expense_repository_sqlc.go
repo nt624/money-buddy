@@ -71,6 +71,38 @@ func (r *expenseRepositorySQLC) FindAll(userID string) ([]domain.Expense, error)
 	return out, nil
 }
 
+func (r *expenseRepositorySQLC) FindByMonth(userID string, year, month int) ([]domain.Expense, error) {
+	items, err := r.q.ListExpensesByMonth(context.Background(), db.ListExpensesByMonthParams{
+		UserID: userID,
+		Year:   int32(year),
+		Month:  int32(month),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var out []domain.Expense
+	for _, it := range items {
+		out = append(out, dbListExpensesByMonthRowToModel(it))
+	}
+	return out, nil
+}
+
+func dbListExpensesByMonthRowToModel(e db.ListExpensesByMonthRow) domain.Expense {
+	memo := ""
+	if e.Memo.Valid {
+		memo = e.Memo.String
+	}
+	return domain.Expense{
+		ID:       int(e.ID),
+		Amount:   int(e.Amount),
+		Memo:     memo,
+		SpentAt:  e.SpentAt.Format(time.RFC3339),
+		Status:   e.Status,
+		Category: domain.Category{ID: int(e.CategoryID), Name: e.CategoryName},
+	}
+}
+
 func dbExpenseToModel(e db.GetExpenseWithCategoryByIDRow) domain.Expense {
 	memo := ""
 	if e.Memo.Valid {

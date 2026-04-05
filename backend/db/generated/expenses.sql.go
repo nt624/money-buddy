@@ -203,6 +203,69 @@ func (q *Queries) ListExpenses(ctx context.Context, userID string) ([]ListExpens
 	return items, nil
 }
 
+const listExpensesByMonth = `-- name: ListExpensesByMonth :many
+SELECT
+  e.id,
+  e.amount,
+  e.memo,
+  e.spent_at,
+  e.status,
+  c.id AS category_id,
+  c.name AS category_name
+FROM expenses e
+JOIN categories c ON e.category_id = c.id
+WHERE e.user_id = $1
+  AND DATE_TRUNC('month', e.spent_at) = DATE_TRUNC('month', MAKE_DATE($2::int4, $3::int4, 1))
+ORDER BY e.spent_at DESC
+`
+
+type ListExpensesByMonthParams struct {
+	UserID string
+	Year   int32
+	Month  int32
+}
+
+type ListExpensesByMonthRow struct {
+	ID           int32
+	Amount       int32
+	Memo         sql.NullString
+	SpentAt      time.Time
+	Status       string
+	CategoryID   int32
+	CategoryName string
+}
+
+func (q *Queries) ListExpensesByMonth(ctx context.Context, arg ListExpensesByMonthParams) ([]ListExpensesByMonthRow, error) {
+	rows, err := q.db.QueryContext(ctx, listExpensesByMonth, arg.UserID, arg.Year, arg.Month)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListExpensesByMonthRow
+	for rows.Next() {
+		var i ListExpensesByMonthRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Amount,
+			&i.Memo,
+			&i.SpentAt,
+			&i.Status,
+			&i.CategoryID,
+			&i.CategoryName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateExpense = `-- name: UpdateExpense :exec
 UPDATE expenses
 SET
