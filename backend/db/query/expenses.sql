@@ -79,7 +79,8 @@ SELECT
 FROM expenses e
 JOIN categories c ON e.category_id = c.id
 WHERE e.user_id = $1
-  AND DATE_TRUNC('month', e.spent_at) = DATE_TRUNC('month', MAKE_DATE(sqlc.arg(year)::int4, sqlc.arg(month)::int4, 1))
+  AND e.spent_at >= MAKE_DATE(sqlc.arg(year)::int4, sqlc.arg(month)::int4, 1)
+  AND e.spent_at < MAKE_DATE(sqlc.arg(year)::int4, sqlc.arg(month)::int4, 1) + INTERVAL '1 month'
 ORDER BY e.spent_at DESC;
 
 -- name: DeleteExpense :exec
