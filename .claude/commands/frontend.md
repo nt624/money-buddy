@@ -17,8 +17,23 @@ src/
 ├── contexts/      → React Context（認証状態など）
 ├── hooks/         → カスタムフック（データ取得・状態管理）
 └── lib/
-    ├── api.ts     → APIクライアント（fetch ラッパー）
-    └── types.ts   → 型定義（バックエンドのOpenAPI仕様と一致させる）
+    ├── api/           → APIクライアント（エンドポイント別にファイルを分割）
+    │   ├── client.ts      → fetchベースの共通クライアント
+    │   ├── categories.ts
+    │   ├── expenses.ts
+    │   ├── dashboard.ts
+    │   ├── fixed-costs.ts
+    │   ├── setup.ts
+    │   └── users.ts
+    ├── types/         → 型定義（バックエンドのOpenAPI仕様と一致させる）
+    │   ├── category.ts
+    │   ├── dashboard.ts
+    │   ├── expense.ts
+    │   ├── fixed-cost.ts
+    │   ├── setup.ts
+    │   └── user.ts
+    ├── firebase/      → Firebase設定
+    └── constants.ts   → 定数
 ```
 
 ## 実装の指針
@@ -30,7 +45,7 @@ src/
 - **セマンティックカラートークン**: プロジェクト既存のカラートークンを優先して使用する。新しいカラーを安易に追加しない。
 
 ### 型安全性
-- `frontend/src/lib/types.ts` で定義された型を使用する。`any` 型は使わない。
+- `frontend/src/lib/types/` 配下のファイルで定義された型を使用する。`any` 型は使わない。
 - APIレスポンスはバックエンドのOpenAPI仕様に基づいた型で受け取る。
 
 ### データ取得
