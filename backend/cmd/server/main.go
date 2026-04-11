@@ -76,6 +76,7 @@ func main() {
 	userRepo := repository.NewUserRepositorySQLC(queries)
 	fixedCostRepo := repository.NewFixedCostRepositorySQLC(queries)
 	dashboardRepo := repository.NewDashboardRepositorySQLC(queries)
+	monthlySettingsRepo := repository.NewMonthlySettingsRepositorySQLC(queries)
 	txManager := transaction.NewTxManager(dbConn)
 
 	// ユースケース初期化
@@ -96,6 +97,9 @@ func main() {
 	updateFixedCostUC := usecase.NewUpdateFixedCostUseCase(fixedCostRepo)
 	deleteFixedCostUC := usecase.NewDeleteFixedCostUseCase(fixedCostRepo)
 	getDashboardUC := usecase.NewGetDashboardUseCase(dashboardRepo)
+	getMonthlySettingsUC := usecase.NewGetMonthlySettingsUseCase(repository.NewMonthlySettingsFullRepo(monthlySettingsRepo, userRepo))
+	upsertMonthlySettingsUC := usecase.NewUpsertMonthlySettingsUseCase(monthlySettingsRepo)
+	deleteMonthlySettingsUC := usecase.NewDeleteMonthlySettingsUseCase(monthlySettingsRepo)
 
 	// 認証不要なエンドポイント
 	r.GET("/health", func(c *gin.Context) {
@@ -111,6 +115,7 @@ func main() {
 		initialSetupUC, getUserUC, updateUserUC,
 		createFixedCostUC, listFixedCostsUC, updateFixedCostUC, deleteFixedCostUC,
 		getDashboardUC,
+		getMonthlySettingsUC, upsertMonthlySettingsUC, deleteMonthlySettingsUC,
 	)
 
 	log.Printf("Server starting on port %s (env: %s)", port, env)

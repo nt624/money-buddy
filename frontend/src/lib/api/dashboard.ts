@@ -1,9 +1,10 @@
 import { Dashboard } from "@/lib/types/dashboard";
 import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
 
-export async function getDashboard(): Promise<Dashboard> {
+export async function getDashboard(params?: { year: number; month: number }): Promise<Dashboard> {
   const headers = await getAuthHeaders();
-  const res = await fetch(`${API_BASE_URL}/dashboard`, {
+  const query = params ? `?year=${params.year}&month=${params.month}` : '';
+  const res = await fetch(`${API_BASE_URL}/dashboard${query}`, {
     method: "GET",
     headers,
   });

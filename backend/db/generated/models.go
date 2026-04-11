@@ -36,6 +36,17 @@ type FixedCost struct {
 	UpdatedAt sql.NullTime
 }
 
+type MonthlySetting struct {
+	ID         int32
+	UserID     string
+	Year       int32
+	Month      int32
+	Income     int32
+	SavingGoal int32
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+}
+
 type User struct {
 	ID         string
 	Income     int32

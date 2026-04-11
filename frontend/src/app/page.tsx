@@ -4,12 +4,14 @@ import { useState } from 'react'
 import { useExpenses } from '@/hooks/useExpenses'
 import { useUser } from '@/hooks/useUser'
 import { useDashboard } from '@/hooks/useDashboard'
+import { useMonthlySettings } from '@/hooks/useMonthlySettings'
 import { ExpenseForm } from '@/components/ExpenseForm'
 import { ExpenseList } from '@/components/ExpenseList'
 import { ExpenseCalendar } from '@/components/ExpenseCalendar'
 import { Button } from '@/components/ui/Button'
 import { InitialSetupForm } from '@/components/InitialSetupForm'
 import { Dashboard } from '@/components/Dashboard'
+import { MonthlySettingsModal } from '@/components/MonthlySettingsModal'
 import { Container } from '@/components/Layout/Container'
 import { submitInitialSetup } from '@/lib/api/setup'
 import { InitialSetupRequest } from '@/lib/types/setup'
@@ -18,7 +20,17 @@ import { Expense, UpdateExpenseInput } from '@/lib/types/expense'
 export default function Home() {
   const { user, needsSetup, isLoading: userLoading, error: userError, refetchUser } = useUser()
   const { expenses, selectedMonth, navigateMonth, createExpense, updateExpense, deleteExpense, isSubmitting, isLoading, error } = useExpenses()
-  const { dashboard, isLoading: dashboardLoading, error: dashboardError, refetch: refetchDashboard } = useDashboard({ enabled: !needsSetup })
+  const { dashboard, isLoading: dashboardLoading, error: dashboardError, refetch: refetchDashboard } = useDashboard({ enabled: !needsSetup, selectedMonth })
+  const {
+    settings: monthlySettings,
+    isSubmitting: msSubmitting,
+    error: msError,
+    isModalOpen,
+    openModal,
+    closeModal,
+    saveSettings,
+    resetSettings,
+  } = useMonthlySettings(selectedMonth, user)
   const [setupSubmitting, setSetupSubmitting] = useState(false)
   const [setupError, setSetupError] = useState<string | null>(null)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
@@ -33,8 +45,8 @@ export default function Home() {
 
     try {
       await submitInitialSetup(input)
-      await refetchUser() // セットアップ完了後、ユーザー情報を再取得
-      refetchDashboard() // ダッシュボードも更新
+      await refetchUser()
+      refetchDashboard()
     } catch (err) {
       setSetupError(err instanceof Error ? err.message : 'エラーが発生しました')
     } finally {
@@ -48,9 +60,8 @@ export default function Home() {
 
   const handleUpdateSubmit = async (input: UpdateExpenseInput) => {
     if (!editingExpense) return
-    
+
     const success = await updateExpense(editingExpense.id, input)
-    // 成功時のみ編集モード解除とダッシュボード再取得
     if (success) {
       setEditingExpense(null)
       refetchDashboard()
@@ -63,9 +74,8 @@ export default function Home() {
 
   const handleDelete = async (id: number) => {
     if (!confirm('本当に削除しますか？')) return
-    
+
     const success = await deleteExpense(id)
-    // 削除成功時のみダッシュボード再取得と編集モード解除
     if (success) {
       if (editingExpense?.id === id) {
         setEditingExpense(null)
@@ -73,7 +83,6 @@ export default function Home() {
       refetchDashboard()
     }
   }
-  
 
   // 初回読み込み中
   if (userLoading) {
@@ -106,23 +115,6 @@ export default function Home() {
   // 通常の支出入力画面
   return (
     <Container className="py-6 space-y-6" maxWidth="lg">
-      {/* User Info Card */}
-      {user && (
-        <section className="bg-card border border-border rounded-lg shadow-sm p-4 sm:p-6">
-          <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">基本情報</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <div className="space-y-1">
-              <div className="text-xs sm:text-sm text-muted-foreground">月収</div>
-              <div className="text-lg sm:text-xl font-semibold text-foreground">¥{user.income.toLocaleString()}</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-xs sm:text-sm text-muted-foreground">貯金目標</div>
-              <div className="text-lg sm:text-xl font-semibold text-foreground">¥{user.saving_goal.toLocaleString()}</div>
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Dashboard Section */}
       {dashboardLoading && <p className="text-muted-foreground">ダッシュボード読み込み中...</p>}
       {dashboardError && <p className="text-danger">ダッシュボードエラー: {dashboardError}</p>}
@@ -134,7 +126,7 @@ export default function Home() {
         {editingExpense ? (
           <div className="space-y-2">
             <h3 className="text-lg font-semibold text-foreground">支出を編集</h3>
-            <ExpenseForm 
+            <ExpenseForm
               mode="edit"
               initialData={editingExpense}
               onSubmit={handleUpdateSubmit}
@@ -143,7 +135,7 @@ export default function Home() {
             />
           </div>
         ) : (
-          <ExpenseForm 
+          <ExpenseForm
             onSubmit={async (input) => {
               const success = await createExpense(input)
               if (success) {
@@ -163,6 +155,14 @@ export default function Home() {
               <Button variant="ghost" size="sm" aria-label="前月へ" onClick={() => navigateMonth('prev')}>‹</Button>
               <span className="text-base font-semibold text-foreground min-w-[120px] text-center">{monthLabel}</span>
               <Button variant="ghost" size="sm" aria-label="翌月へ" onClick={() => navigateMonth('next')}>›</Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={openModal}
+                className="text-xs text-muted-foreground border border-border"
+              >
+                {monthlySettings?.is_custom ? '設定済' : '設定'}
+              </Button>
             </div>
             <div className="flex gap-1">
               <Button
@@ -188,6 +188,24 @@ export default function Home() {
           )}
         </div>
       </section>
+
+      <MonthlySettingsModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        settings={monthlySettings}
+        year={selectedMonth.year}
+        month={selectedMonth.month}
+        onSave={async (input) => {
+          const success = await saveSettings(input, () => refetchDashboard())
+          return success
+        }}
+        onReset={async () => {
+          const success = await resetSettings(() => refetchDashboard())
+          return success
+        }}
+        isSubmitting={msSubmitting}
+        error={msError}
+      />
     </Container>
   )
 }

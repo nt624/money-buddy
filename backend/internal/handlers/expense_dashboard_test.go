@@ -390,12 +390,12 @@ func TestUpdateExpenseHandler_StatusTransitionConflict(t *testing.T) {
 // --- Get Dashboard ---
 
 type mockGetDashboardUC struct {
-	fn func(ctx context.Context, userID string) (*usecase.Dashboard, error)
+	fn func(ctx context.Context, userID string, year, month int) (*usecase.Dashboard, error)
 }
 
-func (m *mockGetDashboardUC) Execute(ctx context.Context, userID string) (*usecase.Dashboard, error) {
+func (m *mockGetDashboardUC) Execute(ctx context.Context, userID string, year, month int) (*usecase.Dashboard, error) {
 	if m.fn != nil {
-		return m.fn(ctx, userID)
+		return m.fn(ctx, userID, year, month)
 	}
 	return nil, nil
 }
@@ -404,7 +404,7 @@ func TestGetDashboardHandler_Success(t *testing.T) {
 	router := newRouterWithUserID("test-user")
 
 	uc := &mockGetDashboardUC{
-		fn: func(ctx context.Context, userID string) (*usecase.Dashboard, error) {
+		fn: func(ctx context.Context, userID string, year, month int) (*usecase.Dashboard, error) {
 			return &usecase.Dashboard{
 				Income:            300000,
 				SavingGoal:        50000,
@@ -434,7 +434,7 @@ func TestGetDashboardHandler_ServiceError(t *testing.T) {
 	router := newRouterWithUserID("test-user")
 
 	uc := &mockGetDashboardUC{
-		fn: func(ctx context.Context, userID string) (*usecase.Dashboard, error) {
+		fn: func(ctx context.Context, userID string, year, month int) (*usecase.Dashboard, error) {
 			return nil, errors.New("db error")
 		},
 	}

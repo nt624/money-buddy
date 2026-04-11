@@ -26,6 +26,9 @@ func Register(
 	updateFixedCost *usecase.UpdateFixedCostUseCase,
 	deleteFixedCost *usecase.DeleteFixedCostUseCase,
 	getDashboard *usecase.GetDashboardUseCase,
+	getMonthlySettings *usecase.GetMonthlySettingsUseCase,
+	upsertMonthlySettings *usecase.UpsertMonthlySettingsUseCase,
+	deleteMonthlySettings *usecase.DeleteMonthlySettingsUseCase,
 ) {
 	r.POST("/expenses", NewCreateExpenseHandler(createExpense).Handle)
 	r.GET("/expenses", NewListExpensesHandler(listExpenses).Handle)
@@ -47,4 +50,8 @@ func Register(
 	r.PUT("/fixed-costs/:id", NewUpdateFixedCostHandler(updateFixedCost).Handle)
 	r.DELETE("/fixed-costs/:id", NewDeleteFixedCostHandler(deleteFixedCost).Handle)
 	r.GET("/dashboard", NewGetDashboardHandler(getDashboard).Handle)
+
+	r.GET("/monthly-settings", NewGetMonthlySettingsHandler(getMonthlySettings).Handle)
+	r.PUT("/monthly-settings", NewUpsertMonthlySettingsHandler(upsertMonthlySettings).Handle)
+	r.DELETE("/monthly-settings", NewDeleteMonthlySettingsHandler(deleteMonthlySettings).Handle)
 }
