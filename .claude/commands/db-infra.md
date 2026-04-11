@@ -59,9 +59,16 @@ NNN_description.sql  （例: 002_add_budgets_table.sql）
 
 ## Neon DB 接続最適化
 
-- **pgx を使用する**: `database/sql` より `pgx/v5` を直接使用する。Neonのサーバーレス環境に最適化されている。
-- **接続プールの設定**: `pgxpool` を使用し、`MaxConns` をサーバーレス環境に合わせて制限する（目安: 10以下）。
-- **コネクション確立コスト**: Neonのコールドスタートを考慮し、接続タイムアウトを適切に設定する。
+現行実装は `database/sql` + `pgx/v5/stdlib`（`sql.Open("pgx", ...)`）を採用している。sqlcが `database/sql` ベースのコードを生成するため、この構成を維持する（`backend/internal/db/db.go`）。
+
+- **`pgx/v5/stdlib` を使用する**: `sql.Open("pgx", dsn)` でpgxドライバーを経由した `*sql.DB` を取得する。sqlcの生成する `DBTX` インターフェース（`database/sql` ベース）を満たすために必要。
+- **コネクションプール設定**: 以下の設定が `db.go` に実装済み。変更時はNeonの接続数制限（無料プランは最大10接続）を超えないよう注意する。
+  - `SetMaxOpenConns(10)` — 最大同時接続数
+  - `SetMaxIdleConns(5)` — アイドル接続数
+  - `SetConnMaxLifetime(5 * time.Minute)` — Neonのタイムアウト対策
+  - `SetConnMaxIdleTime(2 * time.Minute)` — アイドル接続の最大時間
+- **エラー判定**: `pgx/v5/stdlib` 経由ではpgxのエラーが `database/sql` のエラーに変換されるため、「行なし」判定は `pgx.ErrNoRows` ではなく `sql.ErrNoRows` を使う。
+- **型**: sqlcが生成するNullable型（`sql.NullString`、`sql.NullTime`）をそのまま使用する。
 
 ## 絶対ルール
 
