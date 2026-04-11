@@ -36,8 +36,8 @@ backend/db/
 ### 命名規則
 - テーブル名: スネークケース・複数形（例: `expenses`, `user_categories`）
 - カラム名: スネークケース（例: `created_at`, `user_id`）
-- 主キー: `id UUID PRIMARY KEY DEFAULT gen_random_uuid()`
-- タイムスタンプ: 全テーブルに `created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()` を付与する
+- 主キー: 既存テーブルの変更時は現行スキーマに合わせる。現状は `users.id` が `TEXT`、それ以外の主要テーブルは `SERIAL` 主キーを採用しているため、明示的な移行方針がない限り踏襲する。新規テーブルで `UUID PRIMARY KEY DEFAULT gen_random_uuid()` を採用したい場合は、既存テーブルを含む将来的なID方針との整合を確認する
+- タイムスタンプ: 既存テーブルでは `TIMESTAMP`（一部 `NOT NULL` でないカラムを含む）を採用しているため、変更時は互換性を優先する。新規テーブルや将来の移行で `TIMESTAMPTZ NOT NULL DEFAULT NOW()` を採用する場合は、適用範囲を明確にしたうえでマイグレーション方針と合わせて判断する
 
 ### 制約
 - 外部キーには必ず `ON DELETE` 挙動を明示する（`CASCADE` or `RESTRICT`）
