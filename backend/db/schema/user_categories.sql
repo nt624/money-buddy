@@ -10,4 +10,8 @@ CREATE TABLE user_categories (
   CONSTRAINT user_categories_user_name_unique UNIQUE (user_id, name)
 );
 
+CREATE UNIQUE INDEX idx_user_categories_one_other_per_user
+  ON user_categories (user_id)
+  WHERE category_type = 'other';
+
 CREATE INDEX idx_user_categories_user_id ON user_categories(user_id);
