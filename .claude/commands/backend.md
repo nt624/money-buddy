@@ -23,15 +23,16 @@ domain/       → ドメインモデル・インターフェース定義
 - **handlers** はリクエストをバリデーションして usecase を呼ぶだけ。ビジネスロジックを書かない。
 - **usecase** はDBの実装詳細（SQLなど）を知らない。`infra` のインターフェースに依存する。
 - **infra** は sqlc の生成コードを呼び出すリポジトリ実装のみ。直接SQLを書くのは `db/query/` の `.sql` ファイルの中だけ。
+- **インターフェースはコンシューマー側で定義する**: リポジトリのインターフェースは `usecase/` に、usecaseのインターフェースは `handlers/` に定義する。`domain/` にインターフェースを置かない。
 
 ## 実装の進め方
 
 1. `db/query/` に SQLクエリを追加または修正する
 2. `sqlc generate` を実行してGoコードを自動生成する
-3. `domain/` にインターフェースを定義（必要な場合）
-4. `infra/` にリポジトリ実装を書く
+3. `internal/usecase/` に、usecaseが必要とするリポジトリのインターフェースを定義する（例: `type createExpenseRepository interface { ... }`）
+4. `infra/` にリポジトリ実装を書く（usecase で定義したインターフェースを満たす）
 5. `internal/usecase/` にビジネスロジックを書く
-6. `internal/handlers/` にHTTPハンドラーを書く
+6. `internal/handlers/` に、handlerが必要とするusecaseのインターフェースを定義し、HTTPハンドラーを書く（例: `type createExpenseUseCase interface { ... }`）
 7. `go test ./...` でテストを実行する
 
 ## 絶対ルール
