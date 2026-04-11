@@ -87,7 +87,7 @@ func main() {
 	createCategoryUC := usecase.NewCreateCategoryUseCase(categoryRepo)
 	updateCategoryUC := usecase.NewUpdateCategoryUseCase(categoryRepo)
 	deleteCategoryUC := usecase.NewDeleteCategoryUseCase(categoryRepo)
-	reorderCategoriesUC := usecase.NewReorderCategoriesUseCase(categoryRepo)
+	reorderCategoriesUC := usecase.NewReorderCategoriesUseCase(categoryRepo, txManager)
 	initialSetupUC := usecase.NewCompleteInitialSetupUseCase(userRepo, fixedCostRepo, categoryRepo, txManager)
 	getUserUC := usecase.NewGetUserUseCase(userRepo)
 	updateUserUC := usecase.NewUpdateUserSettingsUseCase(userRepo)

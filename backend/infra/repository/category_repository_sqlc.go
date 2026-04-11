@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 
 	db "pace-wallet-backend/db/generated"
+	"pace-wallet-backend/infra/transaction"
 	"pace-wallet-backend/internal/domain"
 )
 
@@ -82,7 +83,11 @@ func (r *categoryRepositorySQLC) UpdateCategory(ctx context.Context, userID stri
 }
 
 func (r *categoryRepositorySQLC) UpdateCategorySortOrder(ctx context.Context, userID string, id int32, sortOrder int32) error {
-	_, err := r.q.UpdateUserCategorySortOrder(ctx, db.UpdateUserCategorySortOrderParams{
+	q := r.q
+	if tx, ok := transaction.TxFromContext(ctx); ok {
+		q = db.New(tx)
+	}
+	_, err := q.UpdateUserCategorySortOrder(ctx, db.UpdateUserCategorySortOrderParams{
 		ID:        id,
 		UserID:    userID,
 		SortOrder: sortOrder,
