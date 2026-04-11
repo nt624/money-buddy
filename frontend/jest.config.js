@@ -8,4 +8,8 @@ module.exports = {
   transform: {
     ...tsJestTransformCfg,
   },
+  moduleNameMapper: {
+    "^@/lib/firebase/config$": "<rootDir>/src/lib/firebase/__mocks__/config.ts",
+    "^@/(.*)$": "<rootDir>/src/$1",
+  },
 };
