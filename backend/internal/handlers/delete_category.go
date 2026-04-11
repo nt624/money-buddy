@@ -43,6 +43,11 @@ func (h *DeleteCategoryHandler) Handle(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": ve.Message})
 			return
 		}
+		var nfe *usecase.NotFoundError
+		if errors.As(err, &nfe) {
+			c.JSON(http.StatusNotFound, gin.H{"error": nfe.Message})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "カテゴリの削除に失敗しました"})
 		return
 	}

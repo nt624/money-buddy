@@ -39,9 +39,9 @@ func (h *ReorderCategoriesHandler) Handle(c *gin.Context) {
 	}
 
 	if err := h.uc.Execute(c.Request.Context(), userID, body.Items); err != nil {
-		var ie *usecase.InternalError
-		if errors.As(err, &ie) {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "並び替えに失敗しました"})
+		var nfe *usecase.NotFoundError
+		if errors.As(err, &nfe) {
+			c.JSON(http.StatusNotFound, gin.H{"error": nfe.Message})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "並び替えに失敗しました"})
