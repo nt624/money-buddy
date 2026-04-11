@@ -35,6 +35,9 @@ func (uc *UpdateCategoryUseCase) Execute(ctx context.Context, userID string, id 
 
 	cat, err := uc.repo.UpdateCategory(ctx, userID, int32(id), name)
 	if err != nil {
+		if errors.Is(err, domain.ErrDuplicateCategoryName) {
+			return domain.Category{}, &ValidationError{Message: "同じ名前のカテゴリがすでに存在します"}
+		}
 		if errors.Is(err, sql.ErrNoRows) {
 			return domain.Category{}, &NotFoundError{Message: "カテゴリが見つかりません"}
 		}

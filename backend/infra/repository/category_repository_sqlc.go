@@ -2,10 +2,15 @@ package repository
 
 import (
 	"context"
+	"errors"
+
+	"github.com/jackc/pgx/v5/pgconn"
 
 	db "pace-wallet-backend/db/generated"
 	"pace-wallet-backend/internal/domain"
 )
+
+
 
 
 type categoryRepositorySQLC struct {
@@ -42,6 +47,9 @@ func (r *categoryRepositorySQLC) CreateCategory(ctx context.Context, userID stri
 		Name:   name,
 	})
 	if err != nil {
+		if isUniqueViolation(err) {
+			return domain.Category{}, domain.ErrDuplicateCategoryName
+		}
 		return domain.Category{}, err
 	}
 	return domain.Category{
@@ -59,6 +67,9 @@ func (r *categoryRepositorySQLC) UpdateCategory(ctx context.Context, userID stri
 		Name:   name,
 	})
 	if err != nil {
+		if isUniqueViolation(err) {
+			return domain.Category{}, domain.ErrDuplicateCategoryName
+		}
 		return domain.Category{}, err
 	}
 	return domain.Category{
@@ -102,4 +113,10 @@ func dbUserCategoryToModel(c db.ListUserCategoriesRow) domain.Category {
 		CategoryType: c.CategoryType,
 		SortOrder:    int(c.SortOrder),
 	}
+}
+
+// isUniqueViolation は PostgreSQL の一意制約違反エラー (23505) かどうかを判定します。
+func isUniqueViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == "23505"
 }

@@ -132,7 +132,7 @@ VALUES
   ($1, '医療費',     'default', 5),
   ($1, '衣服',       'default', 6),
   ($1, 'その他',     'other',   0)
-ON CONFLICT DO NOTHING
+ON CONFLICT (user_id, name) DO NOTHING
 `
 
 func (q *Queries) SeedDefaultCategoriesForUser(ctx context.Context, userID string) error {

@@ -2,10 +2,12 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"pace-wallet-backend/internal/domain"
 )
+
 
 const CategoryNameMaxLen = 50
 
@@ -33,5 +35,12 @@ func (uc *CreateCategoryUseCase) Execute(ctx context.Context, userID string, nam
 		return domain.Category{}, &ValidationError{Message: "カテゴリ名は50文字以内で入力してください"}
 	}
 
-	return uc.repo.CreateCategory(ctx, userID, name)
+	cat, err := uc.repo.CreateCategory(ctx, userID, name)
+	if err != nil {
+		if errors.Is(err, domain.ErrDuplicateCategoryName) {
+			return domain.Category{}, &ValidationError{Message: "同じ名前のカテゴリがすでに存在します"}
+		}
+		return domain.Category{}, &InternalError{Message: "internal error"}
+	}
+	return cat, nil
 }
