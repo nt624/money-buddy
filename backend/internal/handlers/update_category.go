@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -42,7 +43,8 @@ func (h *UpdateCategoryHandler) Handle(c *gin.Context) {
 		Name string `json:"name"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Printf("update_category: invalid request body: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "リクエストが不正です"})
 		return
 	}
 

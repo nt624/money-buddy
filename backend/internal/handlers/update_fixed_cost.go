@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -50,7 +51,8 @@ func (h *UpdateFixedCostHandler) Handle(c *gin.Context) {
 
 	var req updateFixedCostRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Printf("update_fixed_cost: invalid request body: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "リクエストが不正です"})
 		return
 	}
 

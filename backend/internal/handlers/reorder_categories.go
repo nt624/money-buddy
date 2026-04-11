@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,7 +35,8 @@ func (h *ReorderCategoriesHandler) Handle(c *gin.Context) {
 		Items []usecase.ReorderCategoriesInput `json:"items"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Printf("reorder_categories: invalid request body: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "リクエストが不正です"})
 		return
 	}
 
