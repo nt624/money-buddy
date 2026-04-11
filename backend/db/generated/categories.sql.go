@@ -32,7 +32,7 @@ VALUES (
   $2,
   'user',
   COALESCE(
-    (SELECT MAX(sort_order) + 1 FROM user_categories WHERE user_id = $1 AND category_type = 'user'),
+    (SELECT MAX(sort_order) + 1 FROM user_categories WHERE user_id = $1 AND category_type != 'other'),
     1
   )
 )
@@ -82,7 +82,7 @@ SELECT id, name, category_type, sort_order
 FROM user_categories
 WHERE user_id = $1
 ORDER BY
-  CASE category_type WHEN 'default' THEN 0 WHEN 'user' THEN 1 ELSE 2 END,
+  CASE category_type WHEN 'other' THEN 1 ELSE 0 END,
   sort_order ASC,
   created_at ASC
 `

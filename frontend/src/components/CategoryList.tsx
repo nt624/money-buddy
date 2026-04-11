@@ -10,12 +10,6 @@ type Props = {
   isSubmitting: boolean;
 };
 
-const GROUP_LABELS: Record<string, string> = {
-  default: "デフォルト",
-  user: "ユーザー定義",
-  other: "その他",
-};
-
 export function CategoryList({ categories, onEdit, onDelete, onReorder, isSubmitting }: Props) {
   if (categories.length === 0) {
     return (
@@ -25,82 +19,77 @@ export function CategoryList({ categories, onEdit, onDelete, onReorder, isSubmit
     );
   }
 
-  const groups: Array<{ type: string; items: Category[] }> = [
-    { type: "default", items: categories.filter((c) => c.category_type === "default") },
-    { type: "user", items: categories.filter((c) => c.category_type === "user") },
-    { type: "other", items: categories.filter((c) => c.category_type === "other") },
-  ].filter((g) => g.items.length > 0);
+  // 'other' は常に末尾に固定表示。それ以外は sort_order 順に統合表示
+  const mainCategories = categories.filter((c) => c.category_type !== "other");
+  const otherCategories = categories.filter((c) => c.category_type === "other");
 
-  const handleMove = (group: Category[], current: Category, direction: "up" | "down") => {
-    const idx = group.indexOf(current);
+  const handleMove = (list: Category[], current: Category, direction: "up" | "down") => {
+    const idx = list.indexOf(current);
     const swapIdx = direction === "up" ? idx - 1 : idx + 1;
-    if (swapIdx < 0 || swapIdx >= group.length) return;
+    if (swapIdx < 0 || swapIdx >= list.length) return;
 
-    const target = group[swapIdx];
+    const target = list[swapIdx];
     onReorder([
       { id: current.id, sort_order: target.sort_order },
       { id: target.id, sort_order: current.sort_order },
     ]);
   };
 
-  return (
-    <div className="space-y-6">
-      {groups.map(({ type, items }) => (
-        <div key={type}>
-          <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 px-1">
-            {GROUP_LABELS[type]}
-          </div>
-          <ul className="list-none p-0 space-y-2">
-            {items.map((cat, idx) => (
-              <li
-                key={cat.id}
-                className="p-3 border border-border bg-card rounded-lg flex items-center gap-2 shadow-sm"
-              >
-                {/* 並び替えボタン (その他グループは非表示) */}
-                {type !== "other" && (
-                  <div className="flex flex-col gap-0.5 flex-shrink-0">
-                    <button
-                      onClick={() => handleMove(items, cat, "up")}
-                      disabled={isSubmitting || idx === 0}
-                      aria-label="上に移動"
-                      className="p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                    >
-                      ▲
-                    </button>
-                    <button
-                      onClick={() => handleMove(items, cat, "down")}
-                      disabled={isSubmitting || idx === items.length - 1}
-                      aria-label="下に移動"
-                      className="p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                    >
-                      ▼
-                    </button>
-                  </div>
-                )}
-
-                <span className="flex-1 text-sm font-medium text-foreground">{cat.name}</span>
-
-                <div className="flex gap-2 flex-shrink-0">
-                  <button
-                    onClick={() => onEdit(cat)}
-                    disabled={isSubmitting}
-                    className="px-3 py-1.5 text-xs font-medium rounded bg-primary hover:bg-primary-hover text-primary-foreground disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-                  >
-                    編集
-                  </button>
-                  <button
-                    onClick={() => onDelete(cat.id)}
-                    disabled={isSubmitting}
-                    className="px-3 py-1.5 text-xs font-medium rounded bg-danger hover:bg-danger-hover text-danger-foreground disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-                  >
-                    削除
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+  const renderItem = (cat: Category, idx: number, list: Category[], showMoveButtons: boolean) => (
+    <li
+      key={cat.id}
+      className="p-3 border border-border bg-card rounded-lg flex items-center gap-2 shadow-sm"
+    >
+      {showMoveButtons && (
+        <div className="flex flex-col gap-0.5 flex-shrink-0">
+          <button
+            onClick={() => handleMove(list, cat, "up")}
+            disabled={isSubmitting || idx === 0}
+            aria-label="上に移動"
+            className="p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            ▲
+          </button>
+          <button
+            onClick={() => handleMove(list, cat, "down")}
+            disabled={isSubmitting || idx === list.length - 1}
+            aria-label="下に移動"
+            className="p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            ▼
+          </button>
         </div>
-      ))}
-    </div>
+      )}
+
+      <span className="flex-1 text-sm font-medium text-foreground">{cat.name}</span>
+
+      <div className="flex gap-2 flex-shrink-0">
+        <button
+          onClick={() => onEdit(cat)}
+          disabled={isSubmitting}
+          className="px-3 py-1.5 text-xs font-medium rounded bg-primary hover:bg-primary-hover text-primary-foreground disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+        >
+          編集
+        </button>
+        <button
+          onClick={() => onDelete(cat.id)}
+          disabled={isSubmitting}
+          className="px-3 py-1.5 text-xs font-medium rounded bg-danger hover:bg-danger-hover text-danger-foreground disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+        >
+          削除
+        </button>
+      </div>
+    </li>
+  );
+
+  return (
+    <ul className="list-none p-0 space-y-2">
+      {mainCategories.map((cat, idx) =>
+        renderItem(cat, idx, mainCategories, true)
+      )}
+      {otherCategories.map((cat) =>
+        renderItem(cat, 0, otherCategories, false)
+      )}
+    </ul>
   );
 }
