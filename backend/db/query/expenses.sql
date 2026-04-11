@@ -21,7 +21,7 @@ SELECT
   c.id AS category_id,
   c.name AS category_name
 FROM expenses e
-JOIN categories c ON e.category_id = c.id
+JOIN user_categories c ON e.category_id = c.id
 WHERE e.user_id = $1
 ORDER BY spent_at DESC;
 
@@ -35,7 +35,7 @@ SELECT
   c.id AS category_id,
   c.name AS category_name
 FROM expenses e
-JOIN categories c ON e.category_id = c.id
+JOIN user_categories c ON e.category_id = c.id
 WHERE e.user_id = $1 AND e.id = $2;
 
 -- name: GetExpenseByID :one
@@ -77,7 +77,7 @@ SELECT
   c.id AS category_id,
   c.name AS category_name
 FROM expenses e
-JOIN categories c ON e.category_id = c.id
+JOIN user_categories c ON e.category_id = c.id
 WHERE e.user_id = $1
   AND e.spent_at >= MAKE_DATE(sqlc.arg(year)::int4, sqlc.arg(month)::int4, 1)
   AND e.spent_at < MAKE_DATE(sqlc.arg(year)::int4, sqlc.arg(month)::int4, 1) + INTERVAL '1 month'
