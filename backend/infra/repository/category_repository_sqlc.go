@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -89,10 +90,17 @@ func (r *categoryRepositorySQLC) UpdateCategorySortOrder(ctx context.Context, us
 }
 
 func (r *categoryRepositorySQLC) DeleteCategory(ctx context.Context, userID string, id int32) error {
-	return r.q.DeleteUserCategory(ctx, db.DeleteUserCategoryParams{
+	_, err := r.q.DeleteUserCategory(ctx, db.DeleteUserCategoryParams{
 		ID:     id,
 		UserID: userID,
 	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.ErrCategoryNotFound
+		}
+		return err
+	}
+	return nil
 }
 
 func (r *categoryRepositorySQLC) CountExpensesByCategory(ctx context.Context, userID string, categoryID int32) (int64, error) {

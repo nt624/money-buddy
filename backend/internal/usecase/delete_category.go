@@ -2,6 +2,9 @@ package usecase
 
 import (
 	"context"
+	"errors"
+
+	"pace-wallet-backend/internal/domain"
 )
 
 type deleteCategoryRepository interface {
@@ -29,5 +32,11 @@ func (uc *DeleteCategoryUseCase) Execute(ctx context.Context, userID string, id 
 		return &ValidationError{Message: "このカテゴリは支出で使用されているため削除できません"}
 	}
 
-	return uc.repo.DeleteCategory(ctx, userID, int32(id))
+	if err := uc.repo.DeleteCategory(ctx, userID, int32(id)); err != nil {
+		if errors.Is(err, domain.ErrCategoryNotFound) {
+			return &NotFoundError{Message: "カテゴリが見つかりません"}
+		}
+		return &InternalError{Message: "internal error"}
+	}
+	return nil
 }

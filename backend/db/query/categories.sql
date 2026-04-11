@@ -36,8 +36,9 @@ UPDATE user_categories
 SET sort_order = $3, updated_at = now()
 WHERE id = $1 AND user_id = $2;
 
--- name: DeleteUserCategory :exec
-DELETE FROM user_categories WHERE id = $1 AND user_id = $2;
+-- name: DeleteUserCategory :one
+DELETE FROM user_categories WHERE id = $1 AND user_id = $2
+RETURNING id;
 
 -- name: CountExpensesByUserCategory :one
 SELECT COUNT(*) FROM expenses WHERE user_id = $1 AND category_id = $2;

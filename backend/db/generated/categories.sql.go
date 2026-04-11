@@ -63,8 +63,9 @@ func (q *Queries) CreateUserCategory(ctx context.Context, arg CreateUserCategory
 	return i, err
 }
 
-const deleteUserCategory = `-- name: DeleteUserCategory :exec
+const deleteUserCategory = `-- name: DeleteUserCategory :one
 DELETE FROM user_categories WHERE id = $1 AND user_id = $2
+RETURNING id
 `
 
 type DeleteUserCategoryParams struct {
@@ -72,9 +73,11 @@ type DeleteUserCategoryParams struct {
 	UserID string
 }
 
-func (q *Queries) DeleteUserCategory(ctx context.Context, arg DeleteUserCategoryParams) error {
-	_, err := q.db.ExecContext(ctx, deleteUserCategory, arg.ID, arg.UserID)
-	return err
+func (q *Queries) DeleteUserCategory(ctx context.Context, arg DeleteUserCategoryParams) (int32, error) {
+	row := q.db.QueryRowContext(ctx, deleteUserCategory, arg.ID, arg.UserID)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
 }
 
 const listUserCategories = `-- name: ListUserCategories :many
