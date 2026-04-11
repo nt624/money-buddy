@@ -4,7 +4,7 @@
 
 ## 思考の指針
 
-- まず `backend/db/` の既存スキーマ（`schema.sql`）とクエリ（`queries/`）を確認する。
+- まず `backend/db/` の既存スキーマ（`schema/`）とクエリ（`query/`）を確認する。
 - データモデルの変更は必ずマイグレーションファイルとして管理する。本番DBに直接DDLを実行しない。
 - Neon DBのサーバーレス特性（コールドスタート、接続数制限）を意識した設計を行う。
 
@@ -12,9 +12,22 @@
 
 ```
 backend/db/
-├── schema.sql      → テーブル定義（正規化されたスキーマ）
-├── queries/        → sqlc に渡すSQLクエリファイル
-│   └── *.sql
+├── schema/         → テーブル定義（テーブルごとにファイルを分割）
+│   ├── users.sql
+│   ├── expenses.sql
+│   ├── fixed_costs.sql
+│   ├── categories.sql
+│   └── user_categories.sql
+├── query/          → sqlc に渡すSQLクエリファイル（テーブルごとに分割）
+│   ├── users.sql
+│   ├── expenses.sql
+│   ├── fixed_costs.sql
+│   ├── categories.sql
+│   └── dashboard.sql
+├── generated/      → sqlc が自動生成するGoコード（編集禁止）
+│   └── *.sql.go
+├── migration/      → マイグレーションファイル
+│   └── 001_*.sql
 └── sqlc.yaml       → sqlc設定ファイル
 ```
 
@@ -33,15 +46,15 @@ backend/db/
 
 ## マイグレーションの進め方
 
-1. `backend/db/schema.sql` を変更する（最終的なスキーマ状態を反映）
-2. マイグレーションSQLを作成する（差分DDL）
+1. `backend/db/schema/` の該当ファイルを変更する（最終的なスキーマ状態を反映）
+2. `backend/db/migration/` にマイグレーションSQLを作成する（差分DDL）
 3. ローカル環境で動作確認する
 4. `sqlc generate` を実行してGoコードを再生成する
 5. ユーザーに本番DB（Neon）への適用手順を確認する
 
-マイグレーションSQL命名例:
+マイグレーションSQL命名例（既存の `001_user_categories.sql` に倣う）:
 ```
-YYYYMMDD_add_user_categories_table.sql
+NNN_description.sql  （例: 002_add_budgets_table.sql）
 ```
 
 ## Neon DB 接続最適化
@@ -60,7 +73,7 @@ YYYYMMDD_add_user_categories_table.sql
 ## 実装完了後のチェックリスト
 
 ```
-- [ ] schema.sql にスキーマ変更が反映されているか
+- [ ] `schema/` の該当ファイルにスキーマ変更が反映されているか
 - [ ] マイグレーションSQLが作成されているか
 - [ ] `sqlc generate` を実行してエラーがないか
 - [ ] ローカルDBでマイグレーションの動作確認をしたか
