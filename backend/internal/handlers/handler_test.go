@@ -386,12 +386,12 @@ func TestUpdateUserSettingsHandler_MissingIncome(t *testing.T) {
 // --- List Categories ---
 
 type mockListCategoriesUC struct {
-	fn func(ctx context.Context) ([]domain.Category, error)
+	fn func(ctx context.Context, userID string) ([]domain.Category, error)
 }
 
-func (m *mockListCategoriesUC) Execute(ctx context.Context) ([]domain.Category, error) {
+func (m *mockListCategoriesUC) Execute(ctx context.Context, userID string) ([]domain.Category, error) {
 	if m.fn != nil {
-		return m.fn(ctx)
+		return m.fn(ctx, userID)
 	}
 	return nil, nil
 }
@@ -400,7 +400,7 @@ func TestListCategoriesHandler_Success(t *testing.T) {
 	router := newRouterWithUserID("user1")
 
 	uc := &mockListCategoriesUC{
-		fn: func(ctx context.Context) ([]domain.Category, error) {
+		fn: func(ctx context.Context, userID string) ([]domain.Category, error) {
 			return []domain.Category{{ID: 1, Name: "食費"}, {ID: 2, Name: "交通費"}}, nil
 		},
 	}

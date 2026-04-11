@@ -31,10 +31,15 @@ type completeInitialSetupFixedCostRepository interface {
 	BulkCreateFixedCosts(ctx context.Context, userID string, fixedCosts []FixedCostItem) error
 }
 
+type completeInitialSetupCategoryRepository interface {
+	SeedDefaultCategories(ctx context.Context, userID string) error
+}
+
 // CompleteInitialSetupUseCase は初期設定完了ユースケースです。
 type CompleteInitialSetupUseCase struct {
-	userRepo      completeInitialSetupUserRepository
+	userRepo     completeInitialSetupUserRepository
 	fixedCostRepo completeInitialSetupFixedCostRepository
+	categoryRepo  completeInitialSetupCategoryRepository
 	txManager     TxManager
 }
 
@@ -42,11 +47,13 @@ type CompleteInitialSetupUseCase struct {
 func NewCompleteInitialSetupUseCase(
 	userRepo completeInitialSetupUserRepository,
 	fixedCostRepo completeInitialSetupFixedCostRepository,
+	categoryRepo completeInitialSetupCategoryRepository,
 	txManager TxManager,
 ) *CompleteInitialSetupUseCase {
 	return &CompleteInitialSetupUseCase{
 		userRepo:      userRepo,
 		fixedCostRepo: fixedCostRepo,
+		categoryRepo:  categoryRepo,
 		txManager:     txManager,
 	}
 }
@@ -97,6 +104,7 @@ func (uc *CompleteInitialSetupUseCase) Execute(ctx context.Context, userID strin
 
 	txCtx := tx.Context(ctx)
 
+	isNewUser := false
 	user, err := uc.userRepo.GetUserByID(txCtx, userID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -104,12 +112,20 @@ func (uc *CompleteInitialSetupUseCase) Execute(ctx context.Context, userID strin
 				_ = tx.Rollback()
 				return err
 			}
+			isNewUser = true
 		} else {
 			_ = tx.Rollback()
 			return err
 		}
 	} else if user != (domain.User{}) {
 		if err := uc.userRepo.UpdateUserSettings(txCtx, userID, income, savingGoal); err != nil {
+			_ = tx.Rollback()
+			return err
+		}
+	}
+
+	if isNewUser {
+		if err := uc.categoryRepo.SeedDefaultCategories(txCtx, userID); err != nil {
 			_ = tx.Rollback()
 			return err
 		}

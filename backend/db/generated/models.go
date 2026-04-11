@@ -43,3 +43,13 @@ type User struct {
 	CreatedAt  sql.NullTime
 	UpdatedAt  sql.NullTime
 }
+
+type UserCategory struct {
+	ID           int32
+	UserID       string
+	Name         string
+	CategoryType string
+	SortOrder    int32
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+}

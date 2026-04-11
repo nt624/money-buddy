@@ -36,7 +36,7 @@ type mockCategoryRepo struct {
 	err    error
 }
 
-func (m *mockCategoryRepo) CategoryExists(ctx context.Context, id int32) (bool, error) {
+func (m *mockCategoryRepo) CategoryExists(ctx context.Context, userID string, id int32) (bool, error) {
 	if m.err != nil {
 		return false, m.err
 	}

@@ -9,44 +9,106 @@ import (
 	"context"
 )
 
-const categoryExists = `-- name: CategoryExists :one
-SELECT EXISTS (
-  SELECT 1 
-  FROM categories 
-  WHERE id = $1
+const countExpensesByUserCategory = `-- name: CountExpensesByUserCategory :one
+SELECT COUNT(*) FROM expenses WHERE user_id = $1 AND category_id = $2
+`
+
+type CountExpensesByUserCategoryParams struct {
+	UserID     string
+	CategoryID int32
+}
+
+func (q *Queries) CountExpensesByUserCategory(ctx context.Context, arg CountExpensesByUserCategoryParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countExpensesByUserCategory, arg.UserID, arg.CategoryID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const createUserCategory = `-- name: CreateUserCategory :one
+INSERT INTO user_categories (user_id, name, category_type, sort_order)
+VALUES (
+  $1,
+  $2,
+  'user',
+  COALESCE(
+    (SELECT MAX(sort_order) + 1 FROM user_categories WHERE user_id = $1 AND category_type = 'user'),
+    1
+  )
 )
+RETURNING id, name, category_type, sort_order
 `
 
-func (q *Queries) CategoryExists(ctx context.Context, id int32) (bool, error) {
-	row := q.db.QueryRowContext(ctx, categoryExists, id)
-	var exists bool
-	err := row.Scan(&exists)
-	return exists, err
+type CreateUserCategoryParams struct {
+	UserID string
+	Name   string
 }
 
-const listCategories = `-- name: ListCategories :many
-SELECT
-  id,
-  name
-FROM categories
-ORDER BY id
+type CreateUserCategoryRow struct {
+	ID           int32
+	Name         string
+	CategoryType string
+	SortOrder    int32
+}
+
+func (q *Queries) CreateUserCategory(ctx context.Context, arg CreateUserCategoryParams) (CreateUserCategoryRow, error) {
+	row := q.db.QueryRowContext(ctx, createUserCategory, arg.UserID, arg.Name)
+	var i CreateUserCategoryRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.CategoryType,
+		&i.SortOrder,
+	)
+	return i, err
+}
+
+const deleteUserCategory = `-- name: DeleteUserCategory :exec
+DELETE FROM user_categories WHERE id = $1 AND user_id = $2
 `
 
-type ListCategoriesRow struct {
-	ID   int32
-	Name string
+type DeleteUserCategoryParams struct {
+	ID     int32
+	UserID string
 }
 
-func (q *Queries) ListCategories(ctx context.Context) ([]ListCategoriesRow, error) {
-	rows, err := q.db.QueryContext(ctx, listCategories)
+func (q *Queries) DeleteUserCategory(ctx context.Context, arg DeleteUserCategoryParams) error {
+	_, err := q.db.ExecContext(ctx, deleteUserCategory, arg.ID, arg.UserID)
+	return err
+}
+
+const listUserCategories = `-- name: ListUserCategories :many
+SELECT id, name, category_type, sort_order
+FROM user_categories
+WHERE user_id = $1
+ORDER BY
+  CASE category_type WHEN 'default' THEN 0 WHEN 'user' THEN 1 ELSE 2 END,
+  sort_order ASC,
+  created_at ASC
+`
+
+type ListUserCategoriesRow struct {
+	ID           int32
+	Name         string
+	CategoryType string
+	SortOrder    int32
+}
+
+func (q *Queries) ListUserCategories(ctx context.Context, userID string) ([]ListUserCategoriesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listUserCategories, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListCategoriesRow
+	var items []ListUserCategoriesRow
 	for rows.Next() {
-		var i ListCategoriesRow
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		var i ListUserCategoriesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.CategoryType,
+			&i.SortOrder,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -58,4 +120,89 @@ func (q *Queries) ListCategories(ctx context.Context) ([]ListCategoriesRow, erro
 		return nil, err
 	}
 	return items, nil
+}
+
+const seedDefaultCategoriesForUser = `-- name: SeedDefaultCategoriesForUser :exec
+INSERT INTO user_categories (user_id, name, category_type, sort_order)
+VALUES
+  ($1, '食費',       'default', 1),
+  ($1, '交通費',     'default', 2),
+  ($1, '日用品',     'default', 3),
+  ($1, '趣味・娯楽', 'default', 4),
+  ($1, '医療費',     'default', 5),
+  ($1, '衣服',       'default', 6),
+  ($1, 'その他',     'other',   0)
+ON CONFLICT DO NOTHING
+`
+
+func (q *Queries) SeedDefaultCategoriesForUser(ctx context.Context, userID string) error {
+	_, err := q.db.ExecContext(ctx, seedDefaultCategoriesForUser, userID)
+	return err
+}
+
+const updateUserCategory = `-- name: UpdateUserCategory :one
+UPDATE user_categories
+SET name = $3, updated_at = now()
+WHERE id = $1 AND user_id = $2
+RETURNING id, name, category_type, sort_order
+`
+
+type UpdateUserCategoryParams struct {
+	ID     int32
+	UserID string
+	Name   string
+}
+
+type UpdateUserCategoryRow struct {
+	ID           int32
+	Name         string
+	CategoryType string
+	SortOrder    int32
+}
+
+func (q *Queries) UpdateUserCategory(ctx context.Context, arg UpdateUserCategoryParams) (UpdateUserCategoryRow, error) {
+	row := q.db.QueryRowContext(ctx, updateUserCategory, arg.ID, arg.UserID, arg.Name)
+	var i UpdateUserCategoryRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.CategoryType,
+		&i.SortOrder,
+	)
+	return i, err
+}
+
+const updateUserCategorySortOrder = `-- name: UpdateUserCategorySortOrder :exec
+UPDATE user_categories
+SET sort_order = $3, updated_at = now()
+WHERE id = $1 AND user_id = $2
+`
+
+type UpdateUserCategorySortOrderParams struct {
+	ID        int32
+	UserID    string
+	SortOrder int32
+}
+
+func (q *Queries) UpdateUserCategorySortOrder(ctx context.Context, arg UpdateUserCategorySortOrderParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserCategorySortOrder, arg.ID, arg.UserID, arg.SortOrder)
+	return err
+}
+
+const userCategoryExists = `-- name: UserCategoryExists :one
+SELECT EXISTS (
+  SELECT 1 FROM user_categories WHERE id = $1 AND user_id = $2
+)
+`
+
+type UserCategoryExistsParams struct {
+	ID     int32
+	UserID string
+}
+
+func (q *Queries) UserCategoryExists(ctx context.Context, arg UserCategoryExistsParams) (bool, error) {
+	row := q.db.QueryRowContext(ctx, userCategoryExists, arg.ID, arg.UserID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }

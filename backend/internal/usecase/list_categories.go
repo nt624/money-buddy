@@ -7,7 +7,7 @@ import (
 )
 
 type listCategoriesRepository interface {
-	ListCategories(ctx context.Context) ([]domain.Category, error)
+	ListCategories(ctx context.Context, userID string) ([]domain.Category, error)
 }
 
 // ListCategoriesUseCase はカテゴリ一覧取得ユースケースです。
@@ -21,6 +21,6 @@ func NewListCategoriesUseCase(repo listCategoriesRepository) *ListCategoriesUseC
 }
 
 // Execute はカテゴリ一覧取得ユースケースを実行します。
-func (uc *ListCategoriesUseCase) Execute(ctx context.Context) ([]domain.Category, error) {
-	return uc.repo.ListCategories(ctx)
+func (uc *ListCategoriesUseCase) Execute(ctx context.Context, userID string) ([]domain.Category, error) {
+	return uc.repo.ListCategories(ctx, userID)
 }
