@@ -16,6 +16,7 @@ type txMock struct{ mock.Mock }
 type txManagerMock struct{ mock.Mock }
 type userRepoMock struct{ mock.Mock }
 type setupFixedCostRepoMock struct{ mock.Mock }
+type setupCategoryRepoMock struct{ mock.Mock }
 
 func (m *txMock) Commit() error {
 	args := m.Called()
@@ -67,6 +68,11 @@ func (m *setupFixedCostRepoMock) BulkCreateFixedCosts(ctx context.Context, userI
 	return args.Error(0)
 }
 
+func (m *setupCategoryRepoMock) SeedDefaultCategories(ctx context.Context, userID string) error {
+	args := m.Called(ctx, userID)
+	return args.Error(0)
+}
+
 func TestCompleteInitialSetup(t *testing.T) {
 	userID := "user-1"
 	validFixedCosts := []FixedCostItem{
@@ -79,7 +85,7 @@ func TestCompleteInitialSetup(t *testing.T) {
 		income       int
 		savingGoal   int
 		fixedCosts   []FixedCostItem
-		setupMocks   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, calls *[]string)
+		setupMocks   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, cr *setupCategoryRepoMock, calls *[]string)
 		wantErr      bool
 		wantValidate bool
 		wantCommit   bool
@@ -91,17 +97,18 @@ func TestCompleteInitialSetup(t *testing.T) {
 			income:     300000,
 			savingGoal: 50000,
 			fixedCosts: validFixedCosts,
-			setupMocks: func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, calls *[]string) {
+			setupMocks: func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, cr *setupCategoryRepoMock, calls *[]string) {
 				tm.On("Begin", mock.Anything).Run(func(args mock.Arguments) { *calls = append(*calls, "begin") }).Return(tx, nil)
 				ur.On("GetUserByID", mock.Anything, userID).Run(func(args mock.Arguments) { *calls = append(*calls, "get_user") }).Return(domain.User{}, sql.ErrNoRows)
 				ur.On("CreateUser", mock.Anything, userID, 300000, 50000).Run(func(args mock.Arguments) { *calls = append(*calls, "create_user") }).Return(nil)
+				cr.On("SeedDefaultCategories", mock.Anything, userID).Run(func(args mock.Arguments) { *calls = append(*calls, "seed_categories") }).Return(nil)
 				fr.On("DeleteFixedCostsByUser", mock.Anything, userID).Run(func(args mock.Arguments) { *calls = append(*calls, "delete_fixed") }).Return(nil)
 				fr.On("BulkCreateFixedCosts", mock.Anything, userID, validFixedCosts).Run(func(args mock.Arguments) { *calls = append(*calls, "bulk_create") }).Return(nil)
 				tx.On("Commit").Run(func(args mock.Arguments) { *calls = append(*calls, "commit") }).Return(nil)
 			},
 			wantCommit:   true,
 			wantRollback: false,
-			wantCalls:    []string{"begin", "get_user", "create_user", "delete_fixed", "bulk_create", "commit"},
+			wantCalls:    []string{"begin", "get_user", "create_user", "seed_categories", "delete_fixed", "bulk_create", "commit"},
 		},
 		{
 			name:       "固定費名が前後に空白を含む場合トリムされる",
@@ -111,10 +118,11 @@ func TestCompleteInitialSetup(t *testing.T) {
 				{Name: "  rent  ", Amount: 50000},
 				{Name: "phone", Amount: 6000},
 			},
-			setupMocks: func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, calls *[]string) {
+			setupMocks: func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, cr *setupCategoryRepoMock, calls *[]string) {
 				tm.On("Begin", mock.Anything).Return(tx, nil)
 				ur.On("GetUserByID", mock.Anything, userID).Return(domain.User{}, sql.ErrNoRows)
 				ur.On("CreateUser", mock.Anything, userID, 300000, 50000).Return(nil)
+				cr.On("SeedDefaultCategories", mock.Anything, userID).Return(nil)
 				fr.On("DeleteFixedCostsByUser", mock.Anything, userID).Return(nil)
 				trimmedFixedCosts := []FixedCostItem{
 					{Name: "rent", Amount: 50000},
@@ -131,7 +139,7 @@ func TestCompleteInitialSetup(t *testing.T) {
 			income:       0,
 			savingGoal:   0,
 			fixedCosts:   validFixedCosts,
-			setupMocks:   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, calls *[]string) {},
+			setupMocks:   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, cr *setupCategoryRepoMock, calls *[]string) {},
 			wantErr:      true,
 			wantValidate: true,
 		},
@@ -140,7 +148,7 @@ func TestCompleteInitialSetup(t *testing.T) {
 			income:       100,
 			savingGoal:   0,
 			fixedCosts:   []FixedCostItem{{Name: "rent", Amount: 0}},
-			setupMocks:   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, calls *[]string) {},
+			setupMocks:   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, cr *setupCategoryRepoMock, calls *[]string) {},
 			wantErr:      true,
 			wantValidate: true,
 		},
@@ -149,7 +157,7 @@ func TestCompleteInitialSetup(t *testing.T) {
 			income:       100,
 			savingGoal:   0,
 			fixedCosts:   []FixedCostItem{{Name: "rent", Amount: BusinessMaxAmount + 1}},
-			setupMocks:   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, calls *[]string) {},
+			setupMocks:   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, cr *setupCategoryRepoMock, calls *[]string) {},
 			wantErr:      true,
 			wantValidate: true,
 		},
@@ -158,7 +166,7 @@ func TestCompleteInitialSetup(t *testing.T) {
 			income:       100,
 			savingGoal:   0,
 			fixedCosts:   []FixedCostItem{{Name: "", Amount: 10000}},
-			setupMocks:   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, calls *[]string) {},
+			setupMocks:   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, cr *setupCategoryRepoMock, calls *[]string) {},
 			wantErr:      true,
 			wantValidate: true,
 		},
@@ -167,7 +175,7 @@ func TestCompleteInitialSetup(t *testing.T) {
 			income:       100,
 			savingGoal:   0,
 			fixedCosts:   []FixedCostItem{{Name: "   ", Amount: 10000}},
-			setupMocks:   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, calls *[]string) {},
+			setupMocks:   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, cr *setupCategoryRepoMock, calls *[]string) {},
 			wantErr:      true,
 			wantValidate: true,
 		},
@@ -176,7 +184,7 @@ func TestCompleteInitialSetup(t *testing.T) {
 			income:       100,
 			savingGoal:   0,
 			fixedCosts:   []FixedCostItem{{Name: string(make([]byte, 101)), Amount: 10000}},
-			setupMocks:   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, calls *[]string) {},
+			setupMocks:   func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, cr *setupCategoryRepoMock, calls *[]string) {},
 			wantErr:      true,
 			wantValidate: true,
 		},
@@ -185,7 +193,7 @@ func TestCompleteInitialSetup(t *testing.T) {
 			income:     100,
 			savingGoal: 0,
 			fixedCosts: validFixedCosts,
-			setupMocks: func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, calls *[]string) {
+			setupMocks: func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, cr *setupCategoryRepoMock, calls *[]string) {
 				tm.On("Begin", mock.Anything).Run(func(args mock.Arguments) { *calls = append(*calls, "begin") }).Return(tx, nil)
 				ur.On("GetUserByID", mock.Anything, userID).Run(func(args mock.Arguments) { *calls = append(*calls, "get_user") }).Return(domain.User{ID: userID}, nil)
 				ur.On("UpdateUserSettings", mock.Anything, userID, 100, 0).Run(func(args mock.Arguments) { *calls = append(*calls, "update_user") }).Return(nil)
@@ -202,7 +210,7 @@ func TestCompleteInitialSetup(t *testing.T) {
 			income:     100,
 			savingGoal: 0,
 			fixedCosts: validFixedCosts,
-			setupMocks: func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, calls *[]string) {
+			setupMocks: func(tx *txMock, tm *txManagerMock, ur *userRepoMock, fr *setupFixedCostRepoMock, cr *setupCategoryRepoMock, calls *[]string) {
 				tm.On("Begin", mock.Anything).Run(func(args mock.Arguments) { *calls = append(*calls, "begin") }).Return(tx, nil)
 				ur.On("GetUserByID", mock.Anything, userID).Run(func(args mock.Arguments) { *calls = append(*calls, "get_user") }).Return(domain.User{ID: userID}, nil)
 				ur.On("UpdateUserSettings", mock.Anything, userID, 100, 0).Run(func(args mock.Arguments) { *calls = append(*calls, "update_user") }).Return(nil)
@@ -226,13 +234,14 @@ func TestCompleteInitialSetup(t *testing.T) {
 			tm := &txManagerMock{}
 			ur := &userRepoMock{}
 			fr := &setupFixedCostRepoMock{}
+			cr := &setupCategoryRepoMock{}
 			calls := []string{}
 
 			if tc.setupMocks != nil {
-				tc.setupMocks(tx, tm, ur, fr, &calls)
+				tc.setupMocks(tx, tm, ur, fr, cr, &calls)
 			}
 
-			uc := NewCompleteInitialSetupUseCase(ur, fr, tm)
+			uc := NewCompleteInitialSetupUseCase(ur, fr, cr, tm)
 			err := uc.Execute(context.Background(), userID, tc.income, tc.savingGoal, tc.fixedCosts)
 
 			if tc.wantErr {
@@ -263,6 +272,7 @@ func TestCompleteInitialSetup(t *testing.T) {
 			tm.AssertExpectations(t)
 			ur.AssertExpectations(t)
 			fr.AssertExpectations(t)
+			cr.AssertExpectations(t)
 			tx.AssertExpectations(t)
 		})
 	}

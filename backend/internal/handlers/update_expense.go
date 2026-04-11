@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -44,7 +45,8 @@ func (h *UpdateExpenseHandler) Handle(c *gin.Context) {
 	}
 	var body updateBody
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Printf("update_expense: invalid request body: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "リクエストが不正です"})
 		return
 	}
 

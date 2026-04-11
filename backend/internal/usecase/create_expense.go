@@ -29,7 +29,7 @@ type createExpenseRepository interface {
 }
 
 type categoryExistsChecker interface {
-	CategoryExists(ctx context.Context, id int32) (bool, error)
+	CategoryExists(ctx context.Context, userID string, id int32) (bool, error)
 }
 
 type CreateExpenseUseCase struct {
@@ -91,7 +91,7 @@ func (uc *CreateExpenseUseCase) Execute(userID string, input CreateExpenseInput)
 		}
 	}
 
-	exists, err := uc.category.CategoryExists(context.Background(), int32(*input.CategoryID))
+	exists, err := uc.category.CategoryExists(context.Background(), userID, int32(*input.CategoryID))
 	if err != nil {
 		return domain.Expense{}, &InternalError{Message: "internal error"}
 	}

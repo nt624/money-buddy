@@ -84,7 +84,11 @@ func main() {
 	deleteExpenseUC := usecase.NewDeleteExpenseUseCase(expenseRepo)
 	updateExpenseUC := usecase.NewUpdateExpenseUseCase(expenseRepo, categoryRepo)
 	listCategoriesUC := usecase.NewListCategoriesUseCase(categoryRepo)
-	initialSetupUC := usecase.NewCompleteInitialSetupUseCase(userRepo, fixedCostRepo, txManager)
+	createCategoryUC := usecase.NewCreateCategoryUseCase(categoryRepo)
+	updateCategoryUC := usecase.NewUpdateCategoryUseCase(categoryRepo)
+	deleteCategoryUC := usecase.NewDeleteCategoryUseCase(categoryRepo)
+	reorderCategoriesUC := usecase.NewReorderCategoriesUseCase(categoryRepo, txManager)
+	initialSetupUC := usecase.NewCompleteInitialSetupUseCase(userRepo, fixedCostRepo, categoryRepo, txManager)
 	getUserUC := usecase.NewGetUserUseCase(userRepo)
 	updateUserUC := usecase.NewUpdateUserSettingsUseCase(userRepo)
 	createFixedCostUC := usecase.NewCreateFixedCostUseCase(fixedCostRepo)
@@ -103,7 +107,8 @@ func main() {
 	api.Use(middleware.AuthMiddleware())
 	handlers.Register(api,
 		createExpenseUC, listExpensesUC, deleteExpenseUC, updateExpenseUC,
-		listCategoriesUC, initialSetupUC, getUserUC, updateUserUC,
+		listCategoriesUC, createCategoryUC, updateCategoryUC, deleteCategoryUC, reorderCategoriesUC,
+		initialSetupUC, getUserUC, updateUserUC,
 		createFixedCostUC, listFixedCostsUC, updateFixedCostUC, deleteFixedCostUC,
 		getDashboardUC,
 	)

@@ -2,11 +2,15 @@
 
 import { useState } from 'react'
 import { useFixedCosts } from '@/hooks/useFixedCosts'
+import { useCategories } from '@/hooks/useCategories'
 import { useDashboard } from '@/hooks/useDashboard'
 import { FixedCostList } from '@/components/FixedCostList'
 import { FixedCostForm } from '@/components/FixedCostForm'
+import { CategoryList } from '@/components/CategoryList'
+import { CategoryForm } from '@/components/CategoryForm'
 import { UserForm } from '@/components/UserForm'
 import { FixedCost, FixedCostInput } from '@/lib/types/fixed-cost'
+import { Category, ReorderCategoryItem } from '@/lib/types/category'
 import { UpdateUserInput } from '@/lib/types/user'
 import { Container } from '@/components/Layout/Container'
 import { Button } from '@/components/ui/Button'
@@ -14,9 +18,13 @@ import { Button } from '@/components/ui/Button'
 export default function SettingsPage() {
   const { dashboard, updateUserSettings, isSubmitting: userSubmitting, isLoading: dashboardLoading, error: dashboardError, refetch: refetchDashboard } = useDashboard()
   const { fixedCosts, createFixedCost, updateFixedCost, deleteFixedCost, isSubmitting: fcSubmitting, isLoading: fcLoading, error: fcError } = useFixedCosts()
+  const { categories, createCategory, updateCategory, deleteCategory, reorderCategories, isSubmitting: catSubmitting, isLoading: catLoading, error: catError } = useCategories()
+
   const [editingFixedCost, setEditingFixedCost] = useState<FixedCost | null>(null)
   const [showFixedCostForm, setShowFixedCostForm] = useState(false)
   const [showUserForm, setShowUserForm] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
+  const [showCategoryForm, setShowCategoryForm] = useState(false)
 
   const handleFixedCostEdit = (fixedCost: FixedCost) => {
     setEditingFixedCost(fixedCost)
@@ -25,7 +33,6 @@ export default function SettingsPage() {
 
   const handleFixedCostCreateSubmit = async (input: FixedCostInput) => {
     const success = await createFixedCost(input)
-    // 成功時のみフォーム閉じてダッシュボード再取得
     if (success) {
       setShowFixedCostForm(false)
       refetchDashboard()
@@ -34,9 +41,7 @@ export default function SettingsPage() {
 
   const handleFixedCostUpdateSubmit = async (input: FixedCostInput) => {
     if (!editingFixedCost) return
-    
     const success = await updateFixedCost(editingFixedCost.id, input)
-    // 成功時のみ編集モード解除とダッシュボード再取得
     if (success) {
       setEditingFixedCost(null)
       setShowFixedCostForm(false)
@@ -59,9 +64,7 @@ export default function SettingsPage() {
 
   const handleFixedCostDelete = async (id: number) => {
     if (!confirm('本当に削除しますか？')) return
-    
     const success = await deleteFixedCost(id)
-    // 削除成功時のみダッシュボード再取得と編集モード解除
     if (success) {
       if (editingFixedCost?.id === id) {
         setEditingFixedCost(null)
@@ -73,13 +76,46 @@ export default function SettingsPage() {
 
   const handleUserSubmit = async (input: UpdateUserInput) => {
     const success = await updateUserSettings(input)
-    if (success) {
-      setShowUserForm(false)
+    if (success) setShowUserForm(false)
+  }
+
+  const handleCancelUserEdit = () => setShowUserForm(false)
+
+  // Category handlers
+  const handleCategoryEdit = (category: Category) => {
+    setEditingCategory(category)
+    setShowCategoryForm(true)
+  }
+
+  const handleCategoryFormSubmit = async (name: string) => {
+    if (editingCategory) {
+      const success = await updateCategory(editingCategory.id, { name })
+      if (success) {
+        setEditingCategory(null)
+        setShowCategoryForm(false)
+      }
+    } else {
+      const success = await createCategory({ name })
+      if (success) setShowCategoryForm(false)
     }
   }
 
-  const handleCancelUserEdit = () => {
-    setShowUserForm(false)
+  const handleCancelCategoryEdit = () => {
+    setEditingCategory(null)
+    setShowCategoryForm(false)
+  }
+
+  const handleCategoryDelete = async (id: number) => {
+    if (!confirm('本当に削除しますか？')) return
+    const success = await deleteCategory(id)
+    if (success && editingCategory?.id === id) {
+      setEditingCategory(null)
+      setShowCategoryForm(false)
+    }
+  }
+
+  const handleCategoryReorder = async (items: ReorderCategoryItem[]) => {
+    await reorderCategories(items)
   }
 
   return (
@@ -91,7 +127,7 @@ export default function SettingsPage() {
         <div className="flex justify-between items-center mb-3 sm:mb-4">
           <h2 className="text-base sm:text-lg font-semibold text-foreground">基本情報</h2>
           {!showUserForm && (
-            <Button 
+            <Button
               onClick={() => setShowUserForm(true)}
               disabled={dashboardLoading}
               size="sm"
@@ -128,12 +164,49 @@ export default function SettingsPage() {
         )}
       </section>
 
+      {/* カテゴリセクション */}
+      <section className="bg-card border border-border rounded-lg shadow-sm p-4 sm:p-6">
+        <div className="flex justify-between items-center mb-3 sm:mb-4">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground">カテゴリ</h2>
+          {!showCategoryForm && (
+            <Button
+              onClick={() => { setEditingCategory(null); setShowCategoryForm(true) }}
+              size="sm"
+            >
+              カテゴリを追加
+            </Button>
+          )}
+        </div>
+
+        {showCategoryForm && (
+          <div className="mb-4">
+            <CategoryForm
+              category={editingCategory}
+              onSubmit={handleCategoryFormSubmit}
+              onCancel={handleCancelCategoryEdit}
+              isSubmitting={catSubmitting}
+            />
+          </div>
+        )}
+
+        {catLoading && <p className="text-muted-foreground">読み込み中...</p>}
+        {catError && <p className="text-danger">{catError}</p>}
+
+        <CategoryList
+          categories={categories}
+          onEdit={handleCategoryEdit}
+          onDelete={handleCategoryDelete}
+          onReorder={handleCategoryReorder}
+          isSubmitting={catSubmitting}
+        />
+      </section>
+
       {/* 固定費セクション */}
       <section className="bg-card border border-border rounded-lg shadow-sm p-4 sm:p-6">
         <div className="flex justify-between items-center mb-3 sm:mb-4">
           <h2 className="text-base sm:text-lg font-semibold text-foreground">固定費</h2>
           {!showFixedCostForm && (
-            <Button 
+            <Button
               onClick={() => setShowFixedCostForm(true)}
               size="sm"
             >
@@ -141,10 +214,10 @@ export default function SettingsPage() {
             </Button>
           )}
         </div>
-        
+
         {showFixedCostForm && (
           <div className="mb-4">
-            <FixedCostForm 
+            <FixedCostForm
               fixedCost={editingFixedCost}
               onSubmit={handleFixedCostSubmit}
               onCancel={handleCancelFixedCostEdit}
@@ -156,11 +229,11 @@ export default function SettingsPage() {
         {fcLoading && <p className="text-muted-foreground">読み込み中...</p>}
         {fcError && <p className="text-danger">{fcError}</p>}
 
-        <FixedCostList 
-          fixedCosts={fixedCosts} 
-          onEdit={handleFixedCostEdit} 
-          onDelete={handleFixedCostDelete} 
-          isSubmitting={fcSubmitting} 
+        <FixedCostList
+          fixedCosts={fixedCosts}
+          onEdit={handleFixedCostEdit}
+          onDelete={handleFixedCostDelete}
+          isSubmitting={fcSubmitting}
         />
       </section>
     </Container>

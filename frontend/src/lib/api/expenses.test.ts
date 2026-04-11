@@ -30,6 +30,7 @@ describe("createExpense", () => {
       category: { id: 3, name: "交通費" },
       memo: "通勤",
       spent_at: "2025-12-31",
+      status: "confirmed",
     };
 
     (global as any).fetch.mockResolvedValue({

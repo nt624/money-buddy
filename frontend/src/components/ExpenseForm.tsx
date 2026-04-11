@@ -15,7 +15,7 @@ type Props = {
 
 export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, isSubmitting }: Props) {
     const [amount, setAmount] = useState(initialData?.amount.toString() || '')
-    const [categoryId, setCategoryId] = useState(initialData?.category.id.toString() || '1')
+    const [categoryId, setCategoryId] = useState(initialData?.category.id.toString() || '')
     const [memo, setMemo] = useState(initialData?.memo || '')
     const [spentAt, setSpentAt] = useState(initialData?.spent_at || '')
     const [status, setStatus] = useState<'planned' | 'confirmed'>(initialData?.status || 'confirmed')
@@ -23,9 +23,14 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
 
     useEffect(() => {
         getCategories()
-            .then(setCategories)
+            .then((data) => {
+                setCategories(data)
+                if (!initialData && data.length > 0) {
+                    setCategoryId(data[0].id.toString())
+                }
+            })
             .catch(console.error)
-    }, [])
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     // initialDataが変更されたらフォーム状態を更新（編集対象切り替え時）
     useEffect(() => {
@@ -84,7 +89,7 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
         // 作成モードの時のみリセット（statusは保持）
         if (mode === 'create') {
             setAmount('')
-            setCategoryId('1')
+            setCategoryId(categories.length > 0 ? categories[0].id.toString() : '')
             setMemo('')
             setSpentAt('')
             setErrors({})

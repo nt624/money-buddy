@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -35,7 +36,8 @@ func (h *CreateExpenseHandler) Handle(c *gin.Context) {
 	}
 	var body createBody
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Printf("create_expense: invalid request body: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "リクエストが不正です"})
 		return
 	}
 	input = usecase.CreateExpenseInput{

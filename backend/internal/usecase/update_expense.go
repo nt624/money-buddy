@@ -26,7 +26,7 @@ type updateExpenseRepository interface {
 }
 
 type updateCategoryExistsChecker interface {
-	CategoryExists(ctx context.Context, id int32) (bool, error)
+	CategoryExists(ctx context.Context, userID string, id int32) (bool, error)
 }
 
 // UpdateExpenseUseCase は支出更新ユースケースです。
@@ -96,7 +96,7 @@ func (uc *UpdateExpenseUseCase) Execute(userID string, input UpdateExpenseInput)
 	}
 
 	// カテゴリ存在チェック（現在のExpense取得後に実施）
-	exists, err := uc.category.CategoryExists(context.Background(), int32(*input.CategoryID))
+	exists, err := uc.category.CategoryExists(context.Background(), userID, int32(*input.CategoryID))
 	if err != nil {
 		return domain.Expense{}, &InternalError{Message: "internal error"}
 	}

@@ -7,10 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"pace-wallet-backend/internal/domain"
+	"pace-wallet-backend/internal/middleware"
 )
 
 type listCategoriesUseCase interface {
-	Execute(ctx context.Context) ([]domain.Category, error)
+	Execute(ctx context.Context, userID string) ([]domain.Category, error)
 }
 
 type ListCategoriesHandler struct {
@@ -22,7 +23,13 @@ func NewListCategoriesHandler(uc listCategoriesUseCase) *ListCategoriesHandler {
 }
 
 func (h *ListCategoriesHandler) Handle(c *gin.Context) {
-	categories, err := h.uc.Execute(c.Request.Context())
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	categories, err := h.uc.Execute(c.Request.Context(), userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "カテゴリの取得に失敗しました"})
 		return

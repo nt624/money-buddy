@@ -2,10 +2,18 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+
+	"github.com/jackc/pgx/v5/pgconn"
 
 	db "pace-wallet-backend/db/generated"
+	"pace-wallet-backend/infra/transaction"
 	"pace-wallet-backend/internal/domain"
 )
+
+
+
 
 type categoryRepositorySQLC struct {
 	q *db.Queries
@@ -15,27 +23,120 @@ func NewCategoryRepositorySQLC(q *db.Queries) *categoryRepositorySQLC {
 	return &categoryRepositorySQLC{q: q}
 }
 
-func (r *categoryRepositorySQLC) ListCategories(ctx context.Context) ([]domain.Category, error) {
-	items, err := r.q.ListCategories(ctx)
+func (r *categoryRepositorySQLC) ListCategories(ctx context.Context, userID string) ([]domain.Category, error) {
+	items, err := r.q.ListUserCategories(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	var out []domain.Category
+	out := make([]domain.Category, 0, len(items))
 	for _, it := range items {
-		out = append(out, dbCategoryToModel(it))
+		out = append(out, dbUserCategoryToModel(it))
 	}
-
 	return out, nil
 }
 
-func dbCategoryToModel(c db.ListCategoriesRow) domain.Category {
+func (r *categoryRepositorySQLC) CategoryExists(ctx context.Context, userID string, id int32) (bool, error) {
+	return r.q.UserCategoryExists(ctx, db.UserCategoryExistsParams{
+		ID:     id,
+		UserID: userID,
+	})
+}
+
+func (r *categoryRepositorySQLC) CreateCategory(ctx context.Context, userID string, name string) (domain.Category, error) {
+	row, err := r.q.CreateUserCategory(ctx, db.CreateUserCategoryParams{
+		UserID: userID,
+		Name:   name,
+	})
+	if err != nil {
+		if isUniqueViolation(err) {
+			return domain.Category{}, domain.ErrDuplicateCategoryName
+		}
+		return domain.Category{}, err
+	}
 	return domain.Category{
-		ID:   int(c.ID),
-		Name: c.Name,
+		ID:           int(row.ID),
+		Name:         row.Name,
+		CategoryType: row.CategoryType,
+		SortOrder:    int(row.SortOrder),
+	}, nil
+}
+
+func (r *categoryRepositorySQLC) UpdateCategory(ctx context.Context, userID string, id int32, name string) (domain.Category, error) {
+	row, err := r.q.UpdateUserCategory(ctx, db.UpdateUserCategoryParams{
+		ID:     id,
+		UserID: userID,
+		Name:   name,
+	})
+	if err != nil {
+		if isUniqueViolation(err) {
+			return domain.Category{}, domain.ErrDuplicateCategoryName
+		}
+		return domain.Category{}, err
+	}
+	return domain.Category{
+		ID:           int(row.ID),
+		Name:         row.Name,
+		CategoryType: row.CategoryType,
+		SortOrder:    int(row.SortOrder),
+	}, nil
+}
+
+func (r *categoryRepositorySQLC) UpdateCategorySortOrder(ctx context.Context, userID string, id int32, sortOrder int32) error {
+	q := r.q
+	if tx, ok := transaction.TxFromContext(ctx); ok {
+		q = db.New(tx)
+	}
+	_, err := q.UpdateUserCategorySortOrder(ctx, db.UpdateUserCategorySortOrderParams{
+		ID:        id,
+		UserID:    userID,
+		SortOrder: sortOrder,
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.ErrCategoryNotFound
+		}
+		return err
+	}
+	return nil
+}
+
+func (r *categoryRepositorySQLC) DeleteCategory(ctx context.Context, userID string, id int32) error {
+	_, err := r.q.DeleteUserCategory(ctx, db.DeleteUserCategoryParams{
+		ID:     id,
+		UserID: userID,
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.ErrCategoryNotFound
+		}
+		return err
+	}
+	return nil
+}
+
+func (r *categoryRepositorySQLC) CountExpensesByCategory(ctx context.Context, userID string, categoryID int32) (int64, error) {
+	return r.q.CountExpensesByUserCategory(ctx, db.CountExpensesByUserCategoryParams{
+		UserID:     userID,
+		CategoryID: categoryID,
+	})
+}
+
+func (r *categoryRepositorySQLC) SeedDefaultCategories(ctx context.Context, userID string) error {
+	return r.q.SeedDefaultCategoriesForUser(ctx, userID)
+}
+
+func dbUserCategoryToModel(c db.ListUserCategoriesRow) domain.Category {
+	return domain.Category{
+		ID:           int(c.ID),
+		Name:         c.Name,
+		CategoryType: c.CategoryType,
+		SortOrder:    int(c.SortOrder),
 	}
 }
 
-func (r *categoryRepositorySQLC) CategoryExists(ctx context.Context, id int32) (bool, error) {
-	return r.q.CategoryExists(ctx, id)
+// isUniqueViolation は PostgreSQL の一意制約違反エラー (23505) かどうかを判定します。
+func isUniqueViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == "23505"
 }

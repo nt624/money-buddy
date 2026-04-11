@@ -386,12 +386,12 @@ func TestUpdateUserSettingsHandler_MissingIncome(t *testing.T) {
 // --- List Categories ---
 
 type mockListCategoriesUC struct {
-	fn func(ctx context.Context) ([]domain.Category, error)
+	fn func(ctx context.Context, userID string) ([]domain.Category, error)
 }
 
-func (m *mockListCategoriesUC) Execute(ctx context.Context) ([]domain.Category, error) {
+func (m *mockListCategoriesUC) Execute(ctx context.Context, userID string) ([]domain.Category, error) {
 	if m.fn != nil {
-		return m.fn(ctx)
+		return m.fn(ctx, userID)
 	}
 	return nil, nil
 }
@@ -400,7 +400,7 @@ func TestListCategoriesHandler_Success(t *testing.T) {
 	router := newRouterWithUserID("user1")
 
 	uc := &mockListCategoriesUC{
-		fn: func(ctx context.Context) ([]domain.Category, error) {
+		fn: func(ctx context.Context, userID string) ([]domain.Category, error) {
 			return []domain.Category{{ID: 1, Name: "食費"}, {ID: 2, Name: "交通費"}}, nil
 		},
 	}
@@ -414,4 +414,330 @@ func TestListCategoriesHandler_Success(t *testing.T) {
 	var resp map[string][]domain.Category
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	require.Len(t, resp["categories"], 2)
+}
+
+// --- Create Category ---
+
+type mockCreateCategoryUC struct {
+	fn func(ctx context.Context, userID string, name string) (domain.Category, error)
+}
+
+func (m *mockCreateCategoryUC) Execute(ctx context.Context, userID string, name string) (domain.Category, error) {
+	if m.fn != nil {
+		return m.fn(ctx, userID, name)
+	}
+	return domain.Category{}, nil
+}
+
+func TestCreateCategoryHandler_Success(t *testing.T) {
+	router := newRouterWithUserID("user1")
+
+	uc := &mockCreateCategoryUC{
+		fn: func(ctx context.Context, userID string, name string) (domain.Category, error) {
+			require.Equal(t, "user1", userID)
+			return domain.Category{ID: 10, Name: name, CategoryType: "user", SortOrder: 1}, nil
+		},
+	}
+	router.POST("/categories", NewCreateCategoryHandler(uc).Handle)
+
+	req := httptest.NewRequest(http.MethodPost, "/categories", strings.NewReader(`{"name":"外食"}`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusCreated, w.Code)
+	var resp map[string]domain.Category
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
+	require.Equal(t, 10, resp["category"].ID)
+	require.Equal(t, "外食", resp["category"].Name)
+}
+
+func TestCreateCategoryHandler_EmptyName(t *testing.T) {
+	router := newRouterWithUserID("user1")
+
+	uc := &mockCreateCategoryUC{
+		fn: func(ctx context.Context, userID string, name string) (domain.Category, error) {
+			return domain.Category{}, &usecase.ValidationError{Message: "カテゴリ名を入力してください"}
+		},
+	}
+	router.POST("/categories", NewCreateCategoryHandler(uc).Handle)
+
+	req := httptest.NewRequest(http.MethodPost, "/categories", strings.NewReader(`{"name":""}`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusBadRequest, w.Code)
+	var resp map[string]string
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
+	require.Equal(t, "カテゴリ名を入力してください", resp["error"])
+}
+
+func TestCreateCategoryHandler_DuplicateName(t *testing.T) {
+	router := newRouterWithUserID("user1")
+
+	uc := &mockCreateCategoryUC{
+		fn: func(ctx context.Context, userID string, name string) (domain.Category, error) {
+			return domain.Category{}, &usecase.ValidationError{Message: "同じ名前のカテゴリがすでに存在します"}
+		},
+	}
+	router.POST("/categories", NewCreateCategoryHandler(uc).Handle)
+
+	req := httptest.NewRequest(http.MethodPost, "/categories", strings.NewReader(`{"name":"食費"}`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusBadRequest, w.Code)
+	var resp map[string]string
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
+	require.Equal(t, "同じ名前のカテゴリがすでに存在します", resp["error"])
+}
+
+// --- Update Category ---
+
+type mockUpdateCategoryUC struct {
+	fn func(ctx context.Context, userID string, id int, name string) (domain.Category, error)
+}
+
+func (m *mockUpdateCategoryUC) Execute(ctx context.Context, userID string, id int, name string) (domain.Category, error) {
+	if m.fn != nil {
+		return m.fn(ctx, userID, id, name)
+	}
+	return domain.Category{}, nil
+}
+
+func TestUpdateCategoryHandler_Success(t *testing.T) {
+	router := newRouterWithUserID("user1")
+
+	uc := &mockUpdateCategoryUC{
+		fn: func(ctx context.Context, userID string, id int, name string) (domain.Category, error) {
+			require.Equal(t, "user1", userID)
+			require.Equal(t, 3, id)
+			return domain.Category{ID: id, Name: name, CategoryType: "user", SortOrder: 1}, nil
+		},
+	}
+	router.PUT("/categories/:id", NewUpdateCategoryHandler(uc).Handle)
+
+	req := httptest.NewRequest(http.MethodPut, "/categories/3", strings.NewReader(`{"name":"外食費"}`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]domain.Category
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
+	require.Equal(t, "外食費", resp["category"].Name)
+}
+
+func TestUpdateCategoryHandler_OtherUserCategory_NotFound(t *testing.T) {
+	// usecase は userID を条件に含めるため、他ユーザーのカテゴリは NotFoundError になる
+	router := newRouterWithUserID("user1")
+
+	uc := &mockUpdateCategoryUC{
+		fn: func(ctx context.Context, userID string, id int, name string) (domain.Category, error) {
+			return domain.Category{}, &usecase.NotFoundError{Message: "カテゴリが見つかりません"}
+		},
+	}
+	router.PUT("/categories/:id", NewUpdateCategoryHandler(uc).Handle)
+
+	req := httptest.NewRequest(http.MethodPut, "/categories/999", strings.NewReader(`{"name":"外食費"}`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestUpdateCategoryHandler_DuplicateName(t *testing.T) {
+	router := newRouterWithUserID("user1")
+
+	uc := &mockUpdateCategoryUC{
+		fn: func(ctx context.Context, userID string, id int, name string) (domain.Category, error) {
+			return domain.Category{}, &usecase.ValidationError{Message: "同じ名前のカテゴリがすでに存在します"}
+		},
+	}
+	router.PUT("/categories/:id", NewUpdateCategoryHandler(uc).Handle)
+
+	req := httptest.NewRequest(http.MethodPut, "/categories/3", strings.NewReader(`{"name":"食費"}`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusBadRequest, w.Code)
+	var resp map[string]string
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
+	require.Equal(t, "同じ名前のカテゴリがすでに存在します", resp["error"])
+}
+
+func TestUpdateCategoryHandler_InvalidID(t *testing.T) {
+	router := newRouterWithUserID("user1")
+
+	uc := &mockUpdateCategoryUC{}
+	router.PUT("/categories/:id", NewUpdateCategoryHandler(uc).Handle)
+
+	req := httptest.NewRequest(http.MethodPut, "/categories/abc", strings.NewReader(`{"name":"外食費"}`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+// --- Delete Category ---
+
+type mockDeleteCategoryUC struct {
+	fn func(ctx context.Context, userID string, id int) error
+}
+
+func (m *mockDeleteCategoryUC) Execute(ctx context.Context, userID string, id int) error {
+	if m.fn != nil {
+		return m.fn(ctx, userID, id)
+	}
+	return nil
+}
+
+func TestDeleteCategoryHandler_Success(t *testing.T) {
+	router := newRouterWithUserID("user1")
+
+	called := false
+	uc := &mockDeleteCategoryUC{
+		fn: func(ctx context.Context, userID string, id int) error {
+			called = true
+			require.Equal(t, "user1", userID)
+			require.Equal(t, 5, id)
+			return nil
+		},
+	}
+	router.DELETE("/categories/:id", NewDeleteCategoryHandler(uc).Handle)
+
+	req := httptest.NewRequest(http.MethodDelete, "/categories/5", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusNoContent, w.Code)
+	require.True(t, called)
+}
+
+func TestDeleteCategoryHandler_OtherUserCategory_NotFound(t *testing.T) {
+	// usecase は userID を条件に含めるため、他ユーザーのカテゴリは NotFoundError になる
+	router := newRouterWithUserID("user1")
+
+	uc := &mockDeleteCategoryUC{
+		fn: func(ctx context.Context, userID string, id int) error {
+			return &usecase.NotFoundError{Message: "カテゴリが見つかりません"}
+		},
+	}
+	router.DELETE("/categories/:id", NewDeleteCategoryHandler(uc).Handle)
+
+	req := httptest.NewRequest(http.MethodDelete, "/categories/999", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestDeleteCategoryHandler_ReferencedByExpense(t *testing.T) {
+	router := newRouterWithUserID("user1")
+
+	uc := &mockDeleteCategoryUC{
+		fn: func(ctx context.Context, userID string, id int) error {
+			return &usecase.ValidationError{Message: "このカテゴリは支出で使用されているため削除できません"}
+		},
+	}
+	router.DELETE("/categories/:id", NewDeleteCategoryHandler(uc).Handle)
+
+	req := httptest.NewRequest(http.MethodDelete, "/categories/1", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusBadRequest, w.Code)
+	var resp map[string]string
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
+	require.Equal(t, "このカテゴリは支出で使用されているため削除できません", resp["error"])
+}
+
+func TestDeleteCategoryHandler_InvalidID(t *testing.T) {
+	router := newRouterWithUserID("user1")
+
+	uc := &mockDeleteCategoryUC{}
+	router.DELETE("/categories/:id", NewDeleteCategoryHandler(uc).Handle)
+
+	req := httptest.NewRequest(http.MethodDelete, "/categories/0", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+// --- Reorder Categories ---
+
+type mockReorderCategoriesUC struct {
+	fn func(ctx context.Context, userID string, items []usecase.ReorderCategoriesInput) error
+}
+
+func (m *mockReorderCategoriesUC) Execute(ctx context.Context, userID string, items []usecase.ReorderCategoriesInput) error {
+	if m.fn != nil {
+		return m.fn(ctx, userID, items)
+	}
+	return nil
+}
+
+func TestReorderCategoriesHandler_Success(t *testing.T) {
+	router := newRouterWithUserID("user1")
+
+	var gotItems []usecase.ReorderCategoriesInput
+	uc := &mockReorderCategoriesUC{
+		fn: func(ctx context.Context, userID string, items []usecase.ReorderCategoriesInput) error {
+			require.Equal(t, "user1", userID)
+			gotItems = items
+			return nil
+		},
+	}
+	router.PUT("/categories/reorder", NewReorderCategoriesHandler(uc).Handle)
+
+	body := `{"items":[{"id":2,"sort_order":1},{"id":1,"sort_order":2}]}`
+	req := httptest.NewRequest(http.MethodPut, "/categories/reorder", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusNoContent, w.Code)
+	require.Len(t, gotItems, 2)
+	require.Equal(t, 2, gotItems[0].ID)
+	require.Equal(t, 1, gotItems[0].SortOrder)
+}
+
+func TestReorderCategoriesHandler_UnknownID_NotFound(t *testing.T) {
+	// 存在しないIDや他ユーザーのIDが混ざっていた場合は NotFoundError → 404
+	router := newRouterWithUserID("user1")
+
+	uc := &mockReorderCategoriesUC{
+		fn: func(ctx context.Context, userID string, items []usecase.ReorderCategoriesInput) error {
+			return &usecase.NotFoundError{Message: "カテゴリが見つかりません"}
+		},
+	}
+	router.PUT("/categories/reorder", NewReorderCategoriesHandler(uc).Handle)
+
+	body := `{"items":[{"id":999,"sort_order":1}]}`
+	req := httptest.NewRequest(http.MethodPut, "/categories/reorder", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestReorderCategoriesHandler_InvalidJSON(t *testing.T) {
+	router := newRouterWithUserID("user1")
+
+	uc := &mockReorderCategoriesUC{}
+	router.PUT("/categories/reorder", NewReorderCategoriesHandler(uc).Handle)
+
+	req := httptest.NewRequest(http.MethodPut, "/categories/reorder", strings.NewReader(`not-json`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusBadRequest, w.Code)
 }
