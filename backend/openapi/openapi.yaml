@@ -259,6 +259,18 @@ paths:
       responses:
         "204":
           description: "Reordered successfully"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: "One or more category IDs not found or belong to another user"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         "500":
           description: "Internal Server Error"
           content:
@@ -307,7 +319,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         "404":
-          description: "Not Found"
+          description: "Category not found or belongs to another user"
           content:
             application/json:
               schema:
@@ -333,6 +345,12 @@ paths:
           description: "Deleted successfully"
         "400":
           description: "Bad Request (category is referenced by expenses)"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: "Category not found or belongs to another user"
           content:
             application/json:
               schema:
@@ -445,7 +463,15 @@ components:
           type: string
           enum: [planned, confirmed]
           description: "Expense status. Allowed values are 'planned' or 'confirmed'. Note: Status transition rule on update: 'confirmed' -> 'planned' is prohibited; 'planned' -> 'confirmed' is allowed."
-        catego
+        category:
+          $ref: '#/components/schemas/Category'
+      required:
+        - id
+        - amount
+        - memo
+        - spent_at
+        - status
+        - category
 
     User:
       type: object
@@ -470,15 +496,7 @@ components:
         - income
         - saving_goal
         - created_at
-        - updated_atry:
-          $ref: '#/components/schemas/Category'
-      required:
-        - id
-        - amount
-        - memo
-        - spent_at
-        - status
-        - category
+        - updated_at
 
     Category:
       type: object
