@@ -175,10 +175,11 @@ func (q *Queries) UpdateUserCategory(ctx context.Context, arg UpdateUserCategory
 	return i, err
 }
 
-const updateUserCategorySortOrder = `-- name: UpdateUserCategorySortOrder :exec
+const updateUserCategorySortOrder = `-- name: UpdateUserCategorySortOrder :one
 UPDATE user_categories
 SET sort_order = $3, updated_at = now()
 WHERE id = $1 AND user_id = $2
+RETURNING id
 `
 
 type UpdateUserCategorySortOrderParams struct {
@@ -187,9 +188,11 @@ type UpdateUserCategorySortOrderParams struct {
 	SortOrder int32
 }
 
-func (q *Queries) UpdateUserCategorySortOrder(ctx context.Context, arg UpdateUserCategorySortOrderParams) error {
-	_, err := q.db.ExecContext(ctx, updateUserCategorySortOrder, arg.ID, arg.UserID, arg.SortOrder)
-	return err
+func (q *Queries) UpdateUserCategorySortOrder(ctx context.Context, arg UpdateUserCategorySortOrderParams) (int32, error) {
+	row := q.db.QueryRowContext(ctx, updateUserCategorySortOrder, arg.ID, arg.UserID, arg.SortOrder)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
 }
 
 const userCategoryExists = `-- name: UserCategoryExists :one

@@ -82,11 +82,18 @@ func (r *categoryRepositorySQLC) UpdateCategory(ctx context.Context, userID stri
 }
 
 func (r *categoryRepositorySQLC) UpdateCategorySortOrder(ctx context.Context, userID string, id int32, sortOrder int32) error {
-	return r.q.UpdateUserCategorySortOrder(ctx, db.UpdateUserCategorySortOrderParams{
+	_, err := r.q.UpdateUserCategorySortOrder(ctx, db.UpdateUserCategorySortOrderParams{
 		ID:        id,
 		UserID:    userID,
 		SortOrder: sortOrder,
 	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.ErrCategoryNotFound
+		}
+		return err
+	}
+	return nil
 }
 
 func (r *categoryRepositorySQLC) DeleteCategory(ctx context.Context, userID string, id int32) error {

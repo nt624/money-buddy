@@ -2,6 +2,9 @@ package usecase
 
 import (
 	"context"
+	"errors"
+
+	"pace-wallet-backend/internal/domain"
 )
 
 type reorderCategoriesRepository interface {
@@ -28,6 +31,9 @@ func NewReorderCategoriesUseCase(repo reorderCategoriesRepository) *ReorderCateg
 func (uc *ReorderCategoriesUseCase) Execute(ctx context.Context, userID string, items []ReorderCategoriesInput) error {
 	for _, item := range items {
 		if err := uc.repo.UpdateCategorySortOrder(ctx, userID, int32(item.ID), int32(item.SortOrder)); err != nil {
+			if errors.Is(err, domain.ErrCategoryNotFound) {
+				return &NotFoundError{Message: "カテゴリが見つかりません"}
+			}
 			return &InternalError{Message: "internal error"}
 		}
 	}

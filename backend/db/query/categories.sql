@@ -31,10 +31,11 @@ SET name = $3, updated_at = now()
 WHERE id = $1 AND user_id = $2
 RETURNING id, name, category_type, sort_order;
 
--- name: UpdateUserCategorySortOrder :exec
+-- name: UpdateUserCategorySortOrder :one
 UPDATE user_categories
 SET sort_order = $3, updated_at = now()
-WHERE id = $1 AND user_id = $2;
+WHERE id = $1 AND user_id = $2
+RETURNING id;
 
 -- name: DeleteUserCategory :one
 DELETE FROM user_categories WHERE id = $1 AND user_id = $2
