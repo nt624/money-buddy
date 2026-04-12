@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { MonthlySettings, UpsertMonthlySettingsInput } from '@/lib/types/monthly-settings'
 import { BUSINESS_MAX_AMOUNT } from '@/lib/constants'
 
@@ -29,15 +29,20 @@ export function MonthlySettingsModal({
   isSubmitting,
   error,
 }: MonthlySettingsModalProps) {
-  const [income, setIncome] = useState(0)
-  const [savingGoal, setSavingGoal] = useState(0)
+  const [prevSettings, setPrevSettings] = useState(settings)
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen)
+  const [income, setIncome] = useState(settings?.income ?? 0)
+  const [savingGoal, setSavingGoal] = useState(settings?.saving_goal ?? 0)
 
-  useEffect(() => {
+  // Sync form values when settings or open state changes (React-recommended pattern)
+  if (prevSettings !== settings || prevIsOpen !== isOpen) {
+    setPrevSettings(settings)
+    setPrevIsOpen(isOpen)
     if (settings) {
       setIncome(settings.income)
       setSavingGoal(settings.saving_goal)
     }
-  }, [settings, isOpen])
+  }
 
   if (!isOpen) return null
 

@@ -18,12 +18,14 @@ export function useExpenses() {
 
     // GET
     useEffect(() => {
+        const year = selectedMonth.year;
+        const month = selectedMonth.month;
         const fetchExpenses = async () => {
             setIsLoading(true);
             setError(null);
 
             try {
-                const data = await getExpenses(selectedMonth);
+                const data = await getExpenses({ year, month });
                 setExpenses(data.expenses);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'エラーが発生しました');

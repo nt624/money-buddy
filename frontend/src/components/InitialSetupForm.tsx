@@ -62,7 +62,7 @@ export function InitialSetupForm({ onSubmit, isSubmitting }: Props) {
     await onSubmit({
       income: Number(income),
       savingGoal: Number(savingGoal),
-      fixedCosts: fixedCosts.map(({ id, ...cost }) => cost),
+      fixedCosts: fixedCosts.map(({ name, amount }) => ({ name, amount })),
     })
   }
 

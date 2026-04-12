@@ -1,9 +1,35 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { Container } from '@/components/Layout/Container'
+
+type FirebaseError = { code: string; message: string }
+
+function isFirebaseError(err: unknown): err is FirebaseError {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    typeof (err as Record<string, unknown>).code === 'string'
+  )
+}
+
+function getFirebaseErrorMessage(err: unknown): string {
+  if (!isFirebaseError(err)) return 'エラーが発生しました'
+  const code = err.code
+  if (code === 'auth/email-already-in-use') return 'このメールアドレスは既に使用されています'
+  if (code === 'auth/invalid-email') return 'メールアドレスの形式が正しくありません'
+  if (code === 'auth/weak-password') return 'パスワードは6文字以上にしてください'
+  if (code === 'auth/user-not-found' || code === 'auth/wrong-password') return 'メールアドレスまたはパスワードが間違っています'
+  if (code === 'auth/invalid-credential') return 'メールアドレスまたはパスワードが間違っています'
+  if (code === 'auth/popup-blocked') return 'ポップアップがブロックされました。ブラウザの設定を確認してください'
+  if (code === 'auth/popup-closed-by-user') return 'ログインがキャンセルされました'
+  if (code === 'auth/unauthorized-domain') return 'このドメインは許可されていません'
+  if (code === 'auth/operation-not-allowed') return 'Google認証が有効化されていません'
+  return 'エラーが発生しました'
+}
 
 export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -19,29 +45,18 @@ export default function LoginPage() {
    * リダイレクト先を安全に取得する
    * オープンリダイレクト脆弱性対策: アプリ内パス（/で始まる）のみ許可
    */
-  const getSafeRedirect = (): string => {
+  const getSafeRedirect = useCallback((): string => {
     const redirect = searchParams.get('redirect')
-    
-    // redirectが指定されていない、または空の場合
-    if (!redirect) {
-      return '/'
-    }
-    
-    // /で始まる相対パスのみ許可
-    if (redirect.startsWith('/') && !redirect.startsWith('//')) {
-      return redirect
-    }
-    
-    // 不正な形式の場合はホームにフォールバック
+    if (!redirect) return '/'
+    if (redirect.startsWith('/') && !redirect.startsWith('//')) return redirect
     console.warn(`Invalid redirect parameter detected: ${redirect}`)
     return '/'
-  }
+  }, [searchParams])
 
   useEffect(() => {
     // 既にログイン済みの場合、リダイレクト先またはホームへ
     if (user) {
-      const redirect = getSafeRedirect()
-      router.push(redirect)
+      router.push(getSafeRedirect())
       return
     }
 
@@ -50,39 +65,22 @@ export default function LoginPage() {
     if (reason === 'session_expired') {
       setError('認証の有効期限が切れました。再度ログインしてください。')
     }
-  }, [user, searchParams, router])
+  }, [user, searchParams, router, getSafeRedirect])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
-    
+
     try {
       if (isSignUp) {
         await signUp(email, password)
       } else {
         await signIn(email, password)
       }
-      
-      // リダイレクト先を取得（安全なパスのみ）
-      const redirect = getSafeRedirect()
-      router.push(redirect)
-    } catch (err: any) {
-      // Firebaseのエラーメッセージを日本語化
-      const errorCode = err.code
-      if (errorCode === 'auth/email-already-in-use') {
-        setError('このメールアドレスは既に使用されています')
-      } else if (errorCode === 'auth/invalid-email') {
-        setError('メールアドレスの形式が正しくありません')
-      } else if (errorCode === 'auth/weak-password') {
-        setError('パスワードは6文字以上にしてください')
-      } else if (errorCode === 'auth/user-not-found' || errorCode === 'auth/wrong-password') {
-        setError('メールアドレスまたはパスワードが間違っています')
-      } else if (errorCode === 'auth/invalid-credential') {
-        setError('メールアドレスまたはパスワードが間違っています')
-      } else {
-        setError('エラーが発生しました')
-      }
+      router.push(getSafeRedirect())
+    } catch (err: unknown) {
+      setError(getFirebaseErrorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -91,26 +89,16 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     setError('')
     setLoading(true)
-    
+
     try {
       await signInWithGoogle()
-      
-      // リダイレクト先を取得（安全なパスのみ）
-      const redirect = getSafeRedirect()
-      router.push(redirect)
-    } catch (err: any) {
+      router.push(getSafeRedirect())
+    } catch (err: unknown) {
       console.error('Googleログインエラー:', err)
-      const errorCode = err.code
-      if (errorCode === 'auth/popup-blocked') {
-        setError('ポップアップがブロックされました。ブラウザの設定を確認してください')
-      } else if (errorCode === 'auth/popup-closed-by-user') {
-        setError('ログインがキャンセルされました')
-      } else if (errorCode === 'auth/unauthorized-domain') {
-        setError('このドメインは許可されていません')
-      } else if (errorCode === 'auth/operation-not-allowed') {
-        setError('Google認証が有効化されていません')
+      if (isFirebaseError(err)) {
+        setError(getFirebaseErrorMessage(err))
       } else {
-        setError(`Googleログインに失敗しました: ${err.message || errorCode || '不明なエラー'}`)
+        setError('Googleログインに失敗しました')
       }
     } finally {
       setLoading(false)

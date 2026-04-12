@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { FixedCost, FixedCostInput } from "@/lib/types/fixed-cost";
 import { BUSINESS_MAX_AMOUNT, FIXED_COST_NAME_MAX_LENGTH } from "@/lib/constants";
 
@@ -15,20 +15,18 @@ export function FixedCostForm({
   onCancel,
   isSubmitting,
 }: Props) {
-  const [name, setName] = useState("");
-  const [amount, setAmount] = useState("");
+  const [prevFixedCost, setPrevFixedCost] = useState(fixedCost);
+  const [name, setName] = useState(fixedCost?.name ?? "");
+  const [amount, setAmount] = useState(fixedCost ? fixedCost.amount.toString() : "");
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (fixedCost) {
-      setName(fixedCost.name);
-      setAmount(fixedCost.amount.toString());
-    } else {
-      setName("");
-      setAmount("");
-    }
+  // Sync state when fixedCost prop changes (React-recommended pattern)
+  if (prevFixedCost !== fixedCost) {
+    setPrevFixedCost(fixedCost);
+    setName(fixedCost?.name ?? "");
+    setAmount(fixedCost ? fixedCost.amount.toString() : "");
     setError(null);
-  }, [fixedCost]);
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
