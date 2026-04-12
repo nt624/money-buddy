@@ -23,6 +23,7 @@ export default function Home() {
   const { dashboard, isLoading: dashboardLoading, error: dashboardError, refetch: refetchDashboard } = useDashboard({ enabled: !needsSetup, selectedMonth })
   const {
     settings: monthlySettings,
+    isLoading: msLoading,
     isSubmitting: msSubmitting,
     error: msError,
     isModalOpen,
@@ -159,6 +160,7 @@ export default function Home() {
                 variant="ghost"
                 size="sm"
                 onClick={openModal}
+                disabled={msLoading}
                 className="text-xs text-muted-foreground border border-border"
               >
                 {monthlySettings?.is_custom ? '設定済' : '設定'}

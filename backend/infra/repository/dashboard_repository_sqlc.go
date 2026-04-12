@@ -17,9 +17,9 @@ func NewDashboardRepositorySQLC(q *db.Queries) *dashboardRepositorySQLC {
 
 func (r *dashboardRepositorySQLC) GetMonthlySummary(ctx context.Context, userID string, year, month int) (*usecase.MonthlySummary, error) {
 	row, err := r.q.GetMonthlySummary(ctx, db.GetMonthlySummaryParams{
-		ID:    userID,
-		Year:  int32(year),
-		Month: int32(month),
+		UserID: userID,
+		Year:   int32(year),
+		Month:  int32(month),
 	})
 	if err != nil {
 		return nil, err
@@ -34,9 +34,9 @@ func (r *dashboardRepositorySQLC) GetMonthlySummary(ctx context.Context, userID 
 
 func (r *dashboardRepositorySQLC) GetMonthlyExpensesSummary(ctx context.Context, userID string, year, month int) (*usecase.MonthlyExpensesSummary, error) {
 	row, err := r.q.GetMonthlyExpensesSummary(ctx, db.GetMonthlyExpensesSummaryParams{
-		UserID:  userID,
-		Column2: int32(year),
-		Column3: int32(month),
+		UserID: userID,
+		Year:   int32(year),
+		Month:  int32(month),
 	})
 	if err != nil {
 		return nil, err

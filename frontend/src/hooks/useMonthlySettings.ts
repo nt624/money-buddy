@@ -25,8 +25,9 @@ export function useMonthlySettings(
     try {
       const data = await getMonthlySettings(selectedMonth.year, selectedMonth.month);
       setSettings(data);
-    } catch {
-      // API 失敗時はユーザーのグローバルデフォルト値に静かにフォールバック
+    } catch (err) {
+      // API 失敗時はユーザーのグローバルデフォルト値にフォールバックしつつエラーを記録
+      setError(err instanceof Error ? err.message : "月設定の読み込みに失敗しました");
       if (fallbackUser) {
         setSettings({
           year: selectedMonth.year,
@@ -36,7 +37,6 @@ export function useMonthlySettings(
           is_custom: false,
         });
       }
-      // fallbackUser もない場合は settings を null のままにする（エラーは表示しない）
     } finally {
       setIsLoading(false);
     }

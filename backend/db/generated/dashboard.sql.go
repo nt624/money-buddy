@@ -19,9 +19,9 @@ WHERE e.user_id = $1
 `
 
 type GetMonthlyExpensesSummaryParams struct {
-	UserID  string
-	Column2 int32
-	Column3 int32
+	UserID string
+	Year   int32
+	Month  int32
 }
 
 type GetMonthlyExpensesSummaryRow struct {
@@ -30,7 +30,7 @@ type GetMonthlyExpensesSummaryRow struct {
 }
 
 func (q *Queries) GetMonthlyExpensesSummary(ctx context.Context, arg GetMonthlyExpensesSummaryParams) (GetMonthlyExpensesSummaryRow, error) {
-	row := q.db.QueryRowContext(ctx, getMonthlyExpensesSummary, arg.UserID, arg.Column2, arg.Column3)
+	row := q.db.QueryRowContext(ctx, getMonthlyExpensesSummary, arg.UserID, arg.Year, arg.Month)
 	var i GetMonthlyExpensesSummaryRow
 	err := row.Scan(&i.ConfirmedExpenses, &i.PendingExpenses)
 	return i, err
@@ -44,15 +44,15 @@ SELECT
 FROM users u
 LEFT JOIN fixed_costs fc ON fc.user_id = u.id
 LEFT JOIN monthly_settings ms
-  ON ms.user_id = u.id AND ms.year = $2 AND ms.month = $3
-WHERE u.id = $1
+  ON ms.user_id = u.id AND ms.year = $1::int AND ms.month = $2::int
+WHERE u.id = $3
 GROUP BY u.id, ms.income, ms.saving_goal
 `
 
 type GetMonthlySummaryParams struct {
-	ID    string
-	Year  int32
-	Month int32
+	Year   int32
+	Month  int32
+	UserID string
 }
 
 type GetMonthlySummaryRow struct {
@@ -62,7 +62,7 @@ type GetMonthlySummaryRow struct {
 }
 
 func (q *Queries) GetMonthlySummary(ctx context.Context, arg GetMonthlySummaryParams) (GetMonthlySummaryRow, error) {
-	row := q.db.QueryRowContext(ctx, getMonthlySummary, arg.ID, arg.Year, arg.Month)
+	row := q.db.QueryRowContext(ctx, getMonthlySummary, arg.Year, arg.Month, arg.UserID)
 	var i GetMonthlySummaryRow
 	err := row.Scan(&i.Income, &i.SavingGoal, &i.FixedCosts)
 	return i, err

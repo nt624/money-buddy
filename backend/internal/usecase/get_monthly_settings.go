@@ -30,6 +30,13 @@ func NewGetMonthlySettingsUseCase(repo getMonthlySettingsRepository) *GetMonthly
 }
 
 func (uc *GetMonthlySettingsUseCase) Execute(ctx context.Context, userID string, year, month int) (*MonthlySettingsResult, error) {
+	if year < 1 {
+		return nil, &ValidationError{Message: "年は1以上で入力してください"}
+	}
+	if month < 1 || month > 12 {
+		return nil, &ValidationError{Message: "月は1〜12の範囲で入力してください"}
+	}
+
 	ms, err := uc.repo.GetMonthlySetting(ctx, userID, year, month)
 	if err != nil {
 		return nil, err

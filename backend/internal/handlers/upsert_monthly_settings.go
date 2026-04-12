@@ -47,19 +47,19 @@ func (h *UpsertMonthlySettingsHandler) Handle(c *gin.Context) {
 	}
 
 	if req.Year == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "year is required"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "year は必須です"})
 		return
 	}
 	if req.Month == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "month is required"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "month は必須です"})
 		return
 	}
 	if req.Income == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "income is required"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "income は必須です"})
 		return
 	}
 	if req.SavingGoal == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "saving_goal is required"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "saving_goal は必須です"})
 		return
 	}
 

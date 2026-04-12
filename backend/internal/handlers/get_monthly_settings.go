@@ -36,23 +36,28 @@ func (h *GetMonthlySettingsHandler) Handle(c *gin.Context) {
 	monthStr := c.Query("month")
 
 	if yearStr == "" || monthStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "year and month query parameters are required"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "year と month のクエリパラメータは必須です"})
 		return
 	}
 
 	year, err := strconv.Atoi(yearStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "year must be a valid integer"})
+	if err != nil || year < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "year は1以上の整数で指定してください"})
 		return
 	}
 	month, err := strconv.Atoi(monthStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "month must be a valid integer"})
+	if err != nil || month < 1 || month > 12 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "month は1〜12の整数で指定してください"})
 		return
 	}
 
 	result, err := h.uc.Execute(c.Request.Context(), userID, year, month)
 	if err != nil {
+		var validationErr *usecase.ValidationError
+		if errors.As(err, &validationErr) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Message})
+			return
+		}
 		if errors.Is(err, sql.ErrNoRows) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "ユーザーが見つかりません"})
 			return

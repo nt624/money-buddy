@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { MonthlySettings, UpsertMonthlySettingsInput } from '@/lib/types/monthly-settings'
 import { BUSINESS_MAX_AMOUNT } from '@/lib/constants'
 
@@ -44,6 +44,16 @@ export function MonthlySettingsModal({
     }
   }
 
+  // Close on Escape key
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isSubmitting) onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, isSubmitting, onClose])
+
   if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,11 +69,16 @@ export function MonthlySettingsModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="monthly-settings-title"
+      className="fixed inset-0 z-50 overflow-y-auto"
+    >
       <div className="flex min-h-full items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
       <div className="relative z-10 bg-card border border-border rounded-xl shadow-xl w-full max-w-sm p-6">
-        <h2 className="text-lg font-semibold text-foreground mb-1">
+        <h2 id="monthly-settings-title" className="text-lg font-semibold text-foreground mb-1">
           {year}年{MONTH_NAMES[month - 1]}の設定
         </h2>
         {settings && !settings.is_custom && (

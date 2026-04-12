@@ -21,7 +21,7 @@ export default function SettingsPage() {
   // グローバルデフォルト値の取得・編集には useUser を使う
   // （useDashboard は COALESCE で月別値を返す場合があるためデフォルト表示に不適）
   const { user, refetchUser, isLoading: userLoading } = useUser()
-  const { refetch: refetchDashboard } = useDashboard()
+  const { refetch: refetchDashboard } = useDashboard({ enabled: false })
   const { fixedCosts, createFixedCost, updateFixedCost, deleteFixedCost, isSubmitting: fcSubmitting, isLoading: fcLoading, error: fcError } = useFixedCosts()
   const { categories, createCategory, updateCategory, deleteCategory, reorderCategories, isSubmitting: catSubmitting, isLoading: catLoading, error: catError } = useCategories()
 

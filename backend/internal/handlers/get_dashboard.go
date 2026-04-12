@@ -50,16 +50,16 @@ func (h *GetDashboardHandler) Handle(c *gin.Context) {
 
 	if yearStr := c.Query("year"); yearStr != "" {
 		y, err := strconv.Atoi(yearStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "year must be a valid integer"})
+		if err != nil || y < 1 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "year は1以上の整数で指定してください"})
 			return
 		}
 		year = y
 	}
 	if monthStr := c.Query("month"); monthStr != "" {
 		m, err := strconv.Atoi(monthStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "month must be a valid integer"})
+		if err != nil || m < 1 || m > 12 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "month は1〜12の整数で指定してください"})
 			return
 		}
 		month = m
