@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+
+# Detect which directories have staged changes
+STAGED_FILES=$(git diff --cached --name-only)
+
+run_backend=false
+run_frontend=false
+
+if echo "$STAGED_FILES" | grep -q "^backend/"; then
+  run_backend=true
+fi
+if echo "$STAGED_FILES" | grep -q "^frontend/"; then
+  run_frontend=true
+fi
+
+# --- Backend checks ---
+if [ "$run_backend" = true ]; then
+  echo "[pre-commit] Running backend checks..."
+  cd "$ROOT/backend"
+
+  echo "  go build ./..."
+  go build ./...
+
+  echo "  go vet ./..."
+  go vet ./...
+
+  echo "[pre-commit] Backend checks passed."
+  cd "$ROOT"
+fi
+
+# --- Frontend checks ---
+if [ "$run_frontend" = true ]; then
+  echo "[pre-commit] Running frontend checks..."
+  cd "$ROOT/frontend"
+
+  echo "  npm run lint"
+  npm run lint
+
+  echo "  tsc --noEmit"
+  npx tsc --noEmit
+
+  echo "[pre-commit] Frontend checks passed."
+  cd "$ROOT"
+fi
+
+echo "[pre-commit] All checks passed."
