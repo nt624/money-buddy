@@ -10,7 +10,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup
 } from 'firebase/auth'
-import { auth } from '@/lib/firebase/config'
+import { getFirebaseAuth } from '@/lib/firebase/config'
 
 type AuthContextType = {
   user: User | null
@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // 認証状態の監視
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(getFirebaseAuth(), (user) => {
       setUser(user)
       setLoading(false)
     })
@@ -39,20 +39,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password)
+    await signInWithEmailAndPassword(getFirebaseAuth(), email, password)
   }
 
   const signUp = async (email: string, password: string) => {
-    await createUserWithEmailAndPassword(auth, email, password)
+    await createUserWithEmailAndPassword(getFirebaseAuth(), email, password)
   }
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider()
-    await signInWithPopup(auth, provider)
+    await signInWithPopup(getFirebaseAuth(), provider)
   }
 
   const signOut = async () => {
-    await firebaseSignOut(auth)
+    await firebaseSignOut(getFirebaseAuth())
   }
 
   const getIdToken = async () => {

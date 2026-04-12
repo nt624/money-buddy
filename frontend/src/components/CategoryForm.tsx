@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Category } from "@/lib/types/category";
 
 const CATEGORY_NAME_MAX_LENGTH = 50;
@@ -13,13 +13,16 @@ type Props = {
 };
 
 export function CategoryForm({ category, onSubmit, onCancel, isSubmitting }: Props) {
-  const [name, setName] = useState("");
+  const [prevCategory, setPrevCategory] = useState(category);
+  const [name, setName] = useState(category ? category.name : "");
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Sync state when category prop changes (React-recommended pattern)
+  if (prevCategory !== category) {
+    setPrevCategory(category);
     setName(category ? category.name : "");
     setError(null);
-  }, [category]);
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

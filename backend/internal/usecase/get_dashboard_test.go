@@ -11,27 +11,27 @@ import (
 )
 
 type mockDashboardRepo struct {
-	getMonthlySummaryFunc         func(ctx context.Context, userID string) (*MonthlySummary, error)
-	getMonthlyExpensesSummaryFunc func(ctx context.Context, userID string) (*MonthlyExpensesSummary, error)
+	getMonthlySummaryFunc         func(ctx context.Context, userID string, year, month int) (*MonthlySummary, error)
+	getMonthlyExpensesSummaryFunc func(ctx context.Context, userID string, year, month int) (*MonthlyExpensesSummary, error)
 }
 
-func (m *mockDashboardRepo) GetMonthlySummary(ctx context.Context, userID string) (*MonthlySummary, error) {
+func (m *mockDashboardRepo) GetMonthlySummary(ctx context.Context, userID string, year, month int) (*MonthlySummary, error) {
 	if m.getMonthlySummaryFunc != nil {
-		return m.getMonthlySummaryFunc(ctx, userID)
+		return m.getMonthlySummaryFunc(ctx, userID, year, month)
 	}
 	return nil, errors.New("not implemented")
 }
 
-func (m *mockDashboardRepo) GetMonthlyExpensesSummary(ctx context.Context, userID string) (*MonthlyExpensesSummary, error) {
+func (m *mockDashboardRepo) GetMonthlyExpensesSummary(ctx context.Context, userID string, year, month int) (*MonthlyExpensesSummary, error) {
 	if m.getMonthlyExpensesSummaryFunc != nil {
-		return m.getMonthlyExpensesSummaryFunc(ctx, userID)
+		return m.getMonthlyExpensesSummaryFunc(ctx, userID, year, month)
 	}
 	return nil, errors.New("not implemented")
 }
 
 func TestGetDashboard_Success(t *testing.T) {
 	repo := &mockDashboardRepo{
-		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*MonthlySummary, error) {
+		getMonthlySummaryFunc: func(ctx context.Context, userID string, year, month int) (*MonthlySummary, error) {
 			assert.Equal(t, "test-user", userID)
 			return &MonthlySummary{
 				Income:     300000,
@@ -39,7 +39,7 @@ func TestGetDashboard_Success(t *testing.T) {
 				FixedCosts: 100000,
 			}, nil
 		},
-		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string) (*MonthlyExpensesSummary, error) {
+		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string, year, month int) (*MonthlyExpensesSummary, error) {
 			assert.Equal(t, "test-user", userID)
 			return &MonthlyExpensesSummary{
 				ConfirmedExpenses: 80000,
@@ -49,7 +49,7 @@ func TestGetDashboard_Success(t *testing.T) {
 	}
 
 	uc := NewGetDashboardUseCase(repo)
-	dashboard, err := uc.Execute(context.Background(), "test-user")
+	dashboard, err := uc.Execute(context.Background(), "test-user", 2026, 4)
 
 	require.NoError(t, err)
 	require.NotNil(t, dashboard)
@@ -67,16 +67,16 @@ func TestGetDashboard_Success(t *testing.T) {
 
 func TestGetDashboard_ZeroExpenses(t *testing.T) {
 	repo := &mockDashboardRepo{
-		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*MonthlySummary, error) {
+		getMonthlySummaryFunc: func(ctx context.Context, userID string, year, month int) (*MonthlySummary, error) {
 			return &MonthlySummary{Income: 300000, SavingGoal: 50000, FixedCosts: 100000}, nil
 		},
-		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string) (*MonthlyExpensesSummary, error) {
+		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string, year, month int) (*MonthlyExpensesSummary, error) {
 			return &MonthlyExpensesSummary{ConfirmedExpenses: 0, PlannedExpenses: 0}, nil
 		},
 	}
 
 	uc := NewGetDashboardUseCase(repo)
-	dashboard, err := uc.Execute(context.Background(), "test-user")
+	dashboard, err := uc.Execute(context.Background(), "test-user", 2026, 4)
 
 	require.NoError(t, err)
 	assert.Equal(t, int64(150000), dashboard.VariableBudget)
@@ -85,16 +85,16 @@ func TestGetDashboard_ZeroExpenses(t *testing.T) {
 
 func TestGetDashboard_ZeroFixedCosts(t *testing.T) {
 	repo := &mockDashboardRepo{
-		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*MonthlySummary, error) {
+		getMonthlySummaryFunc: func(ctx context.Context, userID string, year, month int) (*MonthlySummary, error) {
 			return &MonthlySummary{Income: 300000, SavingGoal: 50000, FixedCosts: 0}, nil
 		},
-		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string) (*MonthlyExpensesSummary, error) {
+		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string, year, month int) (*MonthlyExpensesSummary, error) {
 			return &MonthlyExpensesSummary{ConfirmedExpenses: 100000, PlannedExpenses: 50000}, nil
 		},
 	}
 
 	uc := NewGetDashboardUseCase(repo)
-	dashboard, err := uc.Execute(context.Background(), "test-user")
+	dashboard, err := uc.Execute(context.Background(), "test-user", 2026, 4)
 
 	require.NoError(t, err)
 	assert.Equal(t, int64(250000), dashboard.VariableBudget)
@@ -103,13 +103,13 @@ func TestGetDashboard_ZeroFixedCosts(t *testing.T) {
 
 func TestGetDashboard_UserNotFound(t *testing.T) {
 	repo := &mockDashboardRepo{
-		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*MonthlySummary, error) {
+		getMonthlySummaryFunc: func(ctx context.Context, userID string, year, month int) (*MonthlySummary, error) {
 			return nil, sql.ErrNoRows
 		},
 	}
 
 	uc := NewGetDashboardUseCase(repo)
-	dashboard, err := uc.Execute(context.Background(), "non-existent-user")
+	dashboard, err := uc.Execute(context.Background(), "non-existent-user", 2026, 4)
 
 	require.Error(t, err)
 	require.Nil(t, dashboard)
@@ -118,16 +118,16 @@ func TestGetDashboard_UserNotFound(t *testing.T) {
 
 func TestGetDashboard_ExpensesSummaryError(t *testing.T) {
 	repo := &mockDashboardRepo{
-		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*MonthlySummary, error) {
+		getMonthlySummaryFunc: func(ctx context.Context, userID string, year, month int) (*MonthlySummary, error) {
 			return &MonthlySummary{Income: 300000, SavingGoal: 50000, FixedCosts: 100000}, nil
 		},
-		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string) (*MonthlyExpensesSummary, error) {
+		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string, year, month int) (*MonthlyExpensesSummary, error) {
 			return nil, errors.New("database connection error")
 		},
 	}
 
 	uc := NewGetDashboardUseCase(repo)
-	dashboard, err := uc.Execute(context.Background(), "test-user")
+	dashboard, err := uc.Execute(context.Background(), "test-user", 2026, 4)
 
 	require.Error(t, err)
 	require.Nil(t, dashboard)
@@ -136,16 +136,16 @@ func TestGetDashboard_ExpensesSummaryError(t *testing.T) {
 
 func TestGetDashboard_NegativeRemaining(t *testing.T) {
 	repo := &mockDashboardRepo{
-		getMonthlySummaryFunc: func(ctx context.Context, userID string) (*MonthlySummary, error) {
+		getMonthlySummaryFunc: func(ctx context.Context, userID string, year, month int) (*MonthlySummary, error) {
 			return &MonthlySummary{Income: 300000, SavingGoal: 50000, FixedCosts: 100000}, nil
 		},
-		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string) (*MonthlyExpensesSummary, error) {
+		getMonthlyExpensesSummaryFunc: func(ctx context.Context, userID string, year, month int) (*MonthlyExpensesSummary, error) {
 			return &MonthlyExpensesSummary{ConfirmedExpenses: 120000, PlannedExpenses: 80000}, nil
 		},
 	}
 
 	uc := NewGetDashboardUseCase(repo)
-	dashboard, err := uc.Execute(context.Background(), "test-user")
+	dashboard, err := uc.Execute(context.Background(), "test-user", 2026, 4)
 
 	require.NoError(t, err)
 	assert.Equal(t, int64(150000), dashboard.VariableBudget)

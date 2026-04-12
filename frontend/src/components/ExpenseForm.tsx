@@ -20,6 +20,11 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
     const [spentAt, setSpentAt] = useState(initialData?.spent_at || '')
     const [status, setStatus] = useState<'planned' | 'confirmed'>(initialData?.status || 'confirmed')
     const [categories, setCategories] = useState<Category[]>([])
+    const [errors, setErrors] = useState<{
+        amount?: string
+        spent_at?: string
+        status?: string
+    }>({})
 
     useEffect(() => {
         getCategories()
@@ -32,8 +37,10 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
             .catch(console.error)
     }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-    // initialDataが変更されたらフォーム状態を更新（編集対象切り替え時）
-    useEffect(() => {
+    // Sync state when initialData changes (editing a different expense)
+    const [prevInitialData, setPrevInitialData] = useState(initialData)
+    if (prevInitialData !== initialData) {
+        setPrevInitialData(initialData)
         if (initialData) {
             setAmount(initialData.amount.toString())
             setCategoryId(initialData.category.id.toString())
@@ -42,13 +49,7 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
             setStatus(initialData.status)
             setErrors({})
         }
-    }, [initialData])
-
-    const [errors, setErrors] = useState<{
-        amount?: string
-        spent_at?: string
-        status?: string
-    }>({})
+    }
 
     const validate = (): boolean => {
         const newErrors: typeof errors = {}

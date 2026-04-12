@@ -8,13 +8,24 @@ export function useTheme() {
   const [theme, setTheme] = useState<Theme>('light')
   const [mounted, setMounted] = useState(false)
 
+  // テーマをDOMとlocalStorageに適用
+  const applyTheme = (newTheme: Theme) => {
+    const root = document.documentElement
+    if (newTheme === 'dark') {
+      root.classList.add('dark')
+    } else {
+      root.classList.remove('dark')
+    }
+  }
+
   // クライアントサイドでのみ実行
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
-    
+
     // localStorageまたはシステム設定から初期テーマを取得
     const savedTheme = localStorage.getItem('theme') as Theme | null
-    
+
     if (savedTheme) {
       setTheme(savedTheme)
       applyTheme(savedTheme)
@@ -26,17 +37,6 @@ export function useTheme() {
       applyTheme(initialTheme)
     }
   }, [])
-
-  // テーマをDOMとlocalStorageに適用
-  const applyTheme = (newTheme: Theme) => {
-    const root = document.documentElement
-    
-    if (newTheme === 'dark') {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
-  }
 
   // テーマを切り替え
   const toggleTheme = () => {

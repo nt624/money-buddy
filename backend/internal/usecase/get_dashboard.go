@@ -27,8 +27,8 @@ type Dashboard struct {
 }
 
 type getDashboardRepository interface {
-	GetMonthlySummary(ctx context.Context, userID string) (*MonthlySummary, error)
-	GetMonthlyExpensesSummary(ctx context.Context, userID string) (*MonthlyExpensesSummary, error)
+	GetMonthlySummary(ctx context.Context, userID string, year, month int) (*MonthlySummary, error)
+	GetMonthlyExpensesSummary(ctx context.Context, userID string, year, month int) (*MonthlyExpensesSummary, error)
 }
 
 // GetDashboardUseCase はダッシュボード取得ユースケースです。
@@ -42,13 +42,13 @@ func NewGetDashboardUseCase(repo getDashboardRepository) *GetDashboardUseCase {
 }
 
 // Execute はダッシュボード取得ユースケースを実行します。
-func (uc *GetDashboardUseCase) Execute(ctx context.Context, userID string) (*Dashboard, error) {
-	summary, err := uc.repo.GetMonthlySummary(ctx, userID)
+func (uc *GetDashboardUseCase) Execute(ctx context.Context, userID string, year, month int) (*Dashboard, error) {
+	summary, err := uc.repo.GetMonthlySummary(ctx, userID, year, month)
 	if err != nil {
 		return nil, err
 	}
 
-	expenses, err := uc.repo.GetMonthlyExpensesSummary(ctx, userID)
+	expenses, err := uc.repo.GetMonthlyExpensesSummary(ctx, userID, year, month)
 	if err != nil {
 		return nil, err
 	}

@@ -1,10 +1,12 @@
 import { createExpense } from "./expenses";
 import { CreateExpenseInput, Expense } from "../types/expense";
 
+type GlobalWithFetch = typeof globalThis & { fetch: jest.Mock };
+
 // Mock global.fetch for all tests
 beforeEach(() => {
   jest.resetAllMocks();
-  (global as any).fetch = jest.fn();
+  (global as GlobalWithFetch).fetch = jest.fn();
   // Mock console.error to avoid cluttering test output
   jest.spyOn(console, 'error').mockImplementation(() => {});
 });
@@ -33,15 +35,15 @@ describe("createExpense", () => {
       status: "confirmed",
     };
 
-    (global as any).fetch.mockResolvedValue({
+    (global as GlobalWithFetch).fetch.mockResolvedValue({
       ok: true,
       json: async () => ({ expense: expectedExpense }),
     });
 
     const result = await createExpense(input);
 
-    expect((global as any).fetch).toHaveBeenCalledTimes(1);
-    expect((global as any).fetch).toHaveBeenCalledWith(API_URL, {
+    expect((global as GlobalWithFetch).fetch).toHaveBeenCalledTimes(1);
+    expect((global as GlobalWithFetch).fetch).toHaveBeenCalledWith(API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -60,7 +62,7 @@ describe("createExpense", () => {
       spent_at: "2025-12-30",
     };
 
-    (global as any).fetch.mockResolvedValue({
+    (global as GlobalWithFetch).fetch.mockResolvedValue({
       ok: false,
       status: 500,
       text: async () => "internal error",

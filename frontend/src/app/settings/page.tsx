@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useFixedCosts } from '@/hooks/useFixedCosts'
 import { useCategories } from '@/hooks/useCategories'
 import { useDashboard } from '@/hooks/useDashboard'
+import { useUser } from '@/hooks/useUser'
 import { FixedCostList } from '@/components/FixedCostList'
 import { FixedCostForm } from '@/components/FixedCostForm'
 import { CategoryList } from '@/components/CategoryList'
@@ -12,17 +13,23 @@ import { UserForm } from '@/components/UserForm'
 import { FixedCost, FixedCostInput } from '@/lib/types/fixed-cost'
 import { Category, ReorderCategoryItem } from '@/lib/types/category'
 import { UpdateUserInput } from '@/lib/types/user'
+import { updateUser } from '@/lib/api/users'
 import { Container } from '@/components/Layout/Container'
 import { Button } from '@/components/ui/Button'
 
 export default function SettingsPage() {
-  const { dashboard, updateUserSettings, isSubmitting: userSubmitting, isLoading: dashboardLoading, error: dashboardError, refetch: refetchDashboard } = useDashboard()
+  // グローバルデフォルト値の取得・編集には useUser を使う
+  // （useDashboard は COALESCE で月別値を返す場合があるためデフォルト表示に不適）
+  const { user, refetchUser, isLoading: userLoading } = useUser()
+  const { refetch: refetchDashboard } = useDashboard({ enabled: false })
   const { fixedCosts, createFixedCost, updateFixedCost, deleteFixedCost, isSubmitting: fcSubmitting, isLoading: fcLoading, error: fcError } = useFixedCosts()
   const { categories, createCategory, updateCategory, deleteCategory, reorderCategories, isSubmitting: catSubmitting, isLoading: catLoading, error: catError } = useCategories()
 
   const [editingFixedCost, setEditingFixedCost] = useState<FixedCost | null>(null)
   const [showFixedCostForm, setShowFixedCostForm] = useState(false)
   const [showUserForm, setShowUserForm] = useState(false)
+  const [userSubmitting, setUserSubmitting] = useState(false)
+  const [userError, setUserError] = useState<string | null>(null)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [showCategoryForm, setShowCategoryForm] = useState(false)
 
@@ -75,11 +82,24 @@ export default function SettingsPage() {
   }
 
   const handleUserSubmit = async (input: UpdateUserInput) => {
-    const success = await updateUserSettings(input)
-    if (success) setShowUserForm(false)
+    setUserSubmitting(true)
+    setUserError(null)
+    try {
+      await updateUser(input)
+      await refetchUser()
+      refetchDashboard()
+      setShowUserForm(false)
+    } catch (err) {
+      setUserError(err instanceof Error ? err.message : 'ユーザー設定の更新に失敗しました')
+    } finally {
+      setUserSubmitting(false)
+    }
   }
 
-  const handleCancelUserEdit = () => setShowUserForm(false)
+  const handleCancelUserEdit = () => {
+    setUserError(null)
+    setShowUserForm(false)
+  }
 
   // Category handlers
   const handleCategoryEdit = (category: Category) => {
@@ -124,12 +144,12 @@ export default function SettingsPage() {
 
       {/* 基本情報セクション */}
       <section className="bg-card border border-border rounded-lg shadow-sm p-4 sm:p-6">
-        <div className="flex justify-between items-center mb-3 sm:mb-4">
+        <div className="flex justify-between items-center mb-1 sm:mb-2">
           <h2 className="text-base sm:text-lg font-semibold text-foreground">基本情報</h2>
           {!showUserForm && (
             <Button
               onClick={() => setShowUserForm(true)}
-              disabled={dashboardLoading}
+              disabled={userLoading}
               size="sm"
             >
               編集
@@ -137,29 +157,33 @@ export default function SettingsPage() {
           )}
         </div>
 
-        {dashboardLoading && <p className="text-muted-foreground">読み込み中...</p>}
+        <p className="text-xs text-muted-foreground mb-3 sm:mb-4">
+          月毎の設定がない月に適用されるデフォルト値です
+        </p>
 
-        {!dashboardLoading && !showUserForm && dashboard && (
+        {userLoading && <p className="text-muted-foreground">読み込み中...</p>}
+
+        {!userLoading && !showUserForm && user && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-1">
               <div className="text-xs sm:text-sm text-muted-foreground">月収（手取り）</div>
-              <div className="text-lg sm:text-xl font-semibold text-foreground">¥{dashboard.income.toLocaleString()}</div>
+              <div className="text-lg sm:text-xl font-semibold text-foreground">¥{user.income.toLocaleString()}</div>
             </div>
             <div className="space-y-1">
               <div className="text-xs sm:text-sm text-muted-foreground">貯金目標額（月）</div>
-              <div className="text-lg sm:text-xl font-semibold text-foreground">¥{dashboard.saving_goal.toLocaleString()}</div>
+              <div className="text-lg sm:text-xl font-semibold text-foreground">¥{user.saving_goal.toLocaleString()}</div>
             </div>
           </div>
         )}
 
-        {showUserForm && dashboard && (
+        {showUserForm && user && (
           <UserForm
-            initialIncome={dashboard.income}
-            initialSavingGoal={dashboard.saving_goal}
+            initialIncome={user.income}
+            initialSavingGoal={user.saving_goal}
             onSubmit={handleUserSubmit}
             onCancel={handleCancelUserEdit}
             isSubmitting={userSubmitting}
-            error={dashboardError}
+            error={userError}
           />
         )}
       </section>

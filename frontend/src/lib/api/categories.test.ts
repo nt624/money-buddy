@@ -7,9 +7,11 @@ import {
 } from "./categories";
 import { Category, CreateCategoryInput, UpdateCategoryInput, ReorderCategoryItem } from "../types/category";
 
+type GlobalWithFetch = typeof globalThis & { fetch: jest.Mock };
+
 beforeEach(() => {
   jest.resetAllMocks();
-  (global as any).fetch = jest.fn();
+  (global as GlobalWithFetch).fetch = jest.fn();
   jest.spyOn(console, 'error').mockImplementation(() => {});
 });
 
@@ -31,15 +33,15 @@ const sampleCategory: Category = {
 // ---------------------------------------------------------------------------
 describe("getCategories", () => {
   it("calls fetch with correct URL and method and returns categories on success", async () => {
-    (global as any).fetch.mockResolvedValue({
+    (global as GlobalWithFetch).fetch.mockResolvedValue({
       ok: true,
       json: async () => ({ categories: [sampleCategory] }),
     });
 
     const result = await getCategories();
 
-    expect((global as any).fetch).toHaveBeenCalledTimes(1);
-    expect((global as any).fetch).toHaveBeenCalledWith(
+    expect((global as GlobalWithFetch).fetch).toHaveBeenCalledTimes(1);
+    expect((global as GlobalWithFetch).fetch).toHaveBeenCalledWith(
       `${API_BASE}/categories`,
       expect.objectContaining({ method: "GET" })
     );
@@ -47,7 +49,7 @@ describe("getCategories", () => {
   });
 
   it("throws Error when response.ok is false", async () => {
-    (global as any).fetch.mockResolvedValue({
+    (global as GlobalWithFetch).fetch.mockResolvedValue({
       ok: false,
       status: 500,
       json: async () => { throw new Error("not json"); },
@@ -57,7 +59,7 @@ describe("getCategories", () => {
   });
 
   it("throws Error when response body is not a valid categories array", async () => {
-    (global as any).fetch.mockResolvedValue({
+    (global as GlobalWithFetch).fetch.mockResolvedValue({
       ok: true,
       json: async () => ({ categories: null }),
     });
@@ -73,15 +75,15 @@ describe("createCategory", () => {
   const input: CreateCategoryInput = { name: "外食" };
 
   it("calls fetch with correct URL, method, headers, and body and returns category on success", async () => {
-    (global as any).fetch.mockResolvedValue({
+    (global as GlobalWithFetch).fetch.mockResolvedValue({
       ok: true,
       json: async () => ({ category: { ...sampleCategory, name: "外食" } }),
     });
 
     const result = await createCategory(input);
 
-    expect((global as any).fetch).toHaveBeenCalledTimes(1);
-    expect((global as any).fetch).toHaveBeenCalledWith(
+    expect((global as GlobalWithFetch).fetch).toHaveBeenCalledTimes(1);
+    expect((global as GlobalWithFetch).fetch).toHaveBeenCalledWith(
       `${API_BASE}/categories`,
       {
         method: "POST",
@@ -93,7 +95,7 @@ describe("createCategory", () => {
   });
 
   it("throws Error when response.ok is false", async () => {
-    (global as any).fetch.mockResolvedValue({
+    (global as GlobalWithFetch).fetch.mockResolvedValue({
       ok: false,
       status: 400,
       json: async () => { throw new Error("not json"); },
@@ -103,7 +105,7 @@ describe("createCategory", () => {
   });
 
   it("surfaces server error message from JSON body", async () => {
-    (global as any).fetch.mockResolvedValue({
+    (global as GlobalWithFetch).fetch.mockResolvedValue({
       ok: false,
       status: 400,
       json: async () => ({ error: "同じ名前のカテゴリがすでに存在します" }),
@@ -120,15 +122,15 @@ describe("updateCategory", () => {
   const input: UpdateCategoryInput = { name: "外食費" };
 
   it("calls fetch with correct URL, method, headers, and body and returns category on success", async () => {
-    (global as any).fetch.mockResolvedValue({
+    (global as GlobalWithFetch).fetch.mockResolvedValue({
       ok: true,
       json: async () => ({ category: { ...sampleCategory, name: "外食費" } }),
     });
 
     const result = await updateCategory(1, input);
 
-    expect((global as any).fetch).toHaveBeenCalledTimes(1);
-    expect((global as any).fetch).toHaveBeenCalledWith(
+    expect((global as GlobalWithFetch).fetch).toHaveBeenCalledTimes(1);
+    expect((global as GlobalWithFetch).fetch).toHaveBeenCalledWith(
       `${API_BASE}/categories/1`,
       {
         method: "PUT",
@@ -140,7 +142,7 @@ describe("updateCategory", () => {
   });
 
   it("throws Error when response.ok is false", async () => {
-    (global as any).fetch.mockResolvedValue({
+    (global as GlobalWithFetch).fetch.mockResolvedValue({
       ok: false,
       status: 404,
       json: async () => { throw new Error("not json"); },
@@ -150,7 +152,7 @@ describe("updateCategory", () => {
   });
 
   it("surfaces server error message from JSON body", async () => {
-    (global as any).fetch.mockResolvedValue({
+    (global as GlobalWithFetch).fetch.mockResolvedValue({
       ok: false,
       status: 400,
       json: async () => ({ error: "同じ名前のカテゴリがすでに存在します" }),
@@ -165,19 +167,19 @@ describe("updateCategory", () => {
 // ---------------------------------------------------------------------------
 describe("deleteCategory", () => {
   it("calls fetch with correct URL and method and resolves on success", async () => {
-    (global as any).fetch.mockResolvedValue({ ok: true });
+    (global as GlobalWithFetch).fetch.mockResolvedValue({ ok: true });
 
     await expect(deleteCategory(1)).resolves.toBeUndefined();
 
-    expect((global as any).fetch).toHaveBeenCalledTimes(1);
-    expect((global as any).fetch).toHaveBeenCalledWith(
+    expect((global as GlobalWithFetch).fetch).toHaveBeenCalledTimes(1);
+    expect((global as GlobalWithFetch).fetch).toHaveBeenCalledWith(
       `${API_BASE}/categories/1`,
       expect.objectContaining({ method: "DELETE" })
     );
   });
 
   it("throws Error when response.ok is false", async () => {
-    (global as any).fetch.mockResolvedValue({
+    (global as GlobalWithFetch).fetch.mockResolvedValue({
       ok: false,
       status: 404,
       json: async () => { throw new Error("not json"); },
@@ -187,7 +189,7 @@ describe("deleteCategory", () => {
   });
 
   it("surfaces server error message from JSON body", async () => {
-    (global as any).fetch.mockResolvedValue({
+    (global as GlobalWithFetch).fetch.mockResolvedValue({
       ok: false,
       status: 400,
       json: async () => ({ error: "このカテゴリは支出で使用されているため削除できません" }),
@@ -207,12 +209,12 @@ describe("reorderCategories", () => {
   ];
 
   it("calls fetch with correct URL, method, headers, and body and resolves on success", async () => {
-    (global as any).fetch.mockResolvedValue({ ok: true });
+    (global as GlobalWithFetch).fetch.mockResolvedValue({ ok: true });
 
     await expect(reorderCategories(items)).resolves.toBeUndefined();
 
-    expect((global as any).fetch).toHaveBeenCalledTimes(1);
-    expect((global as any).fetch).toHaveBeenCalledWith(
+    expect((global as GlobalWithFetch).fetch).toHaveBeenCalledTimes(1);
+    expect((global as GlobalWithFetch).fetch).toHaveBeenCalledWith(
       `${API_BASE}/categories/reorder`,
       {
         method: "PUT",
@@ -223,7 +225,7 @@ describe("reorderCategories", () => {
   });
 
   it("throws Error when response.ok is false", async () => {
-    (global as any).fetch.mockResolvedValue({
+    (global as GlobalWithFetch).fetch.mockResolvedValue({
       ok: false,
       status: 404,
       json: async () => { throw new Error("not json"); },

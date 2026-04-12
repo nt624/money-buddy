@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { UpdateUserInput } from '@/lib/types/user'
 import { BUSINESS_MAX_AMOUNT } from '@/lib/constants'
 
@@ -21,13 +21,18 @@ export function UserForm({
   isSubmitting,
   error
 }: UserFormProps) {
+  const [prevInitialIncome, setPrevInitialIncome] = useState(initialIncome)
+  const [prevInitialSavingGoal, setPrevInitialSavingGoal] = useState(initialSavingGoal)
   const [income, setIncome] = useState(initialIncome)
   const [savingGoal, setSavingGoal] = useState(initialSavingGoal)
 
-  useEffect(() => {
+  // Sync state when initial values change (React-recommended pattern)
+  if (prevInitialIncome !== initialIncome || prevInitialSavingGoal !== initialSavingGoal) {
+    setPrevInitialIncome(initialIncome)
+    setPrevInitialSavingGoal(initialSavingGoal)
     setIncome(initialIncome)
     setSavingGoal(initialSavingGoal)
-  }, [initialIncome, initialSavingGoal])
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

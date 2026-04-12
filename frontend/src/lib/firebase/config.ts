@@ -1,5 +1,5 @@
-import { initializeApp, getApps } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app'
+import { getAuth, Auth } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -10,7 +10,20 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
-// シングルトン初期化（複数回初期化を防ぐ）
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+// Lazy singletons — initialized only when first called (client-side only)
+let _app: FirebaseApp | undefined
+let _auth: Auth | undefined
 
-export const auth = getAuth(app)
+export function getFirebaseApp(): FirebaseApp {
+  if (!_app) {
+    _app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+  }
+  return _app
+}
+
+export function getFirebaseAuth(): Auth {
+  if (!_auth) {
+    _auth = getAuth(getFirebaseApp())
+  }
+  return _auth
+}

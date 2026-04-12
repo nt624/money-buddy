@@ -4,23 +4,26 @@ import { updateUser } from "@/lib/api/users";
 import { Dashboard } from "@/lib/types/dashboard";
 import { UpdateUserInput } from "@/lib/types/user";
 
+type SelectedMonth = { year: number; month: number };
+
 type UseDashboardOptions = {
   enabled?: boolean; // trueの場合のみ自動fetch、デフォルトtrue
+  selectedMonth?: SelectedMonth;
 };
 
 export function useDashboard(options: UseDashboardOptions = {}) {
-  const { enabled = true } = options;
+  const { enabled = true, selectedMonth } = options;
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchDashboard = async () => {
+  const fetchDashboard = async (month?: SelectedMonth) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const data = await getDashboard();
+      const data = await getDashboard(month);
       setDashboard(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "エラーが発生しました");
@@ -29,26 +32,25 @@ export function useDashboard(options: UseDashboardOptions = {}) {
     }
   };
 
-  // Initial fetch on mount (enabledがtrueの場合のみ)
+  // selectedMonth または enabled が変化したときに再取得
   useEffect(() => {
     if (enabled) {
-      fetchDashboard();
+      fetchDashboard(selectedMonth);
     }
-  }, [enabled]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, selectedMonth?.year, selectedMonth?.month]);
 
-  // Refetch function for manual updates
   const refetch = () => {
-    fetchDashboard();
+    fetchDashboard(selectedMonth);
   };
 
-  // Update user settings
   const updateUserSettings = async (input: UpdateUserInput): Promise<boolean> => {
     setIsSubmitting(true);
     setError(null);
 
     try {
       await updateUser(input);
-      await fetchDashboard(); // ダッシュボードを再取得
+      await fetchDashboard(selectedMonth);
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "ユーザー設定の更新に失敗しました");

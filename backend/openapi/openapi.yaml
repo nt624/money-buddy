@@ -15,6 +15,8 @@ tags:
     description: "Initial setup operations"
   - name: "dashboard"
     description: "Dashboard operations"
+  - name: "monthly-settings"
+    description: "Monthly income/saving_goal settings"
 paths:
   /expenses:
     post:
@@ -423,7 +425,23 @@ paths:
       tags:
         - "dashboard"
       summary: "Get dashboard data"
-      description: "Returns dashboard with income, expenses, and remaining budget information"
+      description: "Returns dashboard with income, expenses, and remaining budget information for the specified month"
+      parameters:
+        - name: year
+          in: query
+          required: false
+          description: "対象年（例: 2026）。省略時は当年。"
+          schema:
+            type: integer
+            minimum: 1
+        - name: month
+          in: query
+          required: false
+          description: "対象月（1〜12）。省略時は当月。"
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
       responses:
         "200":
           description: "Dashboard data"
@@ -433,6 +451,129 @@ paths:
                 $ref: '#/components/schemas/DashboardResponse'
         "404":
           description: "User not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /monthly-settings:
+    get:
+      tags:
+        - "monthly-settings"
+      summary: "Get monthly settings"
+      description: "指定月の手取り・目標額を返す。設定がない月はユーザーのデフォルト値を返し is_custom=false となる。"
+      parameters:
+        - name: year
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+      responses:
+        "200":
+          description: "Monthly settings"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonthlySettingsResponse'
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: "User not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - "monthly-settings"
+      summary: "Upsert monthly settings"
+      description: "指定月の手取り・目標額を登録または更新する。"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertMonthlySettingsRequest'
+      responses:
+        "200":
+          description: "Upserted successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonthlySettingsResponse'
+        "400":
+          description: "Validation Error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: "User not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - "monthly-settings"
+      summary: "Delete monthly settings"
+      description: "指定月の設定を削除し、ユーザーのデフォルト値へ戻す。"
+      parameters:
+        - name: year
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+      responses:
+        "200":
+          description: "Deleted successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "400":
+          description: "Bad Request"
           content:
             application/json:
               schema:
@@ -662,6 +803,53 @@ components:
         - confirmed_expenses
         - planned_expenses
         - remaining
+
+    MonthlySettingsResponse:
+      type: object
+      properties:
+        year:
+          type: integer
+          description: "対象年"
+        month:
+          type: integer
+          description: "対象月（1〜12）"
+        income:
+          type: integer
+          description: "手取り（月収）"
+        saving_goal:
+          type: integer
+          description: "目標貯金額"
+        is_custom:
+          type: boolean
+          description: "この月専用の設定が存在する場合 true、デフォルト値の場合 false"
+      required:
+        - year
+        - month
+        - income
+        - saving_goal
+        - is_custom
+
+    UpsertMonthlySettingsRequest:
+      type: object
+      properties:
+        year:
+          type: integer
+          minimum: 1
+        month:
+          type: integer
+          minimum: 1
+          maximum: 12
+        income:
+          type: integer
+          minimum: 1
+        saving_goal:
+          type: integer
+          minimum: 0
+      required:
+        - year
+        - month
+        - income
+        - saving_goal
 
     ErrorResponse:
       type: object
