@@ -1,4 +1,4 @@
-import { auth } from "@/lib/firebase/config";
+import { getFirebaseAuth } from "@/lib/firebase/config";
 import { signOut } from "firebase/auth";
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
@@ -17,7 +17,7 @@ export async function getAuthHeaders(hasBody: boolean = false): Promise<Record<s
   }
 
   // 現在のユーザーがログインしている場合、ID Tokenを取得
-  const user = auth.currentUser;
+  const user = getFirebaseAuth().currentUser;
   if (user) {
     try {
       const token = await user.getIdToken();
@@ -43,7 +43,7 @@ export async function handleApiError(response: Response, operation: string): Pro
     
     // 自動ログアウト
     try {
-      await signOut(auth);
+      await signOut(getFirebaseAuth());
     } catch (error) {
       console.error("ログアウトに失敗しました:", error);
     }
