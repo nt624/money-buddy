@@ -75,15 +75,19 @@ export function AmountInput({
         aria-expanded={isCalcOpen}
         className="shrink-0 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
-          <line x1="8" y1="6" x2="16" y2="6"/>
-          <line x1="8" y1="10" x2="10" y2="10"/>
-          <line x1="14" y1="10" x2="16" y2="10"/>
-          <line x1="8" y1="14" x2="10" y2="14"/>
-          <line x1="14" y1="14" x2="16" y2="14"/>
-          <line x1="8" y1="18" x2="10" y2="18"/>
-          <line x1="14" y1="18" x2="16" y2="18"/>
+        <svg width="16" height="16" viewBox="2 1 20 22" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="3" y="2" width="18" height="20" rx="2" strokeWidth="2"/>
+          {/* + (left-top) */}
+          <line x1="6" y1="8" x2="10" y2="8"/>
+          <line x1="8" y1="6" x2="8" y2="10"/>
+          {/* - (right-top) */}
+          <line x1="14" y1="8" x2="18" y2="8"/>
+          {/* × (left-bottom) */}
+          <line x1="6" y1="14" x2="10" y2="18"/>
+          <line x1="10" y1="14" x2="6" y2="18"/>
+          {/* = (right-bottom) */}
+          <line x1="14" y1="14.5" x2="18" y2="14.5"/>
+          <line x1="14" y1="17.5" x2="18" y2="17.5"/>
         </svg>
       </button>
       {isCalcOpen && (
