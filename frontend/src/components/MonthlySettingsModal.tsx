@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { MonthlySettings, UpsertMonthlySettingsInput } from '@/lib/types/monthly-settings'
 import { BUSINESS_MAX_AMOUNT } from '@/lib/constants'
+import { AmountInput } from '@/components/ui/AmountInput'
 
 type MonthlySettingsModalProps = {
   isOpen: boolean
@@ -103,16 +104,14 @@ export function MonthlySettingsModal({
             <label htmlFor="ms-income" className="block text-sm font-medium text-foreground">
               手取り（月収）
             </label>
-            <input
-              type="number"
+            <AmountInput
               id="ms-income"
               value={income}
-              onChange={(e) => setIncome(Number(e.target.value))}
+              onChange={(v) => setIncome(Number(v))}
               disabled={isSubmitting}
-              min="1"
+              min={1}
               max={BUSINESS_MAX_AMOUNT}
-              required
-              className="w-full px-3 py-2 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full"
             />
           </div>
 
@@ -120,16 +119,14 @@ export function MonthlySettingsModal({
             <label htmlFor="ms-saving-goal" className="block text-sm font-medium text-foreground">
               目標貯金額
             </label>
-            <input
-              type="number"
+            <AmountInput
               id="ms-saving-goal"
               value={savingGoal}
-              onChange={(e) => setSavingGoal(Number(e.target.value))}
+              onChange={(v) => setSavingGoal(Number(v))}
               disabled={isSubmitting}
-              min="0"
+              min={0}
               max={BUSINESS_MAX_AMOUNT}
-              required
-              className="w-full px-3 py-2 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full"
             />
           </div>
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { CreateExpenseInput, UpdateExpenseInput, Expense } from '@/lib/types/expense'
 import { getCategories } from '@/lib/api/categories'
 import { Category } from '@/lib/types/category'
+import { AmountInput } from '@/components/ui/AmountInput'
 
 type Props = {
     mode?: 'create' | 'edit'
@@ -102,11 +103,10 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
             <div className="space-y-2">
                 <label className="block text-xs sm:text-sm font-medium text-foreground">
                     金額
-                    <input
-                        className="mt-1 block w-full px-3 py-2 bg-input border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-                        type="number"
+                    <AmountInput
                         value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
+                        onChange={setAmount}
+                        className="mt-1 w-full"
                     />
                 </label>
                 {errors.amount && <p className="text-xs sm:text-sm text-danger">{errors.amount}</p>}
