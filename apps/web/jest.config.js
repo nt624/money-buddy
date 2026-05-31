@@ -13,6 +13,8 @@ module.exports = {
     "^@/lib/firebase/config$": "<rootDir>/src/lib/firebase/__mocks__/config.ts",
     "^@pace/core/types/(.*)$": "<rootDir>/../../packages/core/src/types/$1",
     "^@pace/core/types$": "<rootDir>/../../packages/core/src/types/index.ts",
+    "^@pace/core/api$": "<rootDir>/../../packages/core/src/api/index.ts",
+    "^@pace/core/auth$": "<rootDir>/../../packages/core/src/auth/index.ts",
     "^@pace/core$": "<rootDir>/../../packages/core/src/index.ts",
     "^@/(.*)$": "<rootDir>/src/$1",
   },

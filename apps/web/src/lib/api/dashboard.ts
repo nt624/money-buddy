@@ -1,18 +1,5 @@
-import { Dashboard } from "@pace/core/types/dashboard";
-import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
+// Thin web facade over the shared API client (see @/lib/apiClient).
+// Implementations live in @pace/core/api.
+import { api } from "@/lib/apiClient";
 
-export async function getDashboard(params?: { year: number; month: number }): Promise<Dashboard> {
-  const headers = await getAuthHeaders();
-  const query = params ? `?year=${params.year}&month=${params.month}` : '';
-  const res = await fetch(`${API_BASE_URL}/dashboard${query}`, {
-    method: "GET",
-    headers,
-  });
-
-  if (!res.ok) {
-    await handleApiError(res, 'ダッシュボードの取得');
-  }
-
-  const data = await res.json();
-  return data;
-}
+export const getDashboard = api.dashboard.getDashboard;
