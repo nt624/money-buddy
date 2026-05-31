@@ -12,7 +12,8 @@ run_frontend=false
 if echo "$STAGED_FILES" | grep -q "^backend/"; then
   run_backend=true
 fi
-if echo "$STAGED_FILES" | grep -q "^frontend/"; then
+# Frontend now lives under apps/* and packages/* (npm workspaces + Turborepo)
+if echo "$STAGED_FILES" | grep -qE "^(apps/|packages/)"; then
   run_frontend=true
 fi
 
@@ -31,19 +32,15 @@ if [ "$run_backend" = true ]; then
   cd "$ROOT"
 fi
 
-# --- Frontend checks ---
+# --- Frontend checks (workspaces via Turborepo) ---
 if [ "$run_frontend" = true ]; then
   echo "[pre-commit] Running frontend checks..."
-  cd "$ROOT/frontend"
+  cd "$ROOT"
 
-  echo "  npm run lint"
-  npm run lint
-
-  echo "  tsc --noEmit"
-  npx tsc --noEmit
+  echo "  turbo run lint typecheck"
+  npx turbo run lint typecheck
 
   echo "[pre-commit] Frontend checks passed."
-  cd "$ROOT"
 fi
 
 echo "[pre-commit] All checks passed."
