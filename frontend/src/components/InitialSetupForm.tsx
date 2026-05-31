@@ -103,6 +103,7 @@ export function InitialSetupForm({ onSubmit, isSubmitting }: Props) {
           <AmountInput
             value={income}
             onChange={setIncome}
+            disabled={isSubmitting}
             placeholder="例: 300000"
             className="mt-1 w-full"
           />
@@ -116,6 +117,7 @@ export function InitialSetupForm({ onSubmit, isSubmitting }: Props) {
           <AmountInput
             value={savingGoal}
             onChange={setSavingGoal}
+            disabled={isSubmitting}
             placeholder="例: 50000"
             className="mt-1 w-full"
           />
@@ -141,6 +143,7 @@ export function InitialSetupForm({ onSubmit, isSubmitting }: Props) {
                 <AmountInput
                   value={cost.amount || ''}
                   onChange={(v) => updateFixedCost(cost.id, 'amount', v)}
+                  disabled={isSubmitting}
                   placeholder="金額"
                   className="w-full"
                 />
