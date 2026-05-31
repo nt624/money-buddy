@@ -1,7 +1,8 @@
 "use client";
 
 import { DataSourceProvider } from "@pace/core/data";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider } from "@pace/core/auth";
+import { firebaseWebAuthPort } from "@/auth/firebase-web";
 import { restDataSource } from "@/data/rest";
 
 /**
@@ -10,7 +11,7 @@ import { restDataSource } from "@/data/rest";
  */
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <AuthProvider>
+    <AuthProvider authPort={firebaseWebAuthPort}>
       <DataSourceProvider dataSource={restDataSource}>
         {children}
       </DataSourceProvider>
