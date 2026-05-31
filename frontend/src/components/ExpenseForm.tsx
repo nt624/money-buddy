@@ -106,6 +106,7 @@ export function ExpenseForm({ mode = 'create', initialData, onSubmit, onCancel, 
                     <AmountInput
                         value={amount}
                         onChange={setAmount}
+                        disabled={isSubmitting}
                         className="mt-1 w-full"
                     />
                 </label>
