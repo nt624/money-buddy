@@ -33,6 +33,9 @@ export function useCalculator(initialValue?: number) {
 
   const handleDigit = (digit: string) => {
     setState(prev => {
+      if (prev.display === 'エラー') {
+        return { ...INITIAL_STATE, display: digit === '.' ? '0.' : digit }
+      }
       if (prev.waitingForOperand) {
         return { ...prev, display: digit === '.' ? '0.' : digit, waitingForOperand: false }
       }
@@ -44,6 +47,7 @@ export function useCalculator(initialValue?: number) {
 
   const handleOperator = (op: Operator) => {
     setState(prev => {
+      if (prev.display === 'エラー') return prev
       const current = parseFloat(prev.display)
       if (prev.operand !== null && prev.operator && !prev.waitingForOperand) {
         const result = applyOperator(prev.operand, prev.operator, current)
