@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { InitialSetupRequest, FixedCostInput } from '@/lib/types/setup'
+import { AmountInput } from '@/components/ui/AmountInput'
 
 type Props = {
   onSubmit: (input: InitialSetupRequest) => Promise<void>
@@ -99,12 +100,12 @@ export function InitialSetupForm({ onSubmit, isSubmitting }: Props) {
       <div className="space-y-2">
         <label className="block text-sm font-medium text-foreground">
           月収（手取り）
-          <input
-            className="mt-1 block w-full px-3 py-2 bg-input border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-            type="number"
+          <AmountInput
             value={income}
-            onChange={(e) => setIncome(e.target.value)}
+            onChange={setIncome}
+            disabled={isSubmitting}
             placeholder="例: 300000"
+            className="mt-1 w-full"
           />
         </label>
         {errors.income && <p className="text-sm text-danger">{errors.income}</p>}
@@ -113,12 +114,12 @@ export function InitialSetupForm({ onSubmit, isSubmitting }: Props) {
       <div className="space-y-2">
         <label className="block text-sm font-medium text-foreground">
           貯蓄目標（月額）
-          <input
-            className="mt-1 block w-full px-3 py-2 bg-input border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-            type="number"
+          <AmountInput
             value={savingGoal}
-            onChange={(e) => setSavingGoal(e.target.value)}
+            onChange={setSavingGoal}
+            disabled={isSubmitting}
             placeholder="例: 50000"
+            className="mt-1 w-full"
           />
         </label>
         {errors.savingGoal && <p className="text-sm text-danger">{errors.savingGoal}</p>}
@@ -139,12 +140,12 @@ export function InitialSetupForm({ onSubmit, isSubmitting }: Props) {
                 />
               </div>
               <div>
-                <input
-                  className="block w-full px-3 py-2 bg-input border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-                  type="number"
+                <AmountInput
                   value={cost.amount || ''}
-                  onChange={(e) => updateFixedCost(cost.id, 'amount', e.target.value)}
+                  onChange={(v) => updateFixedCost(cost.id, 'amount', v)}
+                  disabled={isSubmitting}
                   placeholder="金額"
+                  className="w-full"
                 />
               </div>
               {errors.fixedCosts && errors.fixedCosts[index] && (

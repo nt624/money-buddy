@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FixedCost, FixedCostInput } from "@/lib/types/fixed-cost";
 import { BUSINESS_MAX_AMOUNT, FIXED_COST_NAME_MAX_LENGTH } from "@/lib/constants";
+import { AmountInput } from "@/components/ui/AmountInput";
 
 type Props = {
   fixedCost: FixedCost | null;
@@ -94,16 +95,15 @@ export function FixedCostForm({
         <label htmlFor="amount" className="block text-sm font-medium text-foreground">
           金額（円） <span className="text-danger">*</span>
         </label>
-        <input
+        <AmountInput
           id="amount"
-          type="number"
           value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+          onChange={setAmount}
           disabled={isSubmitting}
-          className="w-full px-3 py-2 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
           placeholder="10000"
-          min="1"
+          min={1}
           max={BUSINESS_MAX_AMOUNT}
+          className="w-full"
         />
       </div>
 

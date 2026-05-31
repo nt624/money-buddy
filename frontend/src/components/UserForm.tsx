@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { UpdateUserInput } from '@/lib/types/user'
 import { BUSINESS_MAX_AMOUNT } from '@/lib/constants'
+import { AmountInput } from '@/components/ui/AmountInput'
 
 type UserFormProps = {
   initialIncome?: number
@@ -55,16 +56,14 @@ export function UserForm({
         <label htmlFor="income" className="block text-sm font-medium text-foreground">
           月収（手取り）
         </label>
-        <input
-          type="number"
+        <AmountInput
           id="income"
           value={income}
-          onChange={(e) => setIncome(Number(e.target.value))}
+          onChange={(v) => setIncome(Number(v))}
           disabled={isSubmitting}
-          min="1"
+          min={1}
           max={BUSINESS_MAX_AMOUNT}
-          required
-          className="w-full px-3 py-2 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full"
         />
       </div>
 
@@ -72,16 +71,14 @@ export function UserForm({
         <label htmlFor="savingGoal" className="block text-sm font-medium text-foreground">
           貯金目標額（月）
         </label>
-        <input
-          type="number"
+        <AmountInput
           id="savingGoal"
           value={savingGoal}
-          onChange={(e) => setSavingGoal(Number(e.target.value))}
+          onChange={(v) => setSavingGoal(Number(v))}
           disabled={isSubmitting}
-          min="0"
+          min={0}
           max={BUSINESS_MAX_AMOUNT}
-          required
-          className="w-full px-3 py-2 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full"
         />
       </div>
 
