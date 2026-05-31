@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { createExpense, getExpenses, updateExpense, deleteExpense } from "@/lib/api/expenses";
-import { CreateExpenseInput, UpdateExpenseInput, Expense } from "@pace/core/types/expense";
+import { useDataSource } from "../data";
+import { CreateExpenseInput, UpdateExpenseInput, Expense } from "../types/expense";
 
 type SelectedMonth = { year: number; month: number };
 
@@ -10,6 +10,7 @@ function currentMonth(): SelectedMonth {
 }
 
 export function useExpenses() {
+    const ds = useDataSource();
     const [selectedMonth, setSelectedMonth] = useState<SelectedMonth>(currentMonth);
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,8 +26,8 @@ export function useExpenses() {
             setError(null);
 
             try {
-                const data = await getExpenses({ year, month });
-                setExpenses(data.expenses);
+                const data = await ds.expenses.list({ year, month });
+                setExpenses(data);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'エラーが発生しました');
             } finally {
@@ -35,7 +36,7 @@ export function useExpenses() {
         }
 
         fetchExpenses();
-    }, [selectedMonth.year, selectedMonth.month]);
+    }, [ds, selectedMonth.year, selectedMonth.month]);
 
     const navigateMonth = (direction: 'prev' | 'next') => {
         setSelectedMonth(({ year, month }) => {
@@ -52,7 +53,7 @@ export function useExpenses() {
         setError(null);
 
         try {
-            const expense = await createExpense(input);
+            const expense = await ds.expenses.create(input);
             setExpenses((prevExpenses) => [...prevExpenses, expense]);
             return true;
         } catch (err) {
@@ -69,7 +70,7 @@ export function useExpenses() {
         setError(null);
 
         try {
-            const updatedExpense = await updateExpense(id, input);
+            const updatedExpense = await ds.expenses.update(id, input);
             setExpenses((prevExpenses) =>
                 prevExpenses.map((exp) => (exp.id === id ? updatedExpense : exp))
             );
@@ -88,7 +89,7 @@ export function useExpenses() {
         setError(null);
 
         try {
-            await deleteExpense(id);
+            await ds.expenses.remove(id);
             setExpenses((prevExpenses) => prevExpenses.filter((exp) => exp.id !== id));
             return true;
         } catch (err) {

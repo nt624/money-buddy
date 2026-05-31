@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { getDashboard } from "@/lib/api/dashboard";
-import { updateUser } from "@/lib/api/users";
-import { Dashboard } from "@pace/core/types/dashboard";
-import { UpdateUserInput } from "@pace/core/types/user";
+import { useDataSource } from "../data";
+import { Dashboard } from "../types/dashboard";
+import { UpdateUserInput } from "../types/user";
 
 type SelectedMonth = { year: number; month: number };
 
@@ -12,6 +11,7 @@ type UseDashboardOptions = {
 };
 
 export function useDashboard(options: UseDashboardOptions = {}) {
+  const ds = useDataSource();
   const { enabled = true, selectedMonth } = options;
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +23,7 @@ export function useDashboard(options: UseDashboardOptions = {}) {
     setError(null);
 
     try {
-      const data = await getDashboard(month);
+      const data = await ds.dashboard.get(month);
       setDashboard(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "エラーが発生しました");
@@ -49,7 +49,7 @@ export function useDashboard(options: UseDashboardOptions = {}) {
     setError(null);
 
     try {
-      await updateUser(input);
+      await ds.user.update(input);
       await fetchDashboard(selectedMonth);
       return true;
     } catch (err) {

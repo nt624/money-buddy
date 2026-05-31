@@ -15,6 +15,8 @@ module.exports = {
     "^@pace/core/types$": "<rootDir>/../../packages/core/src/types/index.ts",
     "^@pace/core/api$": "<rootDir>/../../packages/core/src/api/index.ts",
     "^@pace/core/auth$": "<rootDir>/../../packages/core/src/auth/index.ts",
+    "^@pace/core/data$": "<rootDir>/../../packages/core/src/data/index.ts",
+    "^@pace/core/hooks$": "<rootDir>/../../packages/core/src/hooks/index.ts",
     "^@pace/core$": "<rootDir>/../../packages/core/src/index.ts",
     "^@/(.*)$": "<rootDir>/src/$1",
   },

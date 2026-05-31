@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  getMonthlySettings,
-  upsertMonthlySettings,
-  deleteMonthlySettings,
-} from "@/lib/api/monthly-settings";
-import { MonthlySettings, UpsertMonthlySettingsInput } from "@pace/core/types/monthly-settings";
+import { useDataSource } from "../data";
+import { MonthlySettings, UpsertMonthlySettingsInput } from "../types/monthly-settings";
 
 type SelectedMonth = { year: number; month: number };
 type FallbackUser = { income: number; saving_goal: number };
@@ -13,6 +9,7 @@ export function useMonthlySettings(
   selectedMonth: SelectedMonth,
   fallbackUser?: FallbackUser | null
 ) {
+  const ds = useDataSource();
   const [settings, setSettings] = useState<MonthlySettings | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,7 +20,7 @@ export function useMonthlySettings(
     setIsLoading(true);
     setError(null);
     try {
-      const data = await getMonthlySettings(selectedMonth.year, selectedMonth.month);
+      const data = await ds.monthlySettings.get(selectedMonth.year, selectedMonth.month);
       setSettings(data);
     } catch (err) {
       // API 失敗時はユーザーのグローバルデフォルト値にフォールバックしつつエラーを記録
@@ -41,7 +38,7 @@ export function useMonthlySettings(
       setIsLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedMonth.year, selectedMonth.month, fallbackUser?.income, fallbackUser?.saving_goal]);
+  }, [ds, selectedMonth.year, selectedMonth.month, fallbackUser?.income, fallbackUser?.saving_goal]);
 
   useEffect(() => {
     fetchSettings();
@@ -54,7 +51,7 @@ export function useMonthlySettings(
     setIsSubmitting(true);
     setError(null);
     try {
-      const updated = await upsertMonthlySettings(input);
+      const updated = await ds.monthlySettings.upsert(input);
       setSettings(updated);
       onSuccess?.();
       return true;
@@ -70,7 +67,7 @@ export function useMonthlySettings(
     setIsSubmitting(true);
     setError(null);
     try {
-      await deleteMonthlySettings(selectedMonth.year, selectedMonth.month);
+      await ds.monthlySettings.remove(selectedMonth.year, selectedMonth.month);
       await fetchSettings();
       onSuccess?.();
       return true;

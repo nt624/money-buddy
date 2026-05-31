@@ -1,14 +1,9 @@
 import { useEffect, useState } from "react";
-import {
-  getCategories,
-  createCategory,
-  updateCategory,
-  deleteCategory,
-  reorderCategories,
-} from "@/lib/api/categories";
-import { Category, CreateCategoryInput, UpdateCategoryInput, ReorderCategoryItem } from "@pace/core/types/category";
+import { useDataSource } from "../data";
+import { Category, CreateCategoryInput, UpdateCategoryInput, ReorderCategoryItem } from "../types/category";
 
 export function useCategories() {
+  const ds = useDataSource();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +15,7 @@ export function useCategories() {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await getCategories();
+        const data = await ds.categories.list();
         setCategories(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "エラーが発生しました");
@@ -29,13 +24,13 @@ export function useCategories() {
       }
     };
     fetchCategories();
-  }, []);
+  }, [ds]);
 
   const refetchCategories = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await getCategories();
+      const data = await ds.categories.list();
       setCategories(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "エラーが発生しました");
@@ -49,7 +44,7 @@ export function useCategories() {
     setIsSubmitting(true);
     setError(null);
     try {
-      const newCategory = await createCategory(input);
+      const newCategory = await ds.categories.create(input);
       setCategories((prev) => [...prev, newCategory]);
       return true;
     } catch (err) {
@@ -65,7 +60,7 @@ export function useCategories() {
     setIsSubmitting(true);
     setError(null);
     try {
-      const updated = await updateCategory(id, input);
+      const updated = await ds.categories.update(id, input);
       setCategories((prev) => prev.map((c) => (c.id === id ? updated : c)));
       return true;
     } catch (err) {
@@ -81,7 +76,7 @@ export function useCategories() {
     setIsSubmitting(true);
     setError(null);
     try {
-      await deleteCategory(id);
+      await ds.categories.remove(id);
       setCategories((prev) => prev.filter((c) => c.id !== id));
       return true;
     } catch (err) {
@@ -97,7 +92,7 @@ export function useCategories() {
     setIsSubmitting(true);
     setError(null);
     try {
-      await reorderCategories(items);
+      await ds.categories.reorder(items);
       await refetchCategories();
       return true;
     } catch (err) {

@@ -1,13 +1,9 @@
 import { useEffect, useState } from "react";
-import {
-  createFixedCost,
-  getFixedCosts,
-  updateFixedCost,
-  deleteFixedCost,
-} from "@/lib/api/fixed-costs";
-import { FixedCost, CreateFixedCostInput, UpdateFixedCostInput } from "@pace/core/types/fixed-cost";
+import { useDataSource } from "../data";
+import { FixedCost, CreateFixedCostInput, UpdateFixedCostInput } from "../types/fixed-cost";
 
 export function useFixedCosts() {
+  const ds = useDataSource();
   const [fixedCosts, setFixedCosts] = useState<FixedCost[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,8 +16,8 @@ export function useFixedCosts() {
       setError(null);
 
       try {
-        const data = await getFixedCosts();
-        setFixedCosts(data.fixed_costs);
+        const data = await ds.fixedCosts.list();
+        setFixedCosts(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "エラーが発生しました");
       } finally {
@@ -30,7 +26,7 @@ export function useFixedCosts() {
     };
 
     fetchFixedCosts();
-  }, []);
+  }, [ds]);
 
   // Refetch
   const refetchFixedCosts = async () => {
@@ -38,8 +34,8 @@ export function useFixedCosts() {
     setError(null);
 
     try {
-      const data = await getFixedCosts();
-      setFixedCosts(data.fixed_costs);
+      const data = await ds.fixedCosts.list();
+      setFixedCosts(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "エラーが発生しました");
     } finally {
@@ -55,7 +51,7 @@ export function useFixedCosts() {
     setError(null);
 
     try {
-      const newFixedCost = await createFixedCost(input);
+      const newFixedCost = await ds.fixedCosts.create(input);
       setFixedCosts((prevFixedCosts) => [...prevFixedCosts, newFixedCost]);
       return true;
     } catch (err) {
@@ -75,7 +71,7 @@ export function useFixedCosts() {
     setError(null);
 
     try {
-      const updatedFixedCost = await updateFixedCost(id, input);
+      const updatedFixedCost = await ds.fixedCosts.update(id, input);
       setFixedCosts((prevFixedCosts) =>
         prevFixedCosts.map((fc) => (fc.id === id ? updatedFixedCost : fc))
       );
@@ -94,7 +90,7 @@ export function useFixedCosts() {
     setError(null);
 
     try {
-      await deleteFixedCost(id);
+      await ds.fixedCosts.remove(id);
       setFixedCosts((prevFixedCosts) =>
         prevFixedCosts.filter((fc) => fc.id !== id)
       );

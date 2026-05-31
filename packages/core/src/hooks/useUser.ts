@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { getMe, UserNotFoundError } from "@/lib/api/users";
-import { User } from "@pace/core/types/user";
+import { useDataSource } from "../data";
+import { UserNotFoundError } from "../api";
+import { User } from "../types/user";
 
 export function useUser() {
+  const ds = useDataSource();
   const [user, setUser] = useState<User | null>(null);
   const [needsSetup, setNeedsSetup] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -13,7 +15,7 @@ export function useUser() {
     setError(null);
 
     try {
-      const userData = await getMe();
+      const userData = await ds.user.getMe();
       setUser(userData);
       setNeedsSetup(false);
     } catch (err) {
@@ -30,7 +32,8 @@ export function useUser() {
 
   useEffect(() => {
     fetchUser();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ds]);
 
   return {
     user,
