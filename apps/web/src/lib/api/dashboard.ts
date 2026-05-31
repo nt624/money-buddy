@@ -1,4 +1,4 @@
-import { Dashboard } from "@/lib/types/dashboard";
+import { Dashboard } from "@pace/core/types/dashboard";
 import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
 
 export async function getDashboard(params?: { year: number; month: number }): Promise<Dashboard> {

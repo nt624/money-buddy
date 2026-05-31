@@ -1,4 +1,4 @@
-import { CreateExpenseInput, UpdateExpenseInput, Expense, GetExpensesResponse } from "@/lib/types/expense";
+import { CreateExpenseInput, UpdateExpenseInput, Expense, GetExpensesResponse } from "@pace/core/types/expense";
 import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
 
 export async function createExpense(

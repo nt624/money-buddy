@@ -1,4 +1,4 @@
-import { MonthlySettings, UpsertMonthlySettingsInput } from "@/lib/types/monthly-settings";
+import { MonthlySettings, UpsertMonthlySettingsInput } from "@pace/core/types/monthly-settings";
 import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
 
 export async function getMonthlySettings(year: number, month: number): Promise<MonthlySettings> {

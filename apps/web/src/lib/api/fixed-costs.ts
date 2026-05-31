@@ -5,7 +5,7 @@ import {
   CreateFixedCostResponse,
   GetFixedCostsResponse,
   UpdateFixedCostResponse,
-} from "@/lib/types/fixed-cost";
+} from "@pace/core/types/fixed-cost";
 import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
 
 export async function createFixedCost(

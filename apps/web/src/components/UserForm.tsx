@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { UpdateUserInput } from '@/lib/types/user'
+import { UpdateUserInput } from '@pace/core/types/user'
 import { BUSINESS_MAX_AMOUNT } from '@/lib/constants'
 import { AmountInput } from '@/components/ui/AmountInput'
 

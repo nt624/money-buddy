@@ -17,7 +17,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
-import { Category, ReorderCategoryItem } from "@/lib/types/category"
+import { Category, ReorderCategoryItem } from "@pace/core/types/category"
 
 type Props = {
   categories: Category[]

@@ -1,4 +1,4 @@
-import { Category, CreateCategoryInput, UpdateCategoryInput, ReorderCategoryItem } from "@/lib/types/category";
+import { Category, CreateCategoryInput, UpdateCategoryInput, ReorderCategoryItem } from "@pace/core/types/category";
 import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
 
 export async function getCategories(): Promise<Category[]> {

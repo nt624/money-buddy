@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FixedCost, FixedCostInput } from "@/lib/types/fixed-cost";
+import { FixedCost, FixedCostInput } from "@pace/core/types/fixed-cost";
 import { BUSINESS_MAX_AMOUNT, FIXED_COST_NAME_MAX_LENGTH } from "@/lib/constants";
 import { AmountInput } from "@/components/ui/AmountInput";
 

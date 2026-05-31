@@ -6,7 +6,7 @@ import {
   deleteCategory,
   reorderCategories,
 } from "@/lib/api/categories";
-import { Category, CreateCategoryInput, UpdateCategoryInput, ReorderCategoryItem } from "@/lib/types/category";
+import { Category, CreateCategoryInput, UpdateCategoryInput, ReorderCategoryItem } from "@pace/core/types/category";
 
 export function useCategories() {
   const [categories, setCategories] = useState<Category[]>([]);

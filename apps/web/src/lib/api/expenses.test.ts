@@ -1,5 +1,5 @@
 import { createExpense } from "./expenses";
-import { CreateExpenseInput, Expense } from "../types/expense";
+import { CreateExpenseInput, Expense } from "@pace/core/types/expense";
 
 type GlobalWithFetch = typeof globalThis & { fetch: jest.Mock };
 

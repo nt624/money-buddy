@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CreateExpenseInput, UpdateExpenseInput, Expense } from '@/lib/types/expense'
+import { CreateExpenseInput, UpdateExpenseInput, Expense } from '@pace/core/types/expense'
 import { getCategories } from '@/lib/api/categories'
-import { Category } from '@/lib/types/category'
+import { Category } from '@pace/core/types/category'
 import { AmountInput } from '@/components/ui/AmountInput'
 
 type Props = {

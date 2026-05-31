@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getMe, UserNotFoundError } from "@/lib/api/users";
-import { User } from "@/lib/types/user";
+import { User } from "@pace/core/types/user";
 
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);

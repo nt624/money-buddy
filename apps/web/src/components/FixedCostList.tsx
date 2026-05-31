@@ -1,4 +1,4 @@
-import { FixedCost } from "@/lib/types/fixed-cost";
+import { FixedCost } from "@pace/core/types/fixed-cost";
 
 type Props = {
   fixedCosts: FixedCost[];

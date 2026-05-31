@@ -1,4 +1,4 @@
-import { User, UpdateUserInput } from "@/lib/types/user";
+import { User, UpdateUserInput } from "@pace/core/types/user";
 import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
 
 export class UserNotFoundError extends Error {

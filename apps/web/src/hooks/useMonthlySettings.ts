@@ -4,7 +4,7 @@ import {
   upsertMonthlySettings,
   deleteMonthlySettings,
 } from "@/lib/api/monthly-settings";
-import { MonthlySettings, UpsertMonthlySettingsInput } from "@/lib/types/monthly-settings";
+import { MonthlySettings, UpsertMonthlySettingsInput } from "@pace/core/types/monthly-settings";
 
 type SelectedMonth = { year: number; month: number };
 type FallbackUser = { income: number; saving_goal: number };

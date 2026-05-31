@@ -5,7 +5,7 @@ import {
   updateFixedCost,
   deleteFixedCost,
 } from "@/lib/api/fixed-costs";
-import { FixedCost, CreateFixedCostInput, UpdateFixedCostInput } from "@/lib/types/fixed-cost";
+import { FixedCost, CreateFixedCostInput, UpdateFixedCostInput } from "@pace/core/types/fixed-cost";
 
 export function useFixedCosts() {
   const [fixedCosts, setFixedCosts] = useState<FixedCost[]>([]);

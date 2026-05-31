@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { getDashboard } from "@/lib/api/dashboard";
 import { updateUser } from "@/lib/api/users";
-import { Dashboard } from "@/lib/types/dashboard";
-import { UpdateUserInput } from "@/lib/types/user";
+import { Dashboard } from "@pace/core/types/dashboard";
+import { UpdateUserInput } from "@pace/core/types/user";
 
 type SelectedMonth = { year: number; month: number };
 

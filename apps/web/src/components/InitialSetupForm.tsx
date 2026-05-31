@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { InitialSetupRequest, FixedCostInput } from '@/lib/types/setup'
+import { InitialSetupRequest, FixedCostInput } from '@pace/core/types/setup'
 import { AmountInput } from '@/components/ui/AmountInput'
 
 type Props = {

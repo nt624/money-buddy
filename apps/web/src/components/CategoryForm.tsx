@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from "react";
-import { Category } from "@/lib/types/category";
+import { Category } from "@pace/core/types/category";
 
 const CATEGORY_NAME_MAX_LENGTH = 50;
 

@@ -1,4 +1,4 @@
-import { InitialSetupRequest, InitialSetupResponse } from "@/lib/types/setup";
+import { InitialSetupRequest, InitialSetupResponse } from "@pace/core/types/setup";
 import { API_BASE_URL, getAuthHeaders, handleApiError } from "./client";
 
 export async function submitInitialSetup(

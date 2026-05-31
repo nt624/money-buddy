@@ -1,4 +1,4 @@
-import { Dashboard as DashboardType } from "@/lib/types/dashboard";
+import { Dashboard as DashboardType } from "@pace/core/types/dashboard";
 
 type DashboardProps = {
   dashboard: DashboardType;

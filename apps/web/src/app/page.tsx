@@ -14,8 +14,8 @@ import { Dashboard } from '@/components/Dashboard'
 import { MonthlySettingsModal } from '@/components/MonthlySettingsModal'
 import { Container } from '@/components/Layout/Container'
 import { submitInitialSetup } from '@/lib/api/setup'
-import { InitialSetupRequest } from '@/lib/types/setup'
-import { Expense, UpdateExpenseInput } from '@/lib/types/expense'
+import { InitialSetupRequest } from '@pace/core/types/setup'
+import { Expense, UpdateExpenseInput } from '@pace/core/types/expense'
 
 export default function Home() {
   const { user, needsSetup, isLoading: userLoading, error: userError, refetchUser } = useUser()

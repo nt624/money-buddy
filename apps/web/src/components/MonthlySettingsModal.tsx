@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { MonthlySettings, UpsertMonthlySettingsInput } from '@/lib/types/monthly-settings'
+import { MonthlySettings, UpsertMonthlySettingsInput } from '@pace/core/types/monthly-settings'
 import { BUSINESS_MAX_AMOUNT } from '@/lib/constants'
 import { AmountInput } from '@/components/ui/AmountInput'
 

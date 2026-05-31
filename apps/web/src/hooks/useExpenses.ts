@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createExpense, getExpenses, updateExpense, deleteExpense } from "@/lib/api/expenses";
-import { CreateExpenseInput, UpdateExpenseInput, Expense } from "@/lib/types/expense";
+import { CreateExpenseInput, UpdateExpenseInput, Expense } from "@pace/core/types/expense";
 
 type SelectedMonth = { year: number; month: number };
 

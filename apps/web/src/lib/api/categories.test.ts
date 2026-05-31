@@ -5,7 +5,7 @@ import {
   deleteCategory,
   reorderCategories,
 } from "./categories";
-import { Category, CreateCategoryInput, UpdateCategoryInput, ReorderCategoryItem } from "../types/category";
+import { Category, CreateCategoryInput, UpdateCategoryInput, ReorderCategoryItem } from "@pace/core/types/category";
 
 type GlobalWithFetch = typeof globalThis & { fetch: jest.Mock };
 

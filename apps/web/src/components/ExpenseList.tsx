@@ -1,4 +1,4 @@
-import { Expense } from "@/lib/types/expense"
+import { Expense } from "@pace/core/types/expense"
 
 type Props = {
   expenses: Expense[]
