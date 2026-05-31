@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useTheme } from '@/hooks/useTheme'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@pace/core/auth'
 
 export function Header() {
   const pathname = usePathname()

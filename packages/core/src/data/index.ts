@@ -9,3 +9,4 @@ export type {
   MonthlySettingsDataSource,
 } from "./types";
 export { DataSourceProvider, useDataSource } from "./context";
+export { createRestDataSource } from "./rest";
