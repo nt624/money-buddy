@@ -34,14 +34,18 @@ function getFirebaseErrorMessage(err: unknown): string {
 }
 
 export default function LoginPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { user, signIn, signUp, signInWithGoogle } = useAuth()
   const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [error, setError] = useState(() =>
+    searchParams.get('reason') === 'session_expired'
+      ? '認証の有効期限が切れました。再度ログインしてください。'
+      : ''
+  )
   const [loading, setLoading] = useState(false)
-  const { user, signIn, signUp, signInWithGoogle } = useAuth()
-  const router = useRouter()
-  const searchParams = useSearchParams()
 
   /**
    * リダイレクト先を安全に取得する
@@ -59,15 +63,8 @@ export default function LoginPage() {
     // 既にログイン済みの場合、リダイレクト先またはホームへ
     if (user) {
       router.push(getSafeRedirect())
-      return
     }
-
-    // URLパラメータから理由を取得
-    const reason = searchParams.get('reason')
-    if (reason === 'session_expired') {
-      setError('認証の有効期限が切れました。再度ログインしてください。')
-    }
-  }, [user, searchParams, router, getSafeRedirect])
+  }, [user, router, getSafeRedirect])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
