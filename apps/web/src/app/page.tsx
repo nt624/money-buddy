@@ -1,10 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useExpenses } from '@pace/core/hooks'
-import { useUser } from '@pace/core/hooks'
-import { useDashboard } from '@pace/core/hooks'
-import { useMonthlySettings } from '@pace/core/hooks'
+import { useExpenses, useUser, useDashboard, useMonthlySettings } from '@pace/core/hooks'
 import { ExpenseForm } from '@/components/ExpenseForm'
 import { ExpenseList } from '@/components/ExpenseList'
 import { ExpenseCalendar } from '@/components/ExpenseCalendar'

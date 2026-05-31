@@ -1,10 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useFixedCosts } from '@pace/core/hooks'
-import { useCategories } from '@pace/core/hooks'
-import { useDashboard } from '@pace/core/hooks'
-import { useUser } from '@pace/core/hooks'
+import { useFixedCosts, useCategories, useDashboard, useUser } from '@pace/core/hooks'
 import { FixedCostList } from '@/components/FixedCostList'
 import { FixedCostForm } from '@/components/FixedCostForm'
 import { CategoryList } from '@/components/CategoryList'
