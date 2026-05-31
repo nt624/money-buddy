@@ -64,7 +64,8 @@ export function useCalculator(initialValue?: number) {
       const current = parseFloat(prev.display)
       const result = applyOperator(prev.operand, prev.operator, current)
       if (result === 'error') return { ...INITIAL_STATE, display: 'エラー' }
-      return { display: String(result), operand: null, operator: null, waitingForOperand: false }
+      const rounded = Math.round(result as number)
+      return { display: String(rounded), operand: null, operator: null, waitingForOperand: false }
     })
   }
 

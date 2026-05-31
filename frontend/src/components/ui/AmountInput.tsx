@@ -27,8 +27,14 @@ export function AmountInput({
   inputClassName,
 }: AmountInputProps) {
   const [isCalcOpen, setIsCalcOpen] = useState(false)
+  const [prevDisabled, setPrevDisabled] = useState(disabled)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  if (prevDisabled !== disabled) {
+    setPrevDisabled(disabled)
+    if (disabled) setIsCalcOpen(false)
+  }
 
   useEffect(() => {
     if (!isCalcOpen) return
@@ -47,7 +53,7 @@ export function AmountInput({
   }
 
   const handleApply = (val: number) => {
-    onChange(String(Math.floor(val)))
+    onChange(String(val))
     setIsCalcOpen(false)
   }
 
