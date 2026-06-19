@@ -314,18 +314,48 @@ graph LR
 │   │   │   └── *.sql.go
 │   │   └── sqlc.yaml
 │   ├── internal/                 # プライベートパッケージ
-│   │   ├── auth/                 # Firebase認証初期化
-│   │   ├── db/                   # DB接続・トランザクション
-│   │   ├── handlers/             # HTTPハンドラ層
-│   │   │   ├── expense_handler.go
-│   │   │   ├── dashboard_handler.go
-│   │   │   └── ...
+│   │   ├── db/                   # DB接続（トランザクション管理は infra/transaction/ に配置）
+│   │   ├── domain/               # ドメインエンティティ（旧 models/）
+│   │   │   ├── category.go
+│   │   │   ├── expense.go
+│   │   │   ├── fixed_cost.go
+│   │   │   ├── status.go
+│   │   │   └── user.go
+│   │   ├── handlers/             # HTTPハンドラ層（1エンドポイント1ファイル）
+│   │   │   ├── register.go       # 全ルーティング集約
+│   │   │   ├── create_expense.go
+│   │   │   ├── list_expenses.go
+│   │   │   ├── update_expense.go
+│   │   │   ├── delete_expense.go
+│   │   │   ├── list_categories.go
+│   │   │   ├── complete_initial_setup.go
+│   │   │   ├── get_user.go
+│   │   │   ├── update_user_settings.go
+│   │   │   ├── create_fixed_cost.go
+│   │   │   ├── list_fixed_costs.go
+│   │   │   ├── update_fixed_cost.go
+│   │   │   ├── delete_fixed_cost.go
+│   │   │   └── get_dashboard.go
 │   │   ├── middleware/           # 認証ミドルウェア
-│   │   ├── models/               # ドメインモデル
-│   │   ├── repositories/         # リポジトリインターフェース
-│   │   └── services/             # ビジネスロジック層
+│   │   └── usecase/              # ユースケース層（旧 services/、1ユースケース1ファイル）
+│   │       ├── errors.go
+│   │       ├── tx.go
+│   │       ├── create_expense.go
+│   │       ├── list_expenses.go
+│   │       ├── update_expense.go
+│   │       ├── delete_expense.go
+│   │       ├── list_categories.go
+│   │       ├── complete_initial_setup.go
+│   │       ├── get_user.go
+│   │       ├── update_user_settings.go
+│   │       ├── create_fixed_cost.go
+│   │       ├── list_fixed_costs.go
+│   │       ├── update_fixed_cost.go
+│   │       ├── delete_fixed_cost.go
+│   │       └── get_dashboard.go
 │   ├── infra/                    # インフラ層実装
-│   │   ├── repository/           # リポジトリ実装（sqlc）
+│   │   ├── auth/                 # Firebase認証初期化（旧 internal/auth/）
+│   │   ├── repository/           # リポジトリ実装（sqlc、コンストラクタは具体型を返す）
 │   │   └── transaction/          # トランザクション管理
 │   ├── openapi/
 │   │   └── openapi.yaml          # OpenAPI 3.0仕様
