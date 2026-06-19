@@ -1,10 +1,10 @@
 # Pace Wallet
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://money-buddy-app.vercel.app)
-[![Backend](https://img.shields.io/badge/Backend-Railway-0B0D0E?style=for-the-badge&logo=railway)](https://money-buddy-production.up.railway.app/health)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://pace-wallet.vercel.app)
+[![Backend](https://img.shields.io/badge/Backend-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://render.com)
 [![Database](https://img.shields.io/badge/Database-Neon-00E699?style=for-the-badge&logo=postgresql&logoColor=white)](https://neon.tech)
 
-> 💡 **Live Demo**: [https://money-buddy-app.vercel.app](https://money-buddy-app.vercel.app)
+> 💡 **Live Demo**: [https://pace-wallet.vercel.app](https://pace-wallet.vercel.app)
 
 ## プロジェクト概要
 
@@ -230,13 +230,13 @@ _スマートフォンでも快適に操作可能_
 ```mermaid
 graph LR
     A[ユーザー] -->|HTTPS| B[Vercel<br/>Frontend]
-    B -->|API Request| C[Railway<br/>Backend API]
+    B -->|API Request| C[Render<br/>Backend API]
     C -->|Pooled Connection| D[Neon<br/>PostgreSQL]
     B -->|Auth| E[Firebase<br/>Authentication]
     C -->|JWT Verify| E
     
     style B fill:#000,stroke:#fff,color:#fff
-    style C fill:#0B0D0E,stroke:#fff,color:#fff
+    style C fill:#46E3B7,stroke:#000,color:#000
     style D fill:#00E699,stroke:#000,color:#000
     style E fill:#FFCA28,stroke:#000,color:#000
 ```
@@ -249,18 +249,18 @@ graph LR
 - グローバルCDNによる高速配信
 - プレビューデプロイで本番前の動作確認が容易
 
-**バックエンド: Railway**
+**バックエンド: Render**
 - Dockerコンテナを直接デプロイ可能
 - GitHubとの自動連携
 - 環境変数の管理が直感的
-- 無料枠でも十分な性能（512MB RAM, 0.5 vCPU）
+- 無料枠でも十分な性能
 
 **データベース: Neon（Serverless PostgreSQL）**
 - サーバーレスアーキテクチャで自動スケール
 - 使用量ベースの課金で開発コスト削減
 - コネクションプーリング標準搭載
 - ブランチ機能で開発環境の複製が容易
-- Railwayとの相性が良い（低レイテンシー）
+- Renderとの相性が良い（低レイテンシー）
 
 **認証: Firebase Authentication**
 - 手軽に実装できる認証基盤
@@ -899,10 +899,10 @@ Goの強みである型安全性を最大限活かすため、ORM（GORMなど�
 
 ### 💥 1. Serverless環境におけるDB接続の最適化（Neon × Go）
 **課題**:
-Railway（バックエンド）とNeon（DB）へデプロイ後、連続したリクエストを送ると `500 Internal Server Error` が頻発し、接続が不安定になる現象が発生しました。
+Render（バックエンド）とNeon（DB）へデプロイ後、連続したリクエストを送ると `500 Internal Server Error` が頻発し、接続が不安定になる現象が発生しました。
 
 **原因**:
-標準の `database/sql` (lib/pq) ドライバを使用していましたが、Railwayのログを見るとエンコードでエラーが発生しており、Neonプロトコルとの互換性の問題が疑われました。
+標準の `database/sql` (lib/pq) ドライバを使用していましたが、デプロイ先のログを見るとエンコードでエラーが発生しており、Neonプロトコルとの互換性の問題が疑われました。
 
 **解決策**:
 GitHub Copilotとの壁打ちや公式ドキュメントの調査を経て、Goのエコシステムでより高パフォーマンスかつコネクションプール管理に優れた **`pgx`** ドライバへ移行しました。
